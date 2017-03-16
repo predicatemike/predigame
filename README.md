@@ -1,5 +1,4 @@
 # PrediGame
----
 ## API
 ### Classes
 
@@ -27,6 +26,8 @@ Sprite.move_keys(self, right = 'right', left = 'left', up = 'up', down = 'down')
 ```
 Inputs a series of key names which will be used for moving right, left, up, and down respectively.
 
+---
+
 ### Functions
 
 #### grid
@@ -47,12 +48,16 @@ shape(shape = None, color = None, pos = None, size = (1, 1)) -> Sprite
 ```
 Takes a shape constant and draws it at the given position with the given size and color. If no shape is provided, a random shape  will be chosen. If no color is provided, a random color will be chosen. If no position is provided, a random location will be chosen.
 
+---
+
 ### Shapes
 
 ```python
 RECT
 CIRCLE
 ```
+
+---
 
 ### Colors
 ```python
