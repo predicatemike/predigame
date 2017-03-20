@@ -19,18 +19,26 @@ except:
 # shapes
 RECT = 'rect'
 CIRCLE = 'circle'
+ELLIPSE = 'ellipse'
 
 # colors
 BLACK = (0, 0, 0)
+SILVER = (192, 192, 192)
+GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
-PINK = (200, 0, 200)
-RED = (200, 0, 0)
-GREEN = (0, 200, 0)
-BLUE = (0, 0, 200)
-YELLOW = (200, 200, 0)
+RED = (255, 0, 0)
+MAROON = (128, 0, 0)
+YELLOW = (255, 255, 0)
+OLIVE = (128, 128, 0)
+LIME = (0, 255, 0)
+GREEN = (0, 128, 0)
+AQUA = (0, 255, 255)
+TEAL = (0, 128, 128)
+BLUE = (0, 0, 255)
+NAVY = (0, 0, 128)
 CYAN = (0, 200, 200)
-PINK = (200, 0, 200)
-PURPLE = (155, 0, 255)
+PINK = (255, 0, 255)
+PURPLE = (128, 0, 128)
 
 class Sprite:
     def __init__(self, surface, rect):
@@ -113,8 +121,9 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
 
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
-    GRID_SIZE = kwargs.get('grid', 100)
+    GRID_SIZE = kwargs.get('grid', 50)
 
+    pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
     pygame.display.set_caption(title)
     SURF = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -161,7 +170,18 @@ def create_circle(color, pos, size, outline):
 
     return Sprite(surface, rect)
 
+def create_ellipse(color, pos, size, outline):
+    rect = pygame.Rect(pos[0] * GRID_SIZE, pos[1] * GRID_SIZE, size[0] * GRID_SIZE, size[1] * GRID_SIZE)
+    surface = pygame.Surface(rect.size)
+    surface.fill(background_color)
+    surface.set_colorkey(background_color)
+    pygame.draw.ellipse(surface, color, (0, 0, rect.width, rect.height), outline)
+
+    return Sprite(surface, rect)
+
 def img(name = None, pos = None, size = 1):
+    error_path = os.path.join(os.path.dirname(__file__), '__error__.png')
+
     if name:
         path = 'images/' + name + '.'
         if os.path.isfile(path + 'png'):
@@ -173,13 +193,19 @@ def img(name = None, pos = None, size = 1):
         elif os.path.isfile(path + 'gif'):
             path += 'gif'
         else:
-            path = 'images/__error__.png'
+            path = error_path
     else:
-        images = []
-        for image in os.listdir('images/'):
-            if image.endswith('.png') or image.endswith('.jpg') or image.endswith('.jpeg') or images.endswith('.gif'):
-                images.append(image)
-        path = 'images/' + random.choice(images)
+        if os.path.isdir('images/'):
+            images = []
+            for image in os.listdir('images/'):
+                if image.endswith('.png') or image.endswith('.jpg') or image.endswith('.jpeg') or images.endswith('.gif'):
+                    images.append(image)
+            if len(images):
+                path = 'images/' + random.choice(images)
+            else:
+                path = error_path
+        else:
+            path = error_path
 
     if not pos:
         pos = rand_pos()
@@ -190,7 +216,7 @@ def img(name = None, pos = None, size = 1):
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     if not shape:
-        shape = random.choice([CIRCLE, RECT])
+        shape = random.choice([CIRCLE, RECT, ELLIPSE])
 
     if not color:
         color = rand_color()
@@ -200,10 +226,14 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
 
     outline = kwargs.get('outline', 0)
 
-    if shape == 'circle':
-        shape = create_circle(color, pos, size[0], outline)
-    elif shape == 'rect':
+    if shape == CIRCLE:
+        if not isinstance(size, (int, float)):
+            size = size[0]
+        shape = create_circle(color, pos, size, outline)
+    elif shape == RECT:
         shape = create_rectangle(color, pos, size, outline)
+    elif shape == ELLIPSE:
+        shape = create_ellipse(color, pos, size, outline)
     else:
         print('Shape, ' + shape + ', is not a valid shape name')
         return False
