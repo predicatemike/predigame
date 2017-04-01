@@ -10,58 +10,33 @@ keys_registered = {
     'keyup': {}
 }
 
-# hack for Python3 compatibility
-try:
-    basestring
-except:
-    basestring = str
-
-# shapes
-RECT = 'rect'
-CIRCLE = 'circle'
-ELLIPSE = 'ellipse'
-
-# colors
-BLACK = (0, 0, 0)
-SILVER = (192, 192, 192)
-GRAY = (128, 128, 128)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-MAROON = (128, 0, 0)
-YELLOW = (255, 255, 0)
-OLIVE = (128, 128, 0)
-LIME = (0, 255, 0)
-GREEN = (0, 128, 0)
-AQUA = (0, 255, 255)
-TEAL = (0, 128, 128)
-BLUE = (0, 0, 255)
-NAVY = (0, 0, 128)
-CYAN = (0, 200, 200)
-PINK = (255, 0, 255)
-PURPLE = (128, 0, 128)
-
 class Sprite:
     def __init__(self, surface, rect):
         self.surface = surface.convert_alpha()
         self.rect = rect
         self.move_speed = 5
-        self.move_vec = [0, 0, 0] # x distance, y distance, current velocity
-        self.float_vec = [0, 0, 0] # x distance, y distance, total offset distance
+        self.move_vec = [self.rect.x, self.rect.y] # destination coordinates
+        self.float_vec = [0, 0, 0] # x distance, y distance, offset distance
 
     def update(self):
-        move_vel = self.move_vec[2]
+        if not self.rect.x == self.move_vec[0]:
+            dist = self.move_vec[0] - self.rect.x
+            if abs(dist) < self.move_speed:
+                move = dist
+            else:
+                move = (dist) / abs(dist) * self.move_speed
+            self.rect.x += move
+
+        if not self.rect.y == self.move_vec[1]:
+            dist = self.move_vec[1] - self.rect.y
+            if abs(dist) < self.move_speed:
+                move = dist
+            else:
+                move = (dist) / abs(dist) * self.move_speed
+            self.rect.y += move
+
         float_dist = self.float_vec[2]
-
-        if move_vel:
-            x_move = self.move_vec[0] // move_vel
-            y_move = self.move_vec[1] // move_vel
-            self.rect.x += x_move
-            self.rect.y += y_move
-            self.move_vec[0] -= x_move
-            self.move_vec[1] -= y_move
-            self.move_vec[2] -= 1
-
-        if float_dist and not move_vel:
+        if float_dist and not self.is_moving():
             if not self.rect.x % float(GRID_SIZE):
                 self.float_vec[0] = random.randrange(-float_dist, float_dist + 1, float_dist)
             else:
@@ -74,13 +49,17 @@ class Sprite:
 
             self.move_vec[0] += self.float_vec[0]
             self.move_vec[1] += self.float_vec[1]
-            self.move_vec[2] = self.move_speed
 
     def draw(self, surface):
         surface.blit(self.surface, self.rect)
 
+    def is_moving(self):
+        if self.rect.x == self.move_vec[0] and self.rect.y == self.move_vec[1]:
+            return False
+        return True
+
     def move(self, direction, distance = 1):
-        if self.move_vec[2]:
+        if self.is_moving():
             return
 
         if direction == 'right' and not self.rect.x + roundup(self.rect.width, GRID_SIZE) == WIDTH:
@@ -91,8 +70,6 @@ class Sprite:
             self.move_vec[1] += -GRID_SIZE * distance
         elif direction == 'down' and not self.rect.y + roundup(self.rect.height, GRID_SIZE) == HEIGHT:
             self.move_vec[1] += GRID_SIZE * distance
-
-        self.move_vec[2] = self.move_speed
 
     def move_keys(self, right = 'right', left = 'left', up = 'up', down = 'down'):
         if right:
@@ -107,12 +84,12 @@ class Sprite:
         return self
 
     def speed(self, speed):
-        self.move_speed = speed
+        self.move_speed = int(speed)
 
         return self
 
     def float(self, distance = 0.25):
-        self.float_vec[2] = GRID_SIZE * distance
+        self.float_vec[2] = int(GRID_SIZE * distance)
 
         return self
 
@@ -216,7 +193,7 @@ def img(name = None, pos = None, size = 1):
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     if not shape:
-        shape = random.choice([CIRCLE, RECT, ELLIPSE])
+        shape = random.choice(['circle', 'rect', 'ellipse'])
 
     if not color:
         color = rand_color()
@@ -226,13 +203,13 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
 
     outline = kwargs.get('outline', 0)
 
-    if shape == CIRCLE:
+    if shape == 'circle':
         if not isinstance(size, (int, float)):
             size = size[0]
         shape = create_circle(color, pos, size, outline)
-    elif shape == RECT:
+    elif shape == 'rect':
         shape = create_rectangle(color, pos, size, outline)
-    elif shape == ELLIPSE:
+    elif shape == 'ellipse':
         shape = create_ellipse(color, pos, size, outline)
     else:
         print('Shape, ' + shape + ', is not a valid shape name')
@@ -269,9 +246,9 @@ def roundup(num, step):
 
 def draw_grid():
     for x in range(0, WIDTH, GRID_SIZE):
-        pygame.draw.line(SURF, BLACK, (x, 0), (x, HEIGHT))
+        pygame.draw.line(SURF, (0, 0, 0), (x, 0), (x, HEIGHT))
     for y in range(0, HEIGHT, GRID_SIZE):
-        pygame.draw.line(SURF, BLACK, (0, y), (WIDTH, y))
+        pygame.draw.line(SURF, (0, 0, 0), (0, y), (WIDTH, y))
 
 def update():
     for sprite in sprites:
