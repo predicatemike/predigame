@@ -1,61 +1,41 @@
 import sys, os
-# import importlib.util
-from .predigame import *
+from . import predigame, api
+from types import ModuleType
+
+WIDTH = 16
+HEIGHT = 16
+TITLE = 'PrediGame'
+SIZE = 50
 
 def err():
     print('Error: Invalid Python file provided')
     sys.exit()
 
-def dep_injection(mod):
-    # functions
-    mod.grid = grid
-    mod.img = img
-    mod.shape = shape
-
-    # shapes
-    mod.RECT = RECT
-    mod.CIRCLE = CIRCLE
-    mod.ELLIPSE = ELLIPSE
-
-    # colors
-    mod.BLACK = BLACK
-    mod.SILVER = SILVER
-    mod.GRAY = GRAY
-    mod.WHITE = WHITE
-    mod.RED = RED
-    mod.MAROON = MAROON
-    mod.YELLOW = YELLOW
-    mod.OLIVE = OLIVE
-    mod.LIME = LIME
-    mod.GREEN = GREEN
-    mod.AQUA = AQUA
-    mod.TEAL = TEAL
-    mod.BLUE = BLUE
-    mod.NAVY = NAVY
-    mod.CYAN = CYAN
-    mod.PINK = PINK
-    mod.PURPLE = PURPLE
-
 def main():
-    if not len(sys.argv) > 1:
+    try:
+        run_mod = sys.argv[1:][0]
+    except:
         err()
 
-    run_mod = sys.argv[1:][0]
-    run_path = os.getcwd() + '/' + run_mod
-    run_mod = run_mod[:-3]
+    path = os.path.join(os.getcwd(), run_mod)
 
-    if not os.path.isfile(run_path):
-        err()
+    src = open(path).read()
+    code = compile(src, os.path.basename(path), 'exec', dont_inherit = True)
 
-    init()
+    name, _ = os.path.splitext(os.path.basename(path))
+    mod = ModuleType(name)
+    mod.__dict__.update(api.__dict__)
+    sys.modules[name] = mod
 
-    sys.path.append(os.getcwd())
-    script = __import__(run_mod)
+    consts = ['WIDTH', 'HEIGHT', 'TITLE', 'SIZE']
 
-    # spec = importlib.util.spec_from_file_location(run_mod, run_path)
-    # script = importlib.util.module_from_spec(spec)
-    # dep_injection(script)
-    # spec.loader.exec_module(script)
+    for const in code.co_names:
+        if const in consts:
+            globals()[const] = code.co_consts[code.co_names.index(const)]
+
+    predigame.init(WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE)
+
+    exec(code, mod.__dict__)
 
     while True:
-        main_loop()
+        predigame.main_loop()
