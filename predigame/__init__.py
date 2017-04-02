@@ -2,11 +2,6 @@ import sys, os
 from . import predigame, api
 from types import ModuleType
 
-WIDTH = 16
-HEIGHT = 16
-TITLE = 'PrediGame'
-SIZE = 50
-
 def err():
     print('Error: Invalid Python file provided')
     sys.exit()
@@ -27,11 +22,15 @@ def main():
     mod.__dict__.update(api.__dict__)
     sys.modules[name] = mod
 
-    consts = ['WIDTH', 'HEIGHT', 'TITLE', 'SIZE']
-
-    for const in code.co_names:
-        if const in consts:
-            globals()[const] = code.co_consts[code.co_names.index(const)]
+    try:
+        exec(code, mod.__dict__)
+    except:
+        pass
+    finally:
+        WIDTH = getattr(code, 'WIDTH', 16)
+        HEIGHT = getattr(code, 'HEIGHT', 16)
+        TITLE = getattr(code, 'TITLE', 'PrediGame')
+        SIZE = getattr(code, 'SIZE', 50)
 
     predigame.init(WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE)
 
