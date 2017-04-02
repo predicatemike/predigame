@@ -13,10 +13,12 @@ keys_registered = {
 class Sprite:
     def __init__(self, surface, rect):
         self.surface = surface.convert_alpha()
+        self.origin_surface = self.surface
         self.rect = rect
         self.move_speed = 5
         self.move_vec = [self.rect.x, self.rect.y] # destination coordinates
         self.float_vec = [0, 0, 0] # x distance, y distance, offset distance
+        self.collisions = []
 
     def update(self):
         if not self.rect.x == self.move_vec[0]:
@@ -50,8 +52,19 @@ class Sprite:
             self.move_vec[0] += self.float_vec[0]
             self.move_vec[1] += self.float_vec[1]
 
+        self.handle_collisions()
+
     def draw(self, surface):
         surface.blit(self.surface, self.rect)
+
+    def handle_collisions(self):
+        for collision in self.collisions:
+            if not collision['sprite'] in sprites:
+                self.collisions.remove(collision)
+                continue
+
+            if self.rect.colliderect(collision['sprite'].rect):
+                collision['cb'](self, collision['sprite'])
 
     def is_moving(self):
         if self.rect.x == self.move_vec[0] and self.rect.y == self.move_vec[1]:
@@ -90,6 +103,25 @@ class Sprite:
 
     def float(self, distance = 0.25):
         self.float_vec[2] = int(GRID_SIZE * distance)
+
+        return self
+
+    def when_collides(self, sprite, callback):
+        self.collisions.append({ 'sprite': sprite, 'cb': callback })
+
+        return self
+
+    def scale(self, size):
+        width = self.rect.width * size
+        height = self.rect.height * size
+        self.rect.width = width
+        self.rect.height = height
+        self.surface = pygame.transform.smoothscale(self.origin_surface, self.rect.size).convert_alpha()
+
+        return self
+
+    def destroy(self):
+        sprites.remove(self)
 
         return self
 
