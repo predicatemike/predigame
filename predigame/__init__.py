@@ -27,10 +27,10 @@ def main():
     except:
         pass
     finally:
-        WIDTH = getattr(code, 'WIDTH', 16)
-        HEIGHT = getattr(code, 'HEIGHT', 16)
-        TITLE = getattr(code, 'TITLE', 'PrediGame')
-        SIZE = getattr(code, 'SIZE', 50)
+        WIDTH = getattr(mod, 'WIDTH', 16)
+        HEIGHT = getattr(mod, 'HEIGHT', 16)
+        TITLE = getattr(mod, 'TITLE', 'PrediGame')
+        SIZE = getattr(mod, 'SIZE', 50)
 
     predigame.init(WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE)
 
