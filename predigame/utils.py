@@ -8,8 +8,23 @@ def register_keydown(key, callback):
         globs.keys_registered['keydown'][key] = set([callback])
 
 def rand_pos():
-    x = random.randrange(0, globs.WIDTH / globs.GRID_SIZE)
-    y = random.randrange(0, globs.HEIGHT / globs.GRID_SIZE)
+    grid_width = globs.WIDTH / globs.GRID_SIZE
+    grid_height = globs.HEIGHT / globs.GRID_SIZE
+    x = 0
+    y = 0
+    while True:
+        x = random.randrange(0, grid_width)
+        y = random.randrange(0, grid_height)
+
+        if len(globs.sprites) >= grid_width * grid_height:
+            break
+
+        for sprite in globs.sprites:
+            if sprite.rect.x / globs.GRID_SIZE == x and sprite.rect.y / globs.GRID_SIZE == y:
+                break
+        else:
+            break
+
     return x, y
 
 def rand_color():
