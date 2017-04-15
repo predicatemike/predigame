@@ -11,28 +11,26 @@ class Sprite:
         self.origin_surface = self.surface
         self.rect = rect
         self.move_speed = 5
+        self.move_method = None
         self.vel = (0, 0)
-        self.move_vec = [self.rect.x, self.rect.y]
-        self.float_vec = [0, 0, 0] # x distance, y distance, offset distance
+        self.move_pos = [self.rect.x, self.rect.y]
+        self.float_vec = [self.rect.x, self.rect.y, 0]
         self.collisions = []
 
     def _update(self):
-        x_vel, y_vel = self.vel
-        if x_vel and not abs(x_vel) == self.move_speed:
-            x_vel = self.move_speed * (x_vel / abs(x_vel))
-        if y_vel and not abs(y_vel) == self.move_speed:
-            y_vel = self.move_speed * (y_vel / abs(y_vel))
+        if self.move_method:
+            self.move_method()
 
-        self.vel = (x_vel, y_vel)
+            x_vel, y_vel = self.vel
+            if x_vel and not abs(x_vel) == self.move_speed:
+                x_vel = self.move_speed * (x_vel / abs(x_vel))
+            if y_vel and not abs(y_vel) == self.move_speed:
+                y_vel = self.move_speed * (y_vel / abs(y_vel))
 
-        self.move_vec[0] += self.vel[0]
-        self.move_vec[1] += self.vel[1]
+            self.vel = (x_vel, y_vel)
 
-        self._update_bounce()
-
-        self._update_float()
-
-        self._update_move()
+            self.rect.x += self.vel[0]
+            self.rect.y += self.vel[1]
 
         self._handle_collisions()
 
@@ -49,27 +47,24 @@ class Sprite:
                 collision['cb'](self, collision['sprite'])
                 break # only handle one collision per frame (for now)
 
-    def _is_moving(self):
-        if self.rect.x == self.move_vec[0] and self.rect.y == self.move_vec[1]:
-            return False
-        return True
-
     def _update_move(self):
-        if not self.rect.x == self.move_vec[0]:
-            dist = self.move_vec[0] - self.rect.x
-            if abs(dist) < self.move_speed:
-                move = dist
-            else:
-                move = (dist) / abs(dist) * self.move_speed
-            self.rect.x += move
+        if self.rect.x == self.move_pos[0] and self.rect.y == self.move_pos[1] and self.move_method == self._update_move:
+            self.move_method = None
 
-        if not self.rect.y == self.move_vec[1]:
-            dist = self.move_vec[1] - self.rect.y
-            if abs(dist) < self.move_speed:
-                move = dist
-            else:
-                move = (dist) / abs(dist) * self.move_speed
-            self.rect.y += move
+        x_dist = self.move_pos[0] - self.rect.x
+        y_dist = self.move_pos[1] - self.rect.y
+        x_vel, y_vel = self.vel
+        if abs(x_dist) < self.move_speed:
+            x_vel = x_dist
+        else:
+            x_vel = (x_dist) / abs(x_dist) * self.move_speed
+
+        if abs(y_dist) < self.move_speed:
+            y_vel = y_dist
+        else:
+            y_vel = (y_dist) / abs(y_dist) * self.move_speed
+
+        self.vel = x_vel, y_vel
 
     def _update_bounce(self):
         if self.rect.x + self.rect.width > globs.WIDTH and self.vel[0] > 0:
@@ -83,43 +78,39 @@ class Sprite:
             self.bounce(False, True)
 
     def _update_float(self):
-        float_dist = self.float_vec[2]
-        if float_dist and not self._is_moving():
-            if not self.rect.x % float(globs.GRID_SIZE):
-                self.float_vec[0] = random.randrange(-float_dist, float_dist + 1, float_dist)
-            else:
-                self.float_vec[0] = -self.float_vec[0]
+        float_x, float_y, float_dist = self.float_vec
 
-            if not self.rect.y % float(globs.GRID_SIZE):
-                self.float_vec[1] = random.randrange(-float_dist, float_dist + 1,float_dist)
-            else:
-                self.float_vec[1] = -self.float_vec[1]
+        if abs(self.rect.x - float_x) >= float_dist:
+            self.move_pos[0] = float_x
+        elif self.rect.x == float_x:
+            self.move_pos[0] += random.randrange(-float_dist, float_dist + 1, float_dist)
 
-            self.move_vec[0] += self.float_vec[0]
-            self.move_vec[1] += self.float_vec[1]
+        if abs(self.rect.y - float_y) >= float_dist:
+            self.move_pos[1] = float_y
+        elif self.rect.y == float_y:
+            self.move_pos[1] += random.randrange(-float_dist, float_dist + 1,float_dist)
 
-    def _move(self, direction, distance = 1):
-        if self._is_moving():
+        self._update_move()
+
+    def move(self, vector):
+        if self.move_method:
             return
 
-        if direction == 'right' and not self.rect.x + roundup(self.rect.width, globs.GRID_SIZE) == globs.WIDTH:
-            self.move_vec[0] += globs.GRID_SIZE * distance
-        elif direction == 'left' and not self.rect.x == 0:
-            self.move_vec[0] += -globs.GRID_SIZE * distance
-        elif direction == 'up' and not self.rect.y == 0:
-            self.move_vec[1] += -globs.GRID_SIZE * distance
-        elif direction == 'down' and not self.rect.y + roundup(self.rect.height, globs.GRID_SIZE) == globs.HEIGHT:
-            self.move_vec[1] += globs.GRID_SIZE * distance
+        self.move_pos[0] += vector[0] * globs.GRID_SIZE
+        self.move_pos[1] += vector[1] * globs.GRID_SIZE
 
-    def keys(self, right = 'right', left = 'left', up = 'up', down = 'down'):
+        self.move_method = self._update_move
+
+    def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
+        distance = kwargs.get('spaces', 1)
         if right:
-            register_keydown(right, partial(self._move, 'right'))
+            register_keydown(right, partial(self.move, (1 * distance, 0)))
         if left:
-            register_keydown(left, partial(self._move, 'left'))
+            register_keydown(left, partial(self.move, (-1 * distance, 0)))
         if up:
-            register_keydown(up, partial(self._move, 'up'))
+            register_keydown(up, partial(self.move, (0, -1 * distance)))
         if down:
-            register_keydown(down, partial(self._move, 'down'))
+            register_keydown(down, partial(self.move, (0, 1 * distance)))
 
         return self
 
@@ -129,9 +120,8 @@ class Sprite:
         return self
 
     def float(self, distance = 0.25):
-        if float(distance).is_integer():
-            distance += 0.1
-        self.float_vec[2] = int(globs.GRID_SIZE * distance)
+        self.float_vec = self.rect.x, self.rect.y, int(globs.GRID_SIZE * distance)
+        self.move_method = self._update_float
 
         return self
 
@@ -167,10 +157,10 @@ class Sprite:
         return self
 
     def bouncy(self):
-        if not self._is_moving():
-            x_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
-            y_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
-            self.vel = x_vel, y_vel
+        x_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
+        y_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
+        self.vel = x_vel, y_vel
+        self.move_method = self._update_bounce
 
         return self
 
