@@ -177,6 +177,11 @@ def main_loop():
                 for callback in globs.keys_registered['keyup'][key]:
                     callback()
 
+        if event.type == MOUSEBUTTONDOWN:
+            for sprite in globs.sprites:
+                if sprite.rect.collidepoint(event.pos):
+                    sprite._handle_click(event.button)
+
     _update()
     _draw(SURF)
 

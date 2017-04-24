@@ -16,6 +16,7 @@ class Sprite:
         self.move_pos = [self.rect.x, self.rect.y]
         self.float_vec = [self.rect.x, self.rect.y, 0]
         self.collisions = []
+        self.clicks = []
 
     def _update(self):
         if self.move_method:
@@ -92,6 +93,11 @@ class Sprite:
 
         self._update_move()
 
+    def _handle_click(self, button):
+        for click in self.clicks:
+            if button == click['btn']:
+                click['cb'](self)
+
     def move(self, vector):
         if self.move_method:
             return
@@ -136,6 +142,11 @@ class Sprite:
 
         return self
 
+    def clicked(self, callback, button = 1):
+        self.clicks.append({'btn': button, 'cb': callback})
+
+        return self
+
     def scale(self, size):
         width = self.rect.width * size
         height = self.rect.height * size
@@ -164,7 +175,7 @@ class Sprite:
 
         return self
 
-    def destroy(self):
+    def destroy(self, *args):
         globs.sprites.remove(self)
 
         return self
