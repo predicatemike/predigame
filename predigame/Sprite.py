@@ -18,6 +18,14 @@ class Sprite:
         self.collisions = []
         self.clicks = []
 
+    @property
+    def width(self):
+        return self.rect.width / globs.GRID_SIZE
+
+    @property
+    def height(self):
+        return self.rect.height / globs.GRID_SIZE
+
     def _update(self):
         if self.move_method:
             self.move_method()
