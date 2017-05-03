@@ -19,6 +19,10 @@ class Sprite:
         self.clicks = []
 
     @property
+    def pos(self):
+        return self.rect.x / globs.GRID_SIZE, self.rect.y / globs.GRID_SIZE
+
+    @property
     def width(self):
         return self.rect.width / globs.GRID_SIZE
 
@@ -108,12 +112,14 @@ class Sprite:
 
     def move(self, vector):
         if self.move_method:
-            return
+            return self
 
         self.move_pos[0] += vector[0] * globs.GRID_SIZE
         self.move_pos[1] += vector[1] * globs.GRID_SIZE
 
         self.move_method = self._update_move
+
+        return self
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
         distance = kwargs.get('spaces', 1)
