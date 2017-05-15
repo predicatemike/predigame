@@ -143,6 +143,10 @@ def _draw_grid():
     for y in range(0, globs.HEIGHT, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (0, y), (globs.WIDTH, y))
 
+def quit():
+    pygame.quit()
+    sys.exit()
+
 def _update():
     for sprite in globs.sprites:
         sprite._update()
