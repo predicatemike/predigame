@@ -7,9 +7,9 @@ def register_keydown(key, callback):
     else:
         globs.keys_registered['keydown'][key] = set([callback])
 
-def rand_pos():
-    grid_width = globs.WIDTH / globs.GRID_SIZE
-    grid_height = globs.HEIGHT / globs.GRID_SIZE
+def rand_pos(x_padding = 0, y_padding = 0):
+    grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
+    grid_height = (globs.HEIGHT / globs.GRID_SIZE) - math.ceil(y_padding)
     x = 0
     y = 0
     while True:

@@ -1,13 +1,14 @@
 import sys, os, random, pygame
+from time import time as get_time
 from pygame.locals import *
 from . import globs
-from .utils import *
+from .utils import register_keydown, rand_pos, rand_color, roundup
 from .Sprite import Sprite
 
 show_grid = False
 
 def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
-    global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock
+    global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time
 
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
@@ -25,6 +26,7 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     loading_font = pygame.font.Font(None, 72)
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
+    start_time = get_time()
 
 def _create_image(path, pos, size):
     image = pygame.image.load(path)
@@ -74,16 +76,18 @@ def _create_ellipse(color, pos, size, outline):
 def img(name = None, pos = None, size = 1):
     error_path = os.path.join(os.path.dirname(__file__), '__error__.png')
 
+    img_exts = ('png', 'jpg', 'jpeg', 'gif')
+
     if name:
         path = 'images/' + name + '.'
-        if os.path.isfile(path + 'png'):
-            path += 'png'
-        elif os.path.isfile(path + 'jpg'):
-            path += 'jpg'
-        elif os.path.isfile(path + 'jpeg'):
-            path += 'jpeg'
-        elif os.path.isfile(path + 'gif'):
-            path += 'gif'
+        for ext in img_exts:
+            if os.path.isfile(path + ext.lower()):
+                path += ext.lower()
+                break
+
+            if os.path.isfile(path + ext.upper()):
+                path += ext.upper()
+                break
         else:
             path = error_path
     else:
@@ -100,7 +104,7 @@ def img(name = None, pos = None, size = 1):
             path = error_path
 
     if not pos:
-        pos = rand_pos()
+        pos = rand_pos(size - 1, size - 1)
 
     image = _create_image(path, pos, size)
     globs.sprites.append(image)
@@ -113,15 +117,16 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     if not color:
         color = rand_color()
 
+    if isinstance(size, (int, float)):
+        size = (size, size)
+
     if not pos:
-        pos = rand_pos()
+        pos = rand_pos(size[0] - 1, size[1] - 1)
 
     outline = kwargs.get('outline', 0)
 
     if shape == 'circle':
-        if not isinstance(size, (int, float)):
-            size = size[0]
-        shape = _create_circle(color, pos, size, outline)
+        shape = _create_circle(color, pos, size[0], outline)
     elif shape == 'rect':
         shape = _create_rectangle(color, pos, size, outline)
     elif shape == 'ellipse':
@@ -137,15 +142,18 @@ def grid():
     global show_grid
     show_grid = True
 
+def time():
+    return '%.3f'%(get_time() - start_time)
+
+def quit():
+    pygame.quit()
+    sys.exit()
+
 def _draw_grid():
     for x in range(0, globs.WIDTH, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (x, 0), (x, globs.HEIGHT))
     for y in range(0, globs.HEIGHT, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (0, y), (globs.WIDTH, y))
-
-def quit():
-    pygame.quit()
-    sys.exit()
 
 def _update():
     for sprite in globs.sprites:
