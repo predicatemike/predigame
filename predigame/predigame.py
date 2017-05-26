@@ -6,9 +6,11 @@ from .utils import register_keydown, rand_pos, rand_color, roundup
 from .Sprite import Sprite
 
 show_grid = False
+update_game = True
+sounds = {}
 
 def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
-    global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time
+    global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
@@ -26,6 +28,14 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     loading_font = pygame.font.Font(None, 72)
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
+
+    sound_ext_types = ('wav', 'ogg')
+    for f in os.listdir('sounds'):
+        if f.lower().endswith(sound_ext_types):
+            sound = pygame.mixer.Sound(os.path.join('sounds', f))
+            sound_name = f[:-4]
+            sounds[sound_name] = sound
+
     start_time = get_time()
 
 def _create_image(path, pos, size):
@@ -138,12 +148,47 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     globs.sprites.append(shape)
     return globs.sprites[-1]
 
+def text(string, color = None, pos = None, size = 1):
+    size = int(size * globs.GRID_SIZE)
+    font = pygame.font.Font(None, size)
+    font_width, font_height = font.size(string)
+
+    if not color:
+        color = rand_color()
+
+    if not pos:
+        pos = (globs.WIDTH / 2 -  font_width / 2) / globs.GRID_SIZE, (globs.HEIGHT / 2 - font_height / 2) / globs.GRID_SIZE
+
+    pos = pos[0] * GRID_SIZE, pos[1] * GRID_SIZE
+
+    surface = font.render(string, True, color)
+    text = Sprite(surface, pygame.Rect(pos[0], pos[1], font_width, font_height))
+
+    globs.sprites.append(text)
+    return globs.sprites[-1]
+
+def sound(name, plays = 1, duration = 0):
+    plays = plays - 1
+    duration = int(duration * 1000)
+    if name in sounds:
+        sounds[name].play(plays, duration)
+    else:
+        print('Sound ', name, ' does not exist')
+
 def grid():
     global show_grid
     show_grid = True
 
 def time():
     return '%.3f'%(get_time() - start_time)
+
+def pause():
+    global update_game
+    update_game = False
+
+def resume():
+    global update_game
+    update_game = True
 
 def quit():
     pygame.quit()
@@ -194,8 +239,9 @@ def main_loop():
                 if sprite.rect.collidepoint(event.pos):
                     sprite._handle_click(event.button)
 
-    _update()
-    _draw(SURF)
+    if update_game:
+        _update()
+        _draw(SURF)
 
     pygame.display.update()
     clock.tick(FPS)
