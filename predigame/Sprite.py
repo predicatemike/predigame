@@ -30,7 +30,7 @@ class Sprite:
     def height(self):
         return self.rect.height / globs.GRID_SIZE
 
-    def _update(self):
+    def _update(self, delta):
         if self.move_method:
             self.move_method()
 

@@ -200,9 +200,9 @@ def _draw_grid():
     for y in range(0, globs.HEIGHT, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (0, y), (globs.WIDTH, y))
 
-def _update():
+def _update(delta):
     for sprite in globs.sprites:
-        sprite._update()
+        sprite._update(delta)
 
 def _draw(SURF):
     SURF.fill(globs.background_color)
@@ -240,7 +240,7 @@ def main_loop():
                     sprite._handle_click(event.button)
 
     if update_game:
-        _update()
+        _update(clock.get_time())
         _draw(SURF)
 
     pygame.display.update()
