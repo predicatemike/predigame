@@ -29,18 +29,19 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
 
-    sound_ext_types = ('wav', 'ogg')
-    for f in os.listdir('sounds'):
-        if f.lower().endswith(sound_ext_types):
-            sound = pygame.mixer.Sound(os.path.join('sounds', f))
-            sound_name = f[:-4]
-            sounds[sound_name] = sound
+    if os.path.isdir('sounds'):
+        sound_ext_types = ('wav', 'ogg')
+        for f in os.listdir('sounds'):
+            if f.lower().endswith(sound_ext_types):
+                sound = pygame.mixer.Sound(os.path.join('sounds', f))
+                sound_name = f[:-4]
+                sounds[sound_name] = sound
 
     start_time = get_time()
 
 def _create_image(path, pos, size):
-    image = pygame.image.load(path)
-    rect = image.get_rect()
+    img = pygame.image.load(path)
+    rect = img.get_rect()
     rect.topleft = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
 
     new_width = 0
@@ -52,7 +53,7 @@ def _create_image(path, pos, size):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    surface = pygame.transform.scale(image, rect.size)
+    surface = pygame.transform.scale(img, rect.size)
 
     return Sprite(surface, rect)
 
@@ -83,7 +84,7 @@ def _create_ellipse(color, pos, size, outline):
 
     return Sprite(surface, rect)
 
-def img(name = None, pos = None, size = 1):
+def image(name = None, pos = None, size = 1):
     error_path = os.path.join(os.path.dirname(__file__), '__error__.png')
 
     img_exts = ('png', 'jpg', 'jpeg', 'gif')
@@ -103,9 +104,9 @@ def img(name = None, pos = None, size = 1):
     else:
         if os.path.isdir('images/'):
             images = []
-            for image in os.listdir('images/'):
-                if image.endswith('.png') or image.endswith('.jpg') or image.endswith('.jpeg') or images.endswith('.gif'):
-                    images.append(image)
+            for img in os.listdir('images/'):
+                if img.lower().endswith('.png') or img.lower().endswith('.jpg') or img.lower().endswith('.jpeg') or img.lower().endswith('.gif'):
+                    images.append(img)
             if len(images):
                 path = 'images/' + random.choice(images)
             else:
@@ -116,8 +117,8 @@ def img(name = None, pos = None, size = 1):
     if not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    image = _create_image(path, pos, size)
-    globs.sprites.append(image)
+    img = _create_image(path, pos, size)
+    globs.sprites.append(img)
     return globs.sprites[-1]
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
@@ -149,6 +150,7 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1):
+    string = str(string)
     size = int(size * globs.GRID_SIZE)
     font = pygame.font.Font(None, size)
     font_width, font_height = font.size(string)
@@ -180,7 +182,7 @@ def grid():
     show_grid = True
 
 def time():
-    return '%.3f'%(get_time() - start_time)
+    return float('%.3f'%(get_time() - start_time))
 
 def pause():
     global update_game
