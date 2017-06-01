@@ -10,6 +10,7 @@ class Sprite:
         self.surface = surface.convert_alpha()
         self.origin_surface = self.surface
         self.rect = rect
+        self.surface = pygame.transform.scale(self.origin_surface, rect.size)
         self.move_speed = 5
         self.move_method = None
         self.vel = (0, 0)
@@ -164,6 +165,9 @@ class Sprite:
     def scale(self, size):
         width = self.rect.width * size
         height = self.rect.height * size
+        if width > globs.WIDTH and height > globs.HEIGHT:
+            return self
+
         self.rect.width = width
         self.rect.height = height
         self.surface = pygame.transform.smoothscale(self.origin_surface, self.rect.size).convert_alpha()

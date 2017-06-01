@@ -53,9 +53,8 @@ def _create_image(path, pos, size):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    surface = pygame.transform.scale(img, rect.size)
 
-    return Sprite(surface, rect)
+    return Sprite(img, rect)
 
 def _create_rectangle(color, pos, size, outline):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
