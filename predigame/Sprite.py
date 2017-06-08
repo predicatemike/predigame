@@ -162,6 +162,12 @@ class Sprite:
 
         return self
 
+    def flip(self, flip_x = True, flip_y = False):
+        self.origin_surface = pygame.transform.flip(self.origin_surface, flip_x, flip_y)
+        self.surface = pygame.transform.flip(self.surface, flip_x, flip_y)
+
+        return self
+
     def scale(self, size):
         width = self.rect.width * size
         height = self.rect.height * size
