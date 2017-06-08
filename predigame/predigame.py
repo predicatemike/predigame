@@ -8,6 +8,7 @@ from .Sprite import Sprite
 show_grid = False
 update_game = True
 sounds = {}
+images = {}
 
 def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
@@ -29,18 +30,16 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
 
-    if os.path.isdir('sounds'):
-        sound_ext_types = ('wav', 'ogg')
-        for f in os.listdir('sounds'):
-            if f.lower().endswith(sound_ext_types):
-                sound = pygame.mixer.Sound(os.path.join('sounds', f))
-                sound_name = f[:-4]
-                sounds[sound_name] = sound
-
     start_time = get_time()
 
 def _create_image(path, pos, size):
-    img = pygame.image.load(path)
+    img = None
+    name = path[7:]
+    if name in images:
+        img = images[name]
+    else:
+        img = pygame.image.load(path)
+        images[name] = img
     rect = img.get_rect()
     rect.topleft = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
 
@@ -102,12 +101,12 @@ def image(name = None, pos = None, size = 1):
             path = error_path
     else:
         if os.path.isdir('images/'):
-            images = []
+            imgs = []
             for img in os.listdir('images/'):
                 if img.lower().endswith('.png') or img.lower().endswith('.jpg') or img.lower().endswith('.jpeg') or img.lower().endswith('.gif'):
-                    images.append(img)
-            if len(images):
-                path = 'images/' + random.choice(images)
+                    imgs.append(img)
+            if len(imgs):
+                path = 'images/' + random.choice(imgs)
             else:
                 path = error_path
         else:
@@ -168,13 +167,44 @@ def text(string, color = None, pos = None, size = 1):
     globs.sprites.append(text)
     return globs.sprites[-1]
 
-def sound(name, plays = 1, duration = 0):
+def sound(name = None, plays = 1, duration = 0):
     plays = plays - 1
     duration = int(duration * 1000)
-    if name in sounds:
-        sounds[name].play(plays, duration)
+
+    path = None
+    snd_exts = ('wav', 'ogg')
+    if name:
+        path = 'sounds/' + name + '.'
+        for ext in snd_exts:
+            if os.path.isfile(path + ext.lower()):
+                path += ext.lower()
+                break
+
+            if os.path.isfile(path + ext.upper()):
+                path += ext.upper()
+                break
+        else:
+            print('Error: Sound ' + name + ' not found')
     else:
-        print('Sound ', name, ' does not exist')
+        if os.path.isdir('sounds/'):
+            snds = []
+            for snd in os.listdir('sounds/'):
+                for ext in snd_exts:
+                    if snd.lower().endswith(ext):
+                        snds.append(snd)
+            if len(snds):
+                path = 'sounds/' + random.choice(snds)
+                name = path[7:-4]
+            else:
+                print('Error: No sound files found')
+        else:
+            print('Error: Sounds directory does not exist')
+
+    if not name in sounds:
+        snd = pygame.mixer.Sound(path)
+        sounds[name] = snd
+
+    sounds[name].play(plays, duration)
 
 def grid():
     global show_grid
