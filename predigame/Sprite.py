@@ -10,6 +10,7 @@ class Sprite:
         self.surface = surface.convert_alpha()
         self.origin_surface = self.surface
         self.rect = rect
+        self.virt_pos = [float(self.rect.x), float(self.rect.y)]
         self.surface = pygame.transform.scale(self.origin_surface, rect.size)
         self.move_speed = 5
         self.move_method = None
@@ -33,18 +34,24 @@ class Sprite:
 
     def _update(self, delta):
         if self.move_method:
+            x_vel, y_vel = self.vel
+
+            x_dir = 1
+            if x_vel:
+                x_dir = x_vel / abs(x_vel)
+            x_vel = self.move_speed * x_dir
+
+            y_dir = 1
+            if y_vel:
+                y_dir = y_vel / abs(y_vel)
+            y_vel = self.move_speed * y_dir
+
+            self.vel = x_vel * (delta / 16), y_vel * (delta / 16)
             self.move_method()
 
-            x_vel, y_vel = self.vel
-            if x_vel and not abs(x_vel) == self.move_speed:
-                x_vel = self.move_speed * (x_vel / abs(x_vel))
-            if y_vel and not abs(y_vel) == self.move_speed:
-                y_vel = self.move_speed * (y_vel / abs(y_vel))
-
-            self.vel = (x_vel, y_vel)
-
-            self.rect.x += self.vel[0]
-            self.rect.y += self.vel[1]
+            self.virt_pos[0] += self.vel[0]
+            self.virt_pos[1] += self.vel[1]
+            self.rect.topleft = self.virt_pos
 
         self._handle_collisions()
 
@@ -68,15 +75,16 @@ class Sprite:
         x_dist = self.move_pos[0] - self.rect.x
         y_dist = self.move_pos[1] - self.rect.y
         x_vel, y_vel = self.vel
-        if abs(x_dist) < self.move_speed:
+
+        if abs(x_dist) <= abs(x_vel):
             x_vel = x_dist
         else:
-            x_vel = (x_dist) / abs(x_dist) * self.move_speed
+            x_vel = (x_dist / abs(x_dist)) * abs(x_vel)
 
-        if abs(y_dist) < self.move_speed:
+        if abs(y_dist) <= abs(y_vel):
             y_vel = y_dist
         else:
-            y_vel = (y_dist) / abs(y_dist) * self.move_speed
+            y_vel = (y_dist / abs(y_dist)) * abs(y_vel)
 
         self.vel = x_vel, y_vel
 
@@ -136,7 +144,7 @@ class Sprite:
         return self
 
     def speed(self, speed):
-        self.move_speed = int(speed)
+        self.move_speed = speed
 
         return self
 
