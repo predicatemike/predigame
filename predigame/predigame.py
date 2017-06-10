@@ -213,6 +213,9 @@ def grid():
 def time():
     return float('%.3f'%(get_time() - start_time))
 
+def destroyall():
+    del globs.sprites[:]
+
 def pause():
     global update_game
     update_game = False
