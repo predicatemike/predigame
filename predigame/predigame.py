@@ -1,4 +1,4 @@
-import sys, os, random, pygame
+import sys, os, random, datetime, pygame
 from time import time as get_time
 from pygame.locals import *
 from . import globs
@@ -228,6 +228,12 @@ def quit():
     pygame.quit()
     sys.exit()
 
+def screenshot(directory = 'screenshots'):
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+    filename = pygame.display.get_caption()[0] + ' - ' + str(datetime.datetime.today()) + '.jpg'
+    pygame.image.save(SURF, os.path.join(directory, filename))
+
 def _draw_grid():
     for x in range(0, globs.WIDTH, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (x, 0), (x, globs.HEIGHT))
@@ -261,6 +267,9 @@ def main_loop():
 
             if key == 'escape':
                 pygame.event.post(pygame.event.Event(QUIT))
+
+            if key == 'f12':
+                screenshot()
 
         if event.type == KEYUP:
             key = pygame.key.name(event.key)
