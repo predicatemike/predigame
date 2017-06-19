@@ -10,7 +10,7 @@ class Sprite:
         self.surface = surface.convert_alpha()
         self.origin_surface = self.surface
         self.rect = rect
-        self.virt_pos = [float(self.rect.x), float(self.rect.y)]
+        self.virt_rect = [float(self.rect.x), float(self.rect.y), float(self.rect.width), float(self.rect.height)]
         self.surface = pygame.transform.scale(self.origin_surface, rect.size)
         self.move_speed = 5
         self.move_method = None
@@ -21,16 +21,55 @@ class Sprite:
         self.clicks = []
 
     @property
+    def x(self):
+        return self.virt_rect[0] / globs.GRID_SIZE
+
+    @x.setter
+    def x(self, value):
+        self.virt_rect[0] = float(value) * globs.GRID_SIZE
+
+    @property
+    def y(self):
+        return self.virt_rect[1] / globs.GRID_SIZE
+
+    @y.setter
+    def y(self, value):
+        self.virt_rect[1] = float(value) * globs.GRID_SIZE
+
+    @property
     def pos(self):
-        return self.rect.x / globs.GRID_SIZE, self.rect.y / globs.GRID_SIZE
+        return self.x, self.y
 
     @property
     def width(self):
-        return self.rect.width / globs.GRID_SIZE
+        return self.virt_rect[2] / globs.GRID_SIZE
 
     @property
     def height(self):
-        return self.rect.height / globs.GRID_SIZE
+        return self.virt_rect[3] / globs.GRID_SIZE
+
+    @property
+    def size(self):
+        return max(self.width, self.height)
+
+    @size.setter
+    def size(self, value):
+        new_width = 0
+        new_height = 0
+        if self.virt_rect[2] >= self.virt_rect[3]:
+            new_width = float(value) * globs.GRID_SIZE
+            new_height = self.virt_rect[3] * (new_width / self.virt_rect[2])
+        elif self.virt_rect[2] < self.virt_rect[3]:
+            new_height = float(value) * globs.GRID_SIZE
+            new_width = self.virt_rect[2] * (new_height / self.virt_rect[3])
+
+        center = self.virt_rect[0] + self.virt_rect[2] / 2, self.virt_rect[1] + self.virt_rect[3] / 2
+        self.virt_rect[2] = new_width
+        self.virt_rect[3] = new_height
+        self.virt_rect[0] = center[0] - self.virt_rect[2] / 2
+        self.virt_rect[1] = center[1] - self.virt_rect[3] / 2
+
+        self.surface = pygame.transform.smoothscale(self.origin_surface, self.rect.size).convert_alpha()
 
     def _update(self, delta):
         if self.move_method:
@@ -49,10 +88,11 @@ class Sprite:
             self.vel = x_vel * (delta / 16), y_vel * (delta / 16)
             self.move_method()
 
-            self.virt_pos[0] += self.vel[0]
-            self.virt_pos[1] += self.vel[1]
-            self.rect.topleft = self.virt_pos
+            self.virt_rect[0] += self.vel[0]
+            self.virt_rect[1] += self.vel[1]
 
+        self.rect.topleft = self.virt_rect[0:2]
+        self.rect.size = self.virt_rect[2:]
         self._handle_collisions()
 
     def _draw(self, surface):
@@ -123,6 +163,7 @@ class Sprite:
         if self.move_method:
             return self
 
+        self.move_pos = [self.rect.x, self.rect.y]
         self.move_pos[0] += vector[0] * globs.GRID_SIZE
         self.move_pos[1] += vector[1] * globs.GRID_SIZE
 
@@ -177,10 +218,10 @@ class Sprite:
         return self
 
     def scale(self, size):
+        if self.rect.width > globs.WIDTH and self.rect.height > globs.HEIGHT:
+            return self
         width = self.rect.width * size
         height = self.rect.height * size
-        if width > globs.WIDTH and height > globs.HEIGHT:
-            return self
 
         self.rect.width = width
         self.rect.height = height
@@ -204,6 +245,13 @@ class Sprite:
         y_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
         self.vel = x_vel, y_vel
         self.move_method = self._update_bounce
+
+        return self
+
+    def pulse(self, time = 1, size = None):
+        if not size:
+            size = self.size * 2
+        animate(self, time, partial(self.pulse, time, self.size), size = size)
 
         return self
 

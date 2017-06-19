@@ -2,7 +2,7 @@ import sys, os, random, datetime, pygame
 from time import time as get_time
 from pygame.locals import *
 from . import globs
-from .utils import register_keydown, rand_pos, rand_color, roundup
+from .utils import register_keydown, rand_pos, rand_color, roundup, animate
 from .Sprite import Sprite
 
 show_grid = False
@@ -83,7 +83,7 @@ def _create_ellipse(color, pos, size, outline):
     return Sprite(surface, rect)
 
 def image(name = None, pos = None, size = 1):
-    error_path = os.path.join(os.path.dirname(__file__), '__error__.png')
+    error_path = os.path.join(os.path.dirname(__file__), 'images', 'error.png')
 
     img_exts = ('png', 'jpg', 'jpeg', 'gif')
 
@@ -234,6 +234,15 @@ def screenshot(directory = 'screenshots'):
     filename = pygame.display.get_caption()[0] + ' - ' + str(datetime.datetime.today()) + '.jpg'
     pygame.image.save(SURF, os.path.join(directory, filename))
 
+    img_path = os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png')
+    size = 1
+    pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - size / 2
+
+    img = _create_image(img_path, pos, size)
+    globs.sprites.append(img)
+    camera = globs.sprites[-1]
+    animate(camera, 0.4, camera.destroy, size = 1.3)
+
 def _draw_grid():
     for x in range(0, globs.WIDTH, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (x, 0), (x, globs.HEIGHT))
@@ -243,6 +252,12 @@ def _draw_grid():
 def _update(delta):
     for sprite in globs.sprites:
         sprite._update(delta)
+
+    for animation in globs.animations:
+        animation.update(delta)
+
+        if animation.finished:
+            globs.animations.remove(animation)
 
 def _draw(SURF):
     SURF.fill(globs.background_color)

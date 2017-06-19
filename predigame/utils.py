@@ -1,5 +1,6 @@
 import random, math
 from . import globs
+from .Animation import Animation
 
 def register_keydown(key, callback):
     if key in globs.keys_registered['keydown']:
@@ -37,3 +38,6 @@ def rand_color():
 
 def roundup(num, step):
     return int(math.ceil(num / float(step))) * step
+
+def animate(obj, duration = 1, callback = None, **kwargs):
+    globs.animations.append(Animation(obj, duration, callback, **kwargs))
