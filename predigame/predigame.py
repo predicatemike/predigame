@@ -1,4 +1,4 @@
-import sys, os, random, datetime, pygame
+import sys, os, random, datetime, mimetypes, pygame
 from time import time as get_time
 from pygame.locals import *
 from . import globs
@@ -30,16 +30,13 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
 
+    images['__error__'] = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images', 'error.png'))
+    images['__screenshot__'] = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png'))
+
     start_time = get_time()
 
-def _create_image(path, pos, size):
-    img = None
-    name = path[7:]
-    if name in images:
-        img = images[name]
-    else:
-        img = pygame.image.load(path)
-        images[name] = img
+def _create_image(name, pos, size):
+    img = images[name]
     rect = img.get_rect()
     rect.topleft = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
 
@@ -83,39 +80,37 @@ def _create_ellipse(color, pos, size, outline):
     return Sprite(surface, rect)
 
 def image(name = None, pos = None, size = 1):
-    error_path = os.path.join(os.path.dirname(__file__), 'images', 'error.png')
-
-    img_exts = ('png', 'jpg', 'jpeg', 'gif')
-
-    if name:
-        path = 'images/' + name + '.'
-        for ext in img_exts:
-            if os.path.isfile(path + ext.lower()):
-                path += ext.lower()
-                break
-
-            if os.path.isfile(path + ext.upper()):
-                path += ext.upper()
-                break
-        else:
-            path = error_path
-    else:
+    if not name:
         if os.path.isdir('images/'):
             imgs = []
+            mime_types = ('image/png', 'image/jpeg', 'image/gif')
             for img in os.listdir('images/'):
-                if img.lower().endswith('.png') or img.lower().endswith('.jpg') or img.lower().endswith('.jpeg') or img.lower().endswith('.gif'):
+                if mimetypes.guess_type(img)[0] in mime_types:
                     imgs.append(img)
             if len(imgs):
-                path = 'images/' + random.choice(imgs)
+                name = os.path.splitext(random.choice(imgs))[0]
             else:
-                path = error_path
+                name = '__error__'
         else:
-            path = error_path
+            name = '__error__'
+
+    if not name in images:
+        for img in os.listdir('images/'):
+            if os.path.splitext(img)[0] == name:
+                try:
+                    img = pygame.image.load(os.path.join('images', img))
+                    images[name] = img
+                except:
+                    continue
+
+                break
+        else: # if no image is found and the loop continues ubroken
+            name = '__error__'
 
     if not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_image(path, pos, size)
+    img = _create_image(name, pos, size)
     globs.sprites.append(img)
     return globs.sprites[-1]
 
@@ -234,14 +229,13 @@ def screenshot(directory = 'screenshots'):
     filename = pygame.display.get_caption()[0] + ' - ' + str(datetime.datetime.today()) + '.jpg'
     pygame.image.save(SURF, os.path.join(directory, filename))
 
-    img_path = os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png')
-    size = 1
+    size = 100 / globs.GRID_SIZE
     pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - size / 2
 
-    img = _create_image(img_path, pos, size)
+    img = _create_image('__screenshot__', pos, size)
     globs.sprites.append(img)
     camera = globs.sprites[-1]
-    animate(camera, 0.4, camera.destroy, size = 1.3)
+    animate(camera, 0.45, camera.destroy, size = size / 1.5)
 
 def _draw_grid():
     for x in range(0, globs.WIDTH, globs.GRID_SIZE):
