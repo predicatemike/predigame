@@ -8,6 +8,9 @@ def register_keydown(key, callback):
     else:
         globs.keys_registered['keydown'][key] = set([callback])
 
+def animate(obj, duration = 1, callback = None, **kwargs):
+    globs.animations.append(Animation(obj, duration, callback, **kwargs))
+
 def rand_pos(x_padding = 0, y_padding = 0):
     grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
     grid_height = (globs.HEIGHT / globs.GRID_SIZE) - math.ceil(y_padding)
@@ -39,5 +42,8 @@ def rand_color():
 def roundup(num, step):
     return int(math.ceil(num / float(step))) * step
 
-def animate(obj, duration = 1, callback = None, **kwargs):
-    globs.animations.append(Animation(obj, duration, callback, **kwargs))
+def randrange_float(start, stop, step):
+    return random.randint(0, int((stop - start) / step)) * step + start
+
+def sign(num):
+    return (1, -1)[num < 0]

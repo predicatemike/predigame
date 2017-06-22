@@ -1,6 +1,6 @@
-import sys, random, pygame
+import sys, random, math, pygame
 from functools import partial
-from .utils import *
+from .utils import register_keydown, animate, randrange_float, sign
 from . import globs
 
 class Sprite:
@@ -13,10 +13,9 @@ class Sprite:
         self.virt_rect = [float(self.rect.x), float(self.rect.y), float(self.rect.width), float(self.rect.height)]
         self.surface = pygame.transform.scale(self.origin_surface, rect.size)
         self.move_speed = 5
-        self.move_method = None
-        self.vel = (0, 0)
-        self.move_pos = [self.rect.x, self.rect.y]
-        self.float_vec = [self.rect.x, self.rect.y, 0]
+        self.moving = False
+        self.float_vec = (self.rect.x, self.rect.y)
+        self.bounce_vec = (0, 0)
         self.collisions = []
         self.clicks = []
 
@@ -69,28 +68,9 @@ class Sprite:
         self.virt_rect[0] = center[0] - self.virt_rect[2] / 2
         self.virt_rect[1] = center[1] - self.virt_rect[3] / 2
 
-        self.surface = pygame.transform.smoothscale(self.origin_surface, self.rect.size).convert_alpha()
+        self.surface = pygame.transform.smoothscale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3]))).convert_alpha()
 
     def _update(self, delta):
-        if self.move_method:
-            x_vel, y_vel = self.vel
-
-            x_dir = 1
-            if x_vel:
-                x_dir = x_vel / abs(x_vel)
-            x_vel = self.move_speed * x_dir
-
-            y_dir = 1
-            if y_vel:
-                y_dir = y_vel / abs(y_vel)
-            y_vel = self.move_speed * y_dir
-
-            self.vel = x_vel * (delta / 16), y_vel * (delta / 16)
-            self.move_method()
-
-            self.virt_rect[0] += self.vel[0]
-            self.virt_rect[1] += self.vel[1]
-
         self.rect.topleft = self.virt_rect[0:2]
         self.rect.size = self.virt_rect[2:]
         self._handle_collisions()
@@ -108,66 +88,62 @@ class Sprite:
                 collision['cb'](self, collision['sprite'])
                 break # only handle one collision per frame (for now)
 
-    def _update_move(self):
-        if self.rect.x == self.move_pos[0] and self.rect.y == self.move_pos[1] and self.move_method == self._update_move:
-            self.move_method = None
+    def _update_float(self, distance, time):
+        float_x, float_y = self.float_vec
+        time = self._calc_time((distance, distance))
 
-        x_dist = self.move_pos[0] - self.rect.x
-        y_dist = self.move_pos[1] - self.rect.y
-        x_vel, y_vel = self.vel
-
-        if abs(x_dist) <= abs(x_vel):
-            x_vel = x_dist
+        if self.virt_rect[0] == float_x:
+            move_x = randrange_float(-distance, distance, distance * 2)
         else:
-            x_vel = (x_dist / abs(x_dist)) * abs(x_vel)
+            move_x = -distance * sign(self.virt_rect[0] - float_x)
 
-        if abs(y_dist) <= abs(y_vel):
-            y_vel = y_dist
+        if self.virt_rect[1] == float_y:
+            move_y = randrange_float(-distance, distance, distance * 2)
         else:
-            y_vel = (y_dist / abs(y_dist)) * abs(y_vel)
+            move_y = -distance * sign(self.virt_rect[1] - float_y)
 
-        self.vel = x_vel, y_vel
+        animate(self, time, partial(self._update_float, distance, time), x = self.x + move_x, y = self.y + move_y)
 
     def _update_bounce(self):
-        if self.rect.x + self.rect.width > globs.WIDTH and self.vel[0] > 0:
+        if self.virt_rect[0] + self.virt_rect[2] > globs.WIDTH and self.bounce_vec[0] > 0:
             self.bounce(True, False)
-        elif self.rect.x < 0 and self.vel[0] < 0:
+        elif self.virt_rect[0] < 0 and self.bounce_vec[0] < 0:
             self.bounce(True, False)
 
-        if self.rect.y + self.rect.height > globs.HEIGHT and self.vel[1] > 0:
+        if self.virt_rect[1] + self.virt_rect[3] > globs.HEIGHT and self.bounce_vec[1] > 0:
             self.bounce(False, True)
-        elif self.rect.y < 0 and self.vel[1] < 0:
+        elif self.virt_rect[1] < 0 and self.bounce_vec[1] < 0:
             self.bounce(False, True)
 
-    def _update_float(self):
-        float_x, float_y, float_dist = self.float_vec
+        distance = self.move_speed / globs.GRID_SIZE
+        time = self._calc_time((distance, distance))
 
-        if abs(self.rect.x - float_x) >= float_dist:
-            self.move_pos[0] = float_x
-        elif self.rect.x == float_x:
-            self.move_pos[0] += random.randrange(-float_dist, float_dist + 1, float_dist)
-
-        if abs(self.rect.y - float_y) >= float_dist:
-            self.move_pos[1] = float_y
-        elif self.rect.y == float_y:
-            self.move_pos[1] += random.randrange(-float_dist, float_dist + 1,float_dist)
-
-        self._update_move()
+        animate(self, time, partial(self._update_bounce), x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
     def _handle_click(self, button):
         for click in self.clicks:
             if button == click['btn']:
                 click['cb'](self)
 
+    def _calc_time(self, vector):
+        cur_x, cur_y = self.virt_rect[0:2]
+        new_x = cur_x + vector[0] * globs.GRID_SIZE
+        new_y = cur_y + vector[1] * globs.GRID_SIZE
+        distance = math.sqrt((new_x - cur_x)**2 + (new_y - cur_y)**2)
+        time = (abs(distance) / self.move_speed) / globs.FPS
+
+        return time
+
     def move(self, vector):
-        if self.move_method:
+        if self.moving:
             return self
+        self.moving = True
 
-        self.move_pos = [self.rect.x, self.rect.y]
-        self.move_pos[0] += vector[0] * globs.GRID_SIZE
-        self.move_pos[1] += vector[1] * globs.GRID_SIZE
+        x_dest = self.x + vector[0]
+        y_dest = self.y + vector[1]
+        time = self._calc_time(vector)
 
-        self.move_method = self._update_move
+        animate(self, time, lambda: setattr(self, 'moving', False), x = x_dest, y = y_dest)
 
         return self
 
@@ -185,13 +161,19 @@ class Sprite:
         return self
 
     def speed(self, speed):
-        self.move_speed = speed
+        self.move_speed = abs(speed)
 
         return self
 
     def float(self, distance = 0.25):
-        self.float_vec = self.rect.x, self.rect.y, int(globs.GRID_SIZE * distance)
-        self.move_method = self._update_float
+        if self.moving:
+            return self
+        self.moving = True
+
+        self.float_vec = (self.virt_rect[0], self.virt_rect[1])
+        time = self._calc_time((distance, distance))
+
+        animate(self, time, partial(self._update_float, distance, time), x = self.x + distance, y = self.y + distance)
 
         return self
 
@@ -218,33 +200,38 @@ class Sprite:
         return self
 
     def scale(self, size):
-        if self.rect.width > globs.WIDTH and self.rect.height > globs.HEIGHT:
+        if self.virt_rect[2] > globs.WIDTH and self.virt_rect[3] > globs.HEIGHT:
             return self
-        width = self.rect.width * size
-        height = self.rect.height * size
+        width = self.virt_rect[2] * size
+        height = self.virt_rect[3] * size
 
-        self.rect.width = width
-        self.rect.height = height
-        self.surface = pygame.transform.smoothscale(self.origin_surface, self.rect.size).convert_alpha()
+        self.virt_rect[2] = width
+        self.virt_rect[3] = height
+        self.surface = pygame.transform.smoothscale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3]))).convert_alpha()
 
         return self
 
     def bounce(self, bounce_x = True, bounce_y = True):
-        x_vel, y_vel = self.vel
+        x_dir, y_dir = self.bounce_vec
         if bounce_x:
-            x_vel = -x_vel
+            x_dir = -x_dir
         if bounce_y:
-            y_vel = -y_vel
+            y_dir = -y_dir
 
-        self.vel = x_vel, y_vel
+        self.bounce_vec = x_dir, y_dir
 
         return self
 
     def bouncy(self):
-        x_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
-        y_vel = random.randrange(-self.move_speed, self.move_speed + 1, self.move_speed * 2)
-        self.vel = x_vel, y_vel
-        self.move_method = self._update_bounce
+        if self.moving:
+            return self
+        self.moving = True
+
+        self.bounce_vec = (random.choice([-1, 1]), random.choice([-1, 1]))
+        distance = self.move_speed / globs.GRID_SIZE
+        time = self._calc_time((distance, distance))
+
+        animate(self, time, partial(self._update_bounce), x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
         return self
 
