@@ -17,7 +17,7 @@ def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
     FPS = kwargs.get('fps', 60)
     GRID_SIZE = kwargs.get('grid', 50)
 
-    globs.init(WIDTH, HEIGHT, FPS, GRID_SIZE)
+    globs.init(WIDTH, HEIGHT, GRID_SIZE)
 
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
@@ -297,4 +297,4 @@ def main_loop():
         _draw(SURF)
 
     pygame.display.update()
-    clock.tick(globs.FPS)
+    clock.tick(FPS)
