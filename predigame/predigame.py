@@ -223,14 +223,15 @@ def quit():
     pygame.quit()
     sys.exit()
 
-def screenshot(directory = 'screenshots'):
+def screenshot(directory = 'screenshots', filename = None):
     if not os.path.isdir(directory):
         os.makedirs(directory)
-    filename = pygame.display.get_caption()[0] + ' - ' + str(datetime.datetime.today()) + '.jpg'
+    if not filename:
+        filename = pygame.display.get_caption()[0] + ' - ' + str(datetime.datetime.today()) + '.jpg'
     pygame.image.save(SURF, os.path.join(directory, filename))
 
     size = 100 / globs.GRID_SIZE
-    pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - size / 2
+    pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - (size / 1.36) / 2
 
     img = _create_image('__screenshot__', pos, size)
     globs.sprites.append(img)
