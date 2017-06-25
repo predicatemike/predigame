@@ -1,6 +1,7 @@
 import sys, os, random, datetime, mimetypes, pygame
 from time import time as get_time
 from pygame.locals import *
+from .__init__ import load_module
 from . import globs
 from .utils import register_keydown, rand_pos, rand_color, roundup, animate
 from .Sprite import Sprite
@@ -10,9 +11,10 @@ update_game = True
 sounds = {}
 images = {}
 
-def init(width = 800, height = 800, title = 'PrediGame', **kwargs):
-    global WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+def init(path, width = 800, height = 800, title = 'PrediGame', **kwargs):
+    global RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
+    RUN_PATH = path
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
     GRID_SIZE = kwargs.get('grid', 50)
@@ -218,6 +220,17 @@ def pause():
 def resume():
     global update_game
     update_game = True
+
+def reset():
+    destroyall()
+    globs.keys_registered['keydown'] = {}
+    globs.keys_registered['keyup'] = {}
+    del globs.animations[:]
+
+    from . import api
+    code, mod = load_module(RUN_PATH, api)
+    exec(code, mod.__dict__)
+    start_time = get_time()
 
 def quit():
     pygame.quit()
