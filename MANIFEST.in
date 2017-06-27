@@ -1,1 +1,2 @@
-include predigame/__error__.png
+include predigame/images/error.png
+include predigame/images/screenshot.png
