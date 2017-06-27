@@ -257,15 +257,23 @@ def _draw_grid():
     for y in range(0, globs.HEIGHT, globs.GRID_SIZE):
         pygame.draw.line(SURF, (0, 0, 0), (0, y), (globs.WIDTH, y))
 
+def _update_animation(animation, delta):
+    animation.update(delta)
+
 def _update(delta):
+    time = get_time()
     for sprite in globs.sprites:
         sprite._update(delta)
 
-    for animation in globs.animations:
-        animation.update(delta)
+    animations = globs.animations
 
+    for animation in animations:
+        animation.update(delta + 1000 * (get_time() - time))
+
+    for index, animation in enumerate(animations):
         if animation.finished:
-            globs.animations.remove(animation)
+            del globs.animations[index]
+            animation.finish()
 
 def _draw(SURF):
     SURF.fill(globs.background_color)

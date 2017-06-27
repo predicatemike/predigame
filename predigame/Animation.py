@@ -16,14 +16,12 @@ class Animation:
 
         if n >= 1:
             self.finished = True
-            for attribute in self.attributes:
-                setattr(self.obj, attribute, self.attributes[attribute])
-
-            if self.callback:
-                self.callback()
-
-            return
+            n = 1
 
         for attribute in self.attributes:
             step = self.attributes[attribute] - self.start[attribute]
             setattr(self.obj, attribute, n * step + self.start[attribute])
+
+    def finish(self):
+        if self.callback:
+            self.callback()
