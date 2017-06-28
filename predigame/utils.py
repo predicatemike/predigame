@@ -1,6 +1,18 @@
-import random, math
+import random, math, os, sys
+from types import ModuleType
 from . import globs
 from .Animation import Animation
+
+def load_module(path, api):
+    src = open(path).read()
+    code = compile(src, os.path.basename(path), 'exec', dont_inherit = True)
+
+    name, _ = os.path.splitext(os.path.basename(path))
+    mod = ModuleType(name)
+    mod.__dict__.update(api.__dict__)
+    sys.modules[name] = mod
+
+    return code, mod
 
 def register_keydown(key, callback):
     if key in globs.keys_registered['keydown']:

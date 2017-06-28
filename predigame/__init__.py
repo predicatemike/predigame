@@ -1,21 +1,10 @@
 import sys, os
 from . import predigame
-from types import ModuleType
+from .utils import load_module
 
 def err():
     print('Error: Invalid Python file provided')
     sys.exit()
-
-def load_module(path, api):
-    src = open(path).read()
-    code = compile(src, os.path.basename(path), 'exec', dont_inherit = True)
-
-    name, _ = os.path.splitext(os.path.basename(path))
-    mod = ModuleType(name)
-    mod.__dict__.update(api.__dict__)
-    sys.modules[name] = mod
-
-    return code, mod
 
 def main():
     try:

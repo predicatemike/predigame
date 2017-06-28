@@ -1,9 +1,8 @@
 import sys, os, random, datetime, mimetypes, pygame
 from time import time as get_time
 from pygame.locals import *
-from .__init__ import load_module
 from . import globs
-from .utils import register_keydown, rand_pos, rand_color, roundup, animate
+from .utils import load_module, register_keydown, rand_pos, rand_color, roundup, animate
 from .Sprite import Sprite
 
 show_grid = False
