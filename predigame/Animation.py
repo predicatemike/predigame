@@ -1,3 +1,5 @@
+from . import globs
+
 class Animation:
     def __init__(self, obj, duration, callback, **kwargs):
         self.obj = obj
@@ -23,5 +25,8 @@ class Animation:
             setattr(self.obj, attribute, n * step + self.start[attribute])
 
     def finish(self):
+        if not self.obj in globs.sprites:
+            return
+
         if self.callback:
             self.callback()

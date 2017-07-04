@@ -9,6 +9,7 @@ show_grid = False
 update_game = True
 sounds = {}
 images = {}
+callbacks = []
 
 def init(path, width = 800, height = 800, title = 'PrediGame', **kwargs):
     global RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
@@ -159,6 +160,7 @@ def text(string, color = None, pos = None, size = 1):
 
     surface = font.render(string, True, color)
     text = Sprite(surface, pygame.Rect(pos[0], pos[1], font_width, font_height))
+    text._draw(SURF)
 
     globs.sprites.append(text)
     return globs.sprites[-1]
@@ -209,6 +211,44 @@ def grid():
 def time():
     return float('%.3f'%(get_time() - start_time))
 
+def callback(function, wait):
+    callbacks.append({'cb': function, 'time': get_time() + wait})
+
+def score(value = 0, **kwargs):
+    global score_dict
+    try:
+        score_dict
+        globs.sprites.remove(score_dict['sprite'])
+    except:
+        score_dict = {
+            'value': 0,
+            'sprite': None,
+            'size': 28,
+            'color': (25, 25, 25),
+            'pos': (25, 25)
+        }
+
+    score_dict['color'] = kwargs.get('color', score_dict['color'])
+    size = kwargs.get('size', None)
+    pos = kwargs.get('pos', None)
+
+    if size:
+        score_dict['size'] = int(size * globs.GRID_SIZE)
+    if pos:
+        score_dict['pos'] = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
+
+    score_dict['value'] += value
+
+    string = str(score_dict['value'])
+    font = pygame.font.Font(None, score_dict['size'])
+    font_width, font_height = font.size(string)
+    surface = font.render(string, True, score_dict['color'])
+    score_dict['sprite'] = Sprite(surface, pygame.Rect(score_dict['pos'][0], score_dict['pos'][1], font_width, font_height))
+
+    globs.sprites.append(score_dict['sprite'])
+
+    return score_dict['value']
+
 def destroyall():
     del globs.sprites[:]
 
@@ -230,6 +270,8 @@ def reset():
     code, mod = load_module(RUN_PATH, api)
     exec(code, mod.__dict__)
     start_time = get_time()
+
+    resume()
 
 def quit():
     pygame.quit()
@@ -273,6 +315,11 @@ def _update(delta):
         if animation.finished:
             del globs.animations[index]
             animation.finish()
+
+    for callback in callbacks:
+        if callback['time'] <= get_time():
+            callback['cb']()
+            callbacks.remove(callback)
 
 def _draw(SURF):
     SURF.fill(globs.background_color)

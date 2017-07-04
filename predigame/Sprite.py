@@ -132,8 +132,10 @@ class Sprite:
             if button == click['btn']:
                 click['cb'](self)
 
-    def _calc_time(self, vector):
-        cur_x, cur_y = self.virt_rect[0:2]
+    def _calc_time(self, vector, position = None):
+        if not position:
+            position = self.virt_rect[0:2]
+        cur_x, cur_y = position
         new_x = cur_x + vector[0] * globs.GRID_SIZE
         new_y = cur_y + vector[1] * globs.GRID_SIZE
         distance = math.sqrt((new_x - cur_x)**2 + (new_y - cur_y)**2)
@@ -153,6 +155,25 @@ class Sprite:
         animate(self, time, lambda: setattr(self, 'moving', False), x = x_dest, y = y_dest)
 
         return self
+
+    def move_to(self, *points, **kwargs):
+        callback = kwargs.get('callback', None)
+        times = []
+
+        for index, point in enumerate(points):
+            if index == 0:
+                prev_point = self.pos
+            else:
+                prev_point = points[index - 1]
+            vector = (point[0] - prev_point[0], point[1] - prev_point[1])
+            time = self._calc_time(vector, prev_point)
+            times.append(time)
+
+        for point in reversed(points):
+            time = times.pop(-1)
+            callback = partial(animate, self, time, callback, x = point[0], y = point[1])
+
+        callback()
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
         distance = kwargs.get('spaces', 1)
