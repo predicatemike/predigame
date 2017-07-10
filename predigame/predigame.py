@@ -260,17 +260,19 @@ def resume():
     global update_game
     update_game = True
 
-def reset():
+def reset(*kwargs):
     destroyall()
     globs.keys_registered['keydown'] = {}
     globs.keys_registered['keyup'] = {}
     del globs.animations[:]
+    del callbacks[:]
 
     from . import api
     code, mod = load_module(RUN_PATH, api)
     exec(code, mod.__dict__)
-    start_time = get_time()
 
+    global start_time
+    start_time = get_time()
     resume()
 
 def quit():
