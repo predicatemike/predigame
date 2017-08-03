@@ -160,7 +160,6 @@ def text(string, color = None, pos = None, size = 1):
 
     surface = font.render(string, True, color)
     text = Sprite(surface, pygame.Rect(pos[0], pos[1], font_width, font_height))
-    text._draw(SURF)
 
     globs.sprites.append(text)
     return globs.sprites[-1]
@@ -253,8 +252,7 @@ def destroyall():
     del globs.sprites[:]
 
 def pause():
-    global update_game
-    update_game = False
+    pygame.event.post(pygame.event.Event(USEREVENT, action = 'pause'))
 
 def resume():
     global update_game
@@ -360,6 +358,13 @@ def main_loop():
             for sprite in globs.sprites:
                 if sprite.rect.collidepoint(event.pos):
                     sprite._handle_click(event.button)
+
+        if event.type == USEREVENT:
+            global update_game
+            if event.action == 'pause' and update_game:
+                update_game = False
+                _update(clock.get_time())
+                _draw(SURF)
 
     if update_game:
         _update(clock.get_time())

@@ -211,7 +211,7 @@ class Sprite:
         self.float_vec = (self.virt_rect[0], self.virt_rect[1])
         time = self._calc_time((distance, distance))
 
-        animate(self, time, partial(self._update_float, distance, time), x = self.x + distance, y = self.y + distance)
+        animate(self, 0.016, partial(self._update_float, distance, time))
 
         return self
 
