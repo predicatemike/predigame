@@ -153,21 +153,32 @@ class Sprite:
 
         return time
 
-    def move(self, vector):
+    def _complete_move(self, callback = None):
+        self.moving = False
+        if callback:
+            callback()
+
+    def move(self, vector, **kwargs):
         if self.moving:
             return self
         self.moving = True
+
+        callback = kwargs.get('callback', None)
 
         x_dest = self.x + vector[0]
         y_dest = self.y + vector[1]
         time = self._calc_time(vector)
 
-        animate(self, time, lambda: setattr(self, 'moving', False), x = x_dest, y = y_dest)
+        animate(self, time, partial(self._complete_move, callback), x = x_dest, y = y_dest)
 
         return self
 
     def move_to(self, *points, **kwargs):
-        callback = kwargs.get('callback', None)
+        if self.moving:
+            return self
+        self.moving = True
+
+        callback = partial(self._complete_move, kwargs.get('callback', None))
         times = []
 
         for index, point in enumerate(points):
@@ -185,16 +196,20 @@ class Sprite:
 
         callback()
 
+    def _continue_key(self, key, distance):
+        if key in globs.keys_pressed:
+            self.move(distance, callback = partial(self._continue_key, key, distance))
+
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
         distance = kwargs.get('spaces', 1)
         if right:
-            register_keydown(right, partial(self.move, (1 * distance, 0)))
+            register_keydown(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0))))
         if left:
-            register_keydown(left, partial(self.move, (-1 * distance, 0)))
+            register_keydown(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0))))
         if up:
-            register_keydown(up, partial(self.move, (0, -1 * distance)))
+            register_keydown(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance))))
         if down:
-            register_keydown(down, partial(self.move, (0, 1 * distance)))
+            register_keydown(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance))))
 
         return self
 

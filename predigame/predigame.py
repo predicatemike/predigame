@@ -342,6 +342,9 @@ def main_loop():
                 for callback in globs.keys_registered['keydown'][key]:
                     callback()
 
+            if not key in globs.keys_pressed:
+                globs.keys_pressed.append(key)
+
             if key == 'escape':
                 pygame.event.post(pygame.event.Event(QUIT))
 
@@ -353,6 +356,9 @@ def main_loop():
             if key in globs.keys_registered['keyup']:
                 for callback in globs.keys_registered['keyup'][key]:
                     callback()
+
+            if key in globs.keys_pressed:
+                globs.keys_pressed.remove(key)
 
         if event.type == MOUSEBUTTONDOWN:
             for sprite in globs.sprites:
