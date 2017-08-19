@@ -97,16 +97,19 @@ def image(name = None, pos = None, size = 1):
             name = '__error__'
 
     if not name in images:
-        for img in os.listdir('images/'):
-            if os.path.splitext(img)[0] == name:
-                try:
-                    img = pygame.image.load(os.path.join('images', img))
-                    images[name] = img
-                except:
-                    continue
+        if os.path.isdir('images/'):
+            for img in os.listdir('images/'):
+                if os.path.splitext(img)[0] == name:
+                    try:
+                        img = pygame.image.load(os.path.join('images', img))
+                        images[name] = img
+                    except:
+                        continue
 
-                break
-        else: # if no image is found and the loop continues ubroken
+                    break
+            else: # if no image is found and the loop continues ubroken
+                name = '__error__'
+        else:
             name = '__error__'
 
     if not pos:
