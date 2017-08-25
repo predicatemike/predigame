@@ -1,4 +1,5 @@
 import sys, os
+from types import ModuleType
 from . import predigame
 from .utils import load_module
 
@@ -17,15 +18,17 @@ def main():
     from . import api
     code, mod = load_module(path, api)
 
+    dummy_mod = ModuleType('dummy')
+
     try:
-        exec(code, mod.__dict__)
+        exec(code, dummy_mod.__dict__)
     except:
         pass
     finally:
-        WIDTH = getattr(mod, 'WIDTH', 16)
-        HEIGHT = getattr(mod, 'HEIGHT', 16)
-        TITLE = getattr(mod, 'TITLE', 'PrediGame')
-        SIZE = getattr(mod, 'SIZE', 50)
+        WIDTH = getattr(dummy_mod, 'WIDTH', 16)
+        HEIGHT = getattr(dummy_mod, 'HEIGHT', 16)
+        TITLE = getattr(dummy_mod, 'TITLE', 'PrediGame')
+        SIZE = getattr(dummy_mod, 'SIZE', 50)
 
     predigame.init(path, WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE)
 
