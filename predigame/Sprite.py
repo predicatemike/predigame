@@ -16,6 +16,7 @@ class Sprite:
         self.moving = False
         self.float_vec = (self.rect.x, self.rect.y)
         self.bounce_vec = (0, 0)
+        self.sprite_scale = self.size
         self.rotate_angle = 90
         self.collisions = []
         self.clicks = []
@@ -39,6 +40,11 @@ class Sprite:
     @property
     def pos(self):
         return self.x, self.y
+
+    @pos.setter
+    def pos(self, value):
+        self.x = value[0]
+        self.y = value[1]
 
     @property
     def width(self):
@@ -69,7 +75,8 @@ class Sprite:
         self.virt_rect[0] = center[0] - self.virt_rect[2] / 2
         self.virt_rect[1] = center[1] - self.virt_rect[3] / 2
 
-        self.surface = pygame.transform.smoothscale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3]))).convert_alpha()
+        self.sprite_scale = value
+        self.rotate(0)
 
     @property
     def angle(self):
@@ -263,17 +270,24 @@ class Sprite:
         self.rotate_angle += angle
         if self.rotate_angle > 360:
             self.rotate_angle -= 360
-        self.surface = pygame.transform.scale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3])))
-        width, height = self.surface.get_rect().size
+
+        x, y, width, height = self.virt_rect[:]
+        center = x + width / 2, y + height / 2
+
+        scale_width = self.sprite_scale * globs.GRID_SIZE
+        scale_height = self.sprite_scale * globs.GRID_SIZE
+        if self.width >= self.height:
+            scale_height = scale_height * (self.height / self.width)
+        else:
+            scale_width = scale_width * (self.width / self.height)
+
+        self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
 
-        new_width, new_height = self.surface.get_rect().size
-        if new_width > width and new_height > height:
-            new_surface = pygame.Surface(self.virt_rect[2:])
-            new_surface.fill(globs.background_color)
-            new_surface.set_colorkey(globs.background_color)
-            new_surface.blit(self.surface, (0, 0), ((new_width - width) / 2, (new_height - height) / 2, self.virt_rect[2], self.virt_rect[3]))
-            self.surface = new_surface
+        new_rect = self.surface.get_rect()
+        self.virt_rect[2] = new_rect[2]
+        self.virt_rect[3] = new_rect[3]
+        self.virt_rect[0], self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
 
         return self
 
@@ -291,6 +305,8 @@ class Sprite:
 
         self.virt_rect[2] = width
         self.virt_rect[3] = height
+        self.sprite_scale = self.sprite_scale * size
+
         self.surface = pygame.transform.smoothscale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3]))).convert_alpha()
 
         return self
@@ -329,8 +345,11 @@ class Sprite:
 
         return self
 
-    def spin(self, time = 1):
-        animate(self, time, partial(self.spin, time), angle = self.angle + 360)
+    def spin(self, time = 1, **kwargs):
+        if self.moving and not kwargs.get('spinning', False):
+            return self
+        self.moving = True
+        animate(self, time, partial(self.spin, time, spinning = True), angle = self.angle + 360)
 
         return self
 
