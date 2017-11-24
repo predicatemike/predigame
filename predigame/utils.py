@@ -20,6 +20,12 @@ def register_keydown(key, callback):
     else:
         globs.keys_registered['keydown'][key] = set([callback])
 
+def register_keyup(key, callback):
+    if key in globs.keys_registered['keyup']:
+        globs.keys_registered['keyup'][key].add(callback)
+    else:
+        globs.keys_registered['keyup'][key] = set([callback])
+
 def animate(obj, duration = 1, callback = None, **kwargs):
     globs.animations.append(Animation(obj, duration, callback, **kwargs))
 

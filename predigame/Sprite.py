@@ -1,6 +1,6 @@
 import sys, random, math, pygame
 from functools import partial
-from .utils import register_keydown, animate, randrange_float, sign
+from .utils import register_keydown, register_keyup, animate, randrange_float, sign
 from . import globs
 
 class Sprite:
@@ -175,7 +175,6 @@ class Sprite:
         x_dest = self.x + vector[0]
         y_dest = self.y + vector[1]
         time = self._calc_time(vector)
-
         animate(self, time, partial(self._complete_move, callback), x = x_dest, y = y_dest)
 
         return self
@@ -209,14 +208,21 @@ class Sprite:
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
         distance = kwargs.get('spaces', 1)
+
+        register_key = None
+        if kwargs.get('direction', 'down') == 'down':
+            register_key = register_keydown
+        else:
+            register_key = register_keyup
+
         if right:
-            register_keydown(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0))))
+            register_key(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0))))
         if left:
-            register_keydown(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0))))
+            register_key(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0))))
         if up:
-            register_keydown(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance))))
+            register_key(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance))))
         if down:
-            register_keydown(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance))))
+            register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance))))
 
         return self
 
