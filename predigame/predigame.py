@@ -37,7 +37,7 @@ def init(path, width = 800, height = 800, title = 'PrediGame', **kwargs):
 
     start_time = get_time()
 
-def _create_image(name, pos, size):
+def _create_image(name, pos, size, tag):
     img = images[name]
     rect = img.get_rect()
     rect.topleft = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
@@ -52,36 +52,36 @@ def _create_image(name, pos, size):
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
 
-    return Sprite(img, rect)
+    return Sprite(img, rect, tag)
 
-def _create_rectangle(color, pos, size, outline):
+def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
     surface.fill(globs.background_color)
     surface.set_colorkey(globs.background_color)
     pygame.draw.rect(surface, color, (0, 0, rect.width, rect.height), outline)
 
-    return Sprite(surface, rect)
+    return Sprite(surface, rect, tag)
 
-def _create_circle(color, pos, size, outline):
+def _create_circle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size * globs.GRID_SIZE, size * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
     surface.fill(globs.background_color)
     surface.set_colorkey(globs.background_color)
     pygame.draw.circle(surface, color, (rect.width // 2, rect.height // 2), rect.width // 2, outline)
 
-    return Sprite(surface, rect)
+    return Sprite(surface, rect, tag)
 
-def _create_ellipse(color, pos, size, outline):
+def _create_ellipse(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
     surface.fill(globs.background_color)
     surface.set_colorkey(globs.background_color)
     pygame.draw.ellipse(surface, color, (0, 0, rect.width, rect.height), outline)
 
-    return Sprite(surface, rect)
+    return Sprite(surface, rect, tag)
 
-def image(name = None, pos = None, size = 1):
+def image(name = None, pos = None, size = 1, tag = ''):
     if not name:
         if os.path.isdir('images/'):
             imgs = []
@@ -115,11 +115,22 @@ def image(name = None, pos = None, size = 1):
     if not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_image(name, pos, size)
+    img = _create_image(name, pos, size, tag)
     globs.sprites.append(img)
     return globs.sprites[-1]
 
-def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
+def at(pos):
+    for s in globs.sprites:
+        if s.pos[0] == pos[0] and s.pos[1] == pos[1]:
+            return s
+
+def get(name):
+    if name in globs.tags:
+        return globs.tags[name]
+    else:
+        return []
+
+def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
         shape = random.choice(['circle', 'rect', 'ellipse'])
 
@@ -135,11 +146,11 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     outline = kwargs.get('outline', 0)
 
     if shape == 'circle':
-        shape = _create_circle(color, pos, size[0], outline)
+        shape = _create_circle(color, pos, size[0], outline, tag)
     elif shape == 'rect':
-        shape = _create_rectangle(color, pos, size, outline)
+        shape = _create_rectangle(color, pos, size, outline, tag)
     elif shape == 'ellipse':
-        shape = _create_ellipse(color, pos, size, outline)
+        shape = _create_ellipse(color, pos, size, outline, tag)
     else:
         print('Shape, ' + shape + ', is not a valid shape name')
         return False
@@ -147,7 +158,7 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), **kwargs):
     globs.sprites.append(shape)
     return globs.sprites[-1]
 
-def text(string, color = None, pos = None, size = 1):
+def text(string, color = None, pos = None, size = 1, tag = ''):
     string = str(string)
     size = int(size * globs.GRID_SIZE)
     font = pygame.font.Font(None, size)
@@ -162,7 +173,7 @@ def text(string, color = None, pos = None, size = 1):
     pos = pos[0] * GRID_SIZE, pos[1] * GRID_SIZE
 
     surface = font.render(string, True, color)
-    text = Sprite(surface, pygame.Rect(pos[0], pos[1], font_width, font_height))
+    text = Sprite(surface, pygame.Rect(pos[0], pos[1], font_width, font_height), tag)
 
     globs.sprites.append(text)
     return globs.sprites[-1]
@@ -265,6 +276,7 @@ def reset(*kwargs):
     destroyall()
     globs.keys_registered['keydown'] = {}
     globs.keys_registered['keyup'] = {}
+    globs.tags = {}
     del globs.animations[:]
     del callbacks[:]
 
@@ -335,6 +347,7 @@ def _draw(SURF):
 
 def main_loop():
     for event in pygame.event.get():
+
         if event.type == QUIT:
             pygame.quit()
             sys.exit()

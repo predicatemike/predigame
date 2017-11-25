@@ -4,7 +4,7 @@ from .utils import register_keydown, register_keyup, animate, randrange_float, s
 from . import globs
 
 class Sprite:
-    def __init__(self, surface, rect):
+    def __init__(self, surface, rect, tag):
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
@@ -20,6 +20,11 @@ class Sprite:
         self.rotate_angle = 90
         self.collisions = []
         self.clicks = []
+        self._tag = tag
+        if tag not in globs.tags.keys():
+            globs.tags[tag] = [self]
+        else:
+            globs.tags[tag].append(self)
 
     @property
     def x(self):
@@ -86,6 +91,10 @@ class Sprite:
     def angle(self, value):
         self.rotate_angle = value
         self.rotate(0)
+
+    @property
+    def tag(self):
+        return self._tag
 
     def _update(self, delta):
         self.rect.topleft = self.virt_rect[0:2]
@@ -166,17 +175,17 @@ class Sprite:
             callback()
 
     def move(self, vector, **kwargs):
-        if self.moving:
-            return self
         self.moving = True
-
         callback = kwargs.get('callback', None)
+        precondition = kwargs.get('precondition', None)
 
-        x_dest = self.x + vector[0]
-        y_dest = self.y + vector[1]
+        x_dest = int(self.x + vector[0])
+        y_dest = int(self.y + vector[1])
         time = self._calc_time(vector)
-        animate(self, time, partial(self._complete_move, callback), x = x_dest, y = y_dest)
-
+        if precondition == None or precondition('move', self, (x_dest, y_dest)):
+            animate(self, time, partial(self._complete_move, callback), x = x_dest, y = y_dest)
+        else:
+            animate(self, time, partial(self._complete_move, callback), x = self.x, y = self.y)
         return self
 
     def move_to(self, *points, **kwargs):
@@ -202,11 +211,13 @@ class Sprite:
 
         callback()
 
-    def _continue_key(self, key, distance):
+    def _continue_key(self, key, distance, **kwargs):
+        precondition = kwargs.get('precondition', None)
         if key in globs.keys_pressed:
-            self.move(distance, callback = partial(self._continue_key, key, distance))
+            self.move(distance, callback = partial(self._continue_key, key, distance, precondition = precondition), precondition = precondition)
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
+        precondition = kwargs.get('precondition', None)
         distance = kwargs.get('spaces', 1)
 
         register_key = None
@@ -216,13 +227,13 @@ class Sprite:
             register_key = register_keyup
 
         if right:
-            register_key(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0))))
+            register_key(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0), precondition = precondition), precondition = precondition))
         if left:
-            register_key(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0))))
+            register_key(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0), precondition = precondition), precondition = precondition))
         if up:
-            register_key(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance))))
+            register_key(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance), precondition = precondition), precondition = precondition))
         if down:
-            register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance))))
+            register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance), precondition = precondition), precondition = precondition))
 
         return self
 
@@ -361,5 +372,11 @@ class Sprite:
 
     def destroy(self, *args):
         globs.sprites.remove(self)
+        globs.tags[self._tag].remove(self)
+        return self
 
+    def wander(self, callback, time = 1):
+        callback(self)
+
+        animate(self, time, partial(self.wander, callback, time))
         return self
