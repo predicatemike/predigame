@@ -28,19 +28,19 @@ class Sprite:
 
     @property
     def x(self):
-        return self.virt_rect[0] / globs.GRID_SIZE
+        return int(self.virt_rect[0] / globs.GRID_SIZE)
 
     @x.setter
     def x(self, value):
-        self.virt_rect[0] = float(value) * globs.GRID_SIZE
+        self.virt_rect[0] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def y(self):
-        return self.virt_rect[1] / globs.GRID_SIZE
+        return int(self.virt_rect[1] / globs.GRID_SIZE)
 
     @y.setter
     def y(self, value):
-        self.virt_rect[1] = float(value) * globs.GRID_SIZE
+        self.virt_rect[1] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def pos(self):
@@ -48,8 +48,8 @@ class Sprite:
 
     @pos.setter
     def pos(self, value):
-        self.x = value[0]
-        self.y = value[1]
+        self.x = int(value[0])
+        self.y = int(value[1])
 
     @property
     def width(self):

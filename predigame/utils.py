@@ -65,3 +65,13 @@ def randrange_float(start, stop, step):
 
 def sign(num):
     return (1, -1)[num < 0]
+
+def distance(p1, p2):
+    return math.sqrt(sum([(a - b) ** 2 for a, b in zip(p1, p2)]))
+
+def visible(p1):
+    if p1[0] >= 0 and p1[1] >= 0 and p1[0] < (globs.WIDTH/globs.GRID_SIZE) and p1[1] < (globs.HEIGHT/globs.GRID_SIZE):
+        return True
+    else:
+        return False
+

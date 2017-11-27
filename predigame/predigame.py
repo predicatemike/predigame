@@ -120,9 +120,8 @@ def image(name = None, pos = None, size = 1, tag = ''):
     return globs.sprites[-1]
 
 def at(pos):
-    for s in globs.sprites:
-        if s.pos[0] == pos[0] and s.pos[1] == pos[1]:
-            return s
+    if pos in globs.cells:
+        return globs.cells[pos]
 
 def get(name):
     if name in globs.tags:
@@ -339,7 +338,9 @@ def _update(delta):
 def _draw(SURF):
     SURF.fill(globs.background_color)
 
+    globs.cells = {}
     for sprite in globs.sprites:
+        globs.cells[sprite.pos] = sprite
         sprite._draw(SURF)
 
     if show_grid:
