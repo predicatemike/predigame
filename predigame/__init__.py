@@ -2,6 +2,7 @@ import sys, os
 from types import ModuleType
 from . import predigame
 from .utils import load_module
+from predigame.constants import *
 
 def err():
     print('Error: Invalid Python file provided')
@@ -25,12 +26,14 @@ def main():
     except:
         pass
     finally:
+
         WIDTH = getattr(dummy_mod, 'WIDTH', 16)
         HEIGHT = getattr(dummy_mod, 'HEIGHT', 16)
         TITLE = getattr(dummy_mod, 'TITLE', 'PrediGame')
         SIZE = getattr(dummy_mod, 'SIZE', 50)
+        BACKGROUND = getattr(dummy_mod, 'BACKGROUND', (220, 220, 220))
 
-    predigame.init(path, WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE)
+    predigame.init(path, WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE, background = BACKGROUND)
 
     exec(code, mod.__dict__)
 

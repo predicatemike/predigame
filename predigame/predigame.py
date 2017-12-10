@@ -11,15 +11,16 @@ sounds = {}
 images = {}
 callbacks = []
 
-def init(path, width = 800, height = 800, title = 'PrediGame', **kwargs):
-    global RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+def init(path, width = 800, height = 800, title = 'PrediGame', background = (220, 220, 220), **kwargs):
+    global RUN_PATH, WIDTH, HEIGHT, BACKGROUND, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
     RUN_PATH = path
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
     GRID_SIZE = kwargs.get('grid', 50)
+    BACKGROUND = background
 
-    globs.init(WIDTH, HEIGHT, GRID_SIZE)
+    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
 
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
@@ -57,8 +58,8 @@ def _create_image(name, pos, size, tag):
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.background_color)
-    surface.set_colorkey(globs.background_color)
+    surface.fill(globs.BACKGROUND_COLOR)
+    surface.set_colorkey(globs.BACKGROUND_COLOR)
     pygame.draw.rect(surface, color, (0, 0, rect.width, rect.height), outline)
 
     return Sprite(surface, rect, tag)
@@ -66,8 +67,8 @@ def _create_rectangle(color, pos, size, outline, tag):
 def _create_circle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size * globs.GRID_SIZE, size * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.background_color)
-    surface.set_colorkey(globs.background_color)
+    surface.fill(globs.BACKGROUND_COLOR)
+    surface.set_colorkey(globs.BACKGROUND_COLOR)
     pygame.draw.circle(surface, color, (rect.width // 2, rect.height // 2), rect.width // 2, outline)
 
     return Sprite(surface, rect, tag)
@@ -75,8 +76,8 @@ def _create_circle(color, pos, size, outline, tag):
 def _create_ellipse(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.background_color)
-    surface.set_colorkey(globs.background_color)
+    surface.fill(globs.BACKGROUND_COLOR)
+    surface.set_colorkey(globs.BACKGROUND_COLOR)
     pygame.draw.ellipse(surface, color, (0, 0, rect.width, rect.height), outline)
 
     return Sprite(surface, rect, tag)
@@ -336,8 +337,11 @@ def _update(delta):
             callbacks.remove(callback)
 
 def _draw(SURF):
-    SURF.fill(globs.background_color)
-
+    if isinstance(globs.BACKGROUND, pygame.Surface) :
+        SURF.blit(globs.BACKGROUND, (0,0))
+    else:
+        SURF.fill(globs.BACKGROUND)
+    
     globs.cells = {}
     for sprite in globs.sprites:
         globs.cells[sprite.pos] = sprite
