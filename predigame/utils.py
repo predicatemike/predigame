@@ -14,6 +14,13 @@ def load_module(path, api):
 
     return code, mod
 
+def get_image_file(name):
+    for ext in ['png', 'jpg', 'gif']:
+        fname = 'images/' + name + '.' + ext
+        if os.path.isfile(fname):
+            return fname
+    return None
+
 def register_keydown(key, callback):
     if key in globs.keys_registered['keydown']:
         globs.keys_registered['keydown'][key].add(callback)
@@ -56,6 +63,12 @@ def rand_color():
     if (r, g, b) == globs.background_color:
         r, g, b = rand_color()
     return r, g, b
+
+def rand_arc():
+    p1 = rand_pos(1,4)
+    p2 = rand_pos(1,4)
+    mid_x = (p1[0] + p2[0]) / 2
+    return (p1[0], (globs.HEIGHT/globs.GRID_SIZE)+1), (int(mid_x), 1), (p2[0], (globs.HEIGHT/globs.GRID_SIZE)+1)
 
 def roundup(num, step):
     return int(math.ceil(num / float(step))) * step

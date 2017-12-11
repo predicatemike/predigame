@@ -1,11 +1,5 @@
-import os.path, pygame, sys
-
-def get_image_file(name):
-    for ext in ['png', 'jpg', 'gif']:
-        fname = 'images/' + name + '.' + ext
-        if os.path.isfile(fname):
-            return fname
-    return None
+from predigame.utils import *
+import pygame, sys
 
 def init(width, height, grid_size, background):
     global WIDTH, HEIGHT, GRID_SIZE, BACKGROUND, BACKGROUND_COLOR, sprites, cells, tags, animations, keys_registered, keys_pressed

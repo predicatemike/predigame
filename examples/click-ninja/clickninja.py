@@ -22,20 +22,16 @@ def point(s):
     s.destroy()
     score(5)
 
-def throw_arc():
-    p1 = rand_pos(1,4)
-    p2 = rand_pos(1,4)
-    midway_x = (p1[0] + p2[0]) / 2
-    return (p1[0], HEIGHT+1), (int(midway_x), 1), (p2[0], HEIGHT+1)
-
 def spawn():
-    target = choice(['bomb', 'bananas', 'cherries', 'olives'])
-    arc = throw_arc()
+    target = choice(['bomb', 'bananas', 'cherries', 
+                     'olives', 'ham', 'hotdog', 
+                     'fries','icee', 'pizza'])
+    arc = rand_arc()
     if target == 'bomb':
         s = image(target, arc[0], 2)
         s.speed(5).clicked(explode)
         s.move_to(arc[1], arc[2], callback = s.destroy)
-    elif target in ['bananas', 'cherries', 'olives']:
+    else:
         s = image(target, arc[0], 2)
         s.speed(5).clicked(point)
         s.move_to(arc[1], arc[2], callback = lambda: hurt(s))
