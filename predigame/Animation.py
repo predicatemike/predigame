@@ -9,6 +9,11 @@ class Animation:
             self.start[attribute] = getattr(obj, attribute)
         self.time = float(0)
         self.duration = float(duration)
+
+        # prevent div by 0
+        if self.duration == 0.0:
+            self.duration = 0.001
+
         self.callback = callback
         self.finished = False
 

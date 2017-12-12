@@ -53,7 +53,7 @@ def rand_color():
     r = random.randrange(0, 255)
     g = random.randrange(0, 255)
     b = random.randrange(0, 255)
-    if (r, g, b) == globs.background_color:
+    if (r, g, b) == globs.BACKGROUND:
         r, g, b = rand_color()
     return r, g, b
 

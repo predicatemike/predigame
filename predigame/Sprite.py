@@ -151,6 +151,9 @@ class Sprite:
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
 
+        if distance < self.size:
+            distance = self.size
+
         animate(self, time, self._update_bounce, x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
     def _handle_click(self, button):
