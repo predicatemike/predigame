@@ -14,13 +14,6 @@ def load_module(path, api):
 
     return code, mod
 
-def get_image_file(name):
-    for ext in ['png', 'jpg', 'gif']:
-        fname = 'images/' + name + '.' + ext
-        if os.path.isfile(fname):
-            return fname
-    return None
-
 def register_keydown(key, callback):
     if key in globs.keys_registered['keydown']:
         globs.keys_registered['keydown'][key].add(callback)
