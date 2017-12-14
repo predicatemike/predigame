@@ -12,7 +12,7 @@ class Animation:
 
         # prevent div by 0
         if self.duration == 0.0:
-            self.duration = 0.001
+            self.duration = 0.00001
 
         self.callback = callback
         self.finished = False
@@ -28,6 +28,8 @@ class Animation:
         for attribute in self.attributes:
             step = self.attributes[attribute] - self.start[attribute]
             setattr(self.obj, attribute, n * step + self.start[attribute])
+
+
 
     def finish(self):
         if not self.obj in globs.sprites:
