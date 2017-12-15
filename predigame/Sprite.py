@@ -33,6 +33,7 @@ class Sprite:
 
     @x.setter
     def x(self, value):
+        self.needs_rotation = True
         self.virt_rect[0] = int(float(value) * globs.GRID_SIZE)
 
     @property
@@ -41,6 +42,7 @@ class Sprite:
 
     @y.setter
     def y(self, value):
+        self.needs_rotation = True
         self.virt_rect[1] = int(float(value) * globs.GRID_SIZE)
 
     @property
@@ -287,14 +289,10 @@ class Sprite:
         scale_width = self.sprite_scale * globs.GRID_SIZE
         scale_height = self.sprite_scale * globs.GRID_SIZE
 
-        #if self.width >= self.height:
-        #    scale_height = scale_height * (self.height / self.width)
-        #else:
-        #    scale_width = scale_width * (self.width / self.height)
-
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
         self.rect = self.surface.get_rect(center=center)
+        self.rect.center = center
         new_rect = self.surface.get_rect()
         self.virt_rect[2] = new_rect[2]
         self.virt_rect[3] = new_rect[3]
