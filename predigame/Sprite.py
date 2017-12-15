@@ -88,8 +88,8 @@ class Sprite:
         if self.needs_rotation:
             self.rotate(0)
             self.needs_rotation = False
-        self.rect.topleft = self.virt_rect[0:2]
-        self.rect.size = self.virt_rect[2:]
+        #self.rect.topleft = self.virt_rect[0:2]
+        #self.rect.size = self.virt_rect[2:]
         self._handle_collisions()
 
     def _draw(self, surface):
@@ -183,8 +183,8 @@ class Sprite:
         return self
 
     def move_to(self, *points, **kwargs):
-        if self.moving:
-            return self
+        #if self.moving:
+        #    return self
         self.moving = True
 
         callback = partial(self._complete_move, kwargs.get('callback', None))
@@ -284,7 +284,10 @@ class Sprite:
             self.rotate_angle -= 360
 
         x, y, width, height = self.virt_rect[:]
-        center = x + width / 2, y + height / 2
+        #center = x + width / 2, y + height / 2
+        center = x, y
+        #x = x - width/2
+        #y = x - height/2
 
         scale_width = self.sprite_scale * globs.GRID_SIZE
         scale_height = self.sprite_scale * globs.GRID_SIZE
@@ -292,11 +295,13 @@ class Sprite:
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
         self.rect = self.surface.get_rect(center=center)
-        self.rect.center = center
+        #self.rect.center = center
         new_rect = self.surface.get_rect()
         self.virt_rect[2] = new_rect[2]
         self.virt_rect[3] = new_rect[3]
-        self.virt_rect[0], self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
+        #self.virt_rect[0] = center[0]
+        #self.virt_rect[1] = center[1]
+        #, self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
 
         return self
 
@@ -355,8 +360,8 @@ class Sprite:
         return self
 
     def spin(self, time = 1, **kwargs):
-        if self.moving and not kwargs.get('spinning', False):
-            return self
+        #if self.moving and not kwargs.get('spinning', False):
+        #    return self
         self.moving = True
         animate(self, time, partial(self.spin, time, spinning = True), angle = self.angle + 360)
 
