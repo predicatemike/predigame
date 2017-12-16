@@ -10,7 +10,7 @@ def pop(s):
 
 shapes = []
 
-for i in range(7):
+for i in range(10):
      s = shape(CIRCLE).bouncy()
      s.clicked(pop, 1)
      shapes.append(s)

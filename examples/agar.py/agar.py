@@ -5,11 +5,11 @@ TITLE = 'Agar.py'
 p1 = image('kenny').scale(1.5).speed(10).keys()
 
 def eat(p, f):
-    p.scale(1.05)
+    p.scale(1.25)
     sound('eat')
     f.destroy()
 
-    if p.size > 3:
+    if p.size > 10:
         text(time(), PURPLE)
         pause()
 

@@ -53,9 +53,15 @@ def rand_color():
     r = random.randrange(0, 255)
     g = random.randrange(0, 255)
     b = random.randrange(0, 255)
-    if (r, g, b) == globs.background_color:
+    if (r, g, b) == globs.BACKGROUND:
         r, g, b = rand_color()
     return r, g, b
+
+def rand_arc():
+    p1 = rand_pos(1,4)
+    p2 = rand_pos(1,4)
+    mid_x = (p1[0] + p2[0]) / 2
+    return (p1[0], (globs.HEIGHT/globs.GRID_SIZE)+1), (int(mid_x), 1), (p2[0], (globs.HEIGHT/globs.GRID_SIZE)+1)
 
 def roundup(num, step):
     return int(math.ceil(num / float(step))) * step
@@ -65,3 +71,13 @@ def randrange_float(start, stop, step):
 
 def sign(num):
     return (1, -1)[num < 0]
+
+def distance(p1, p2):
+    return math.sqrt(sum([(a - b) ** 2 for a, b in zip(p1, p2)]))
+
+def visible(p1):
+    if p1[0] >= 0 and p1[1] >= 0 and p1[0] < (globs.WIDTH/globs.GRID_SIZE) and p1[1] < (globs.HEIGHT/globs.GRID_SIZE):
+        return True
+    else:
+        return False
+

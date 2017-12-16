@@ -4,7 +4,7 @@ from .utils import register_keydown, register_keyup, animate, randrange_float, s
 from . import globs
 
 class Sprite:
-    def __init__(self, surface, rect, tag):
+    def __init__(self, surface, rect, tag=None):
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
@@ -12,12 +12,13 @@ class Sprite:
         self.rect = rect
         self.virt_rect = [float(self.rect.x), float(self.rect.y), float(self.rect.width), float(self.rect.height)]
         self.surface = pygame.transform.scale(self.origin_surface, rect.size)
+        self.needs_rotation = False
         self.move_speed = 5
         self.moving = False
         self.float_vec = (self.rect.x, self.rect.y)
         self.bounce_vec = (0, 0)
-        self.sprite_scale = self.size
-        self.rotate_angle = 90
+        self.sprite_scale = max(self.width, self.height)
+        self.rotate_angle = 0
         self.collisions = []
         self.clicks = []
         self._tag = tag
@@ -28,19 +29,21 @@ class Sprite:
 
     @property
     def x(self):
-        return self.virt_rect[0] / globs.GRID_SIZE
+        return int(self.virt_rect[0] / globs.GRID_SIZE)
 
     @x.setter
     def x(self, value):
-        self.virt_rect[0] = float(value) * globs.GRID_SIZE
+        self.needs_rotation = True
+        self.virt_rect[0] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def y(self):
-        return self.virt_rect[1] / globs.GRID_SIZE
+        return int(self.virt_rect[1] / globs.GRID_SIZE)
 
     @y.setter
     def y(self, value):
-        self.virt_rect[1] = float(value) * globs.GRID_SIZE
+        self.needs_rotation = True
+        self.virt_rect[1] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def pos(self):
@@ -48,8 +51,8 @@ class Sprite:
 
     @pos.setter
     def pos(self, value):
-        self.x = value[0]
-        self.y = value[1]
+        self.x = int(value[0])
+        self.y = int(value[1])
 
     @property
     def width(self):
@@ -61,27 +64,12 @@ class Sprite:
 
     @property
     def size(self):
-        return max(self.width, self.height)
+        return self.sprite_scale
 
     @size.setter
     def size(self, value):
-        new_width = 0
-        new_height = 0
-        if self.virt_rect[2] >= self.virt_rect[3]:
-            new_width = float(value) * globs.GRID_SIZE
-            new_height = self.virt_rect[3] * (new_width / self.virt_rect[2])
-        elif self.virt_rect[2] < self.virt_rect[3]:
-            new_height = float(value) * globs.GRID_SIZE
-            new_width = self.virt_rect[2] * (new_height / self.virt_rect[3])
-
-        center = self.virt_rect[0] + self.virt_rect[2] / 2, self.virt_rect[1] + self.virt_rect[3] / 2
-        self.virt_rect[2] = new_width
-        self.virt_rect[3] = new_height
-        self.virt_rect[0] = center[0] - self.virt_rect[2] / 2
-        self.virt_rect[1] = center[1] - self.virt_rect[3] / 2
-
+        self.needs_rotation = True
         self.sprite_scale = value
-        self.rotate(0)
 
     @property
     def angle(self):
@@ -89,16 +77,19 @@ class Sprite:
 
     @angle.setter
     def angle(self, value):
+        self.needs_rotation = True
         self.rotate_angle = value
-        self.rotate(0)
 
     @property
     def tag(self):
         return self._tag
 
     def _update(self, delta):
-        self.rect.topleft = self.virt_rect[0:2]
-        self.rect.size = self.virt_rect[2:]
+        if self.needs_rotation:
+            self.rotate(0)
+            self.needs_rotation = False
+        #self.rect.topleft = self.virt_rect[0:2]
+        #self.rect.size = self.virt_rect[2:]
         self._handle_collisions()
 
     def _draw(self, surface):
@@ -143,13 +134,16 @@ class Sprite:
 
         x_dist = self.x
         if self.bounce_vec[0] >= 1:
-            x_dist = globs.WIDTH / globs.GRID_SIZE - x_dist - self.width
+            x_dist = globs.WIDTH / globs.GRID_SIZE - x_dist
         y_dist = self.y
         if self.bounce_vec[1] >= 1:
-            y_dist = globs.HEIGHT / globs.GRID_SIZE - y_dist - self.height
+            y_dist = globs.HEIGHT / globs.GRID_SIZE - y_dist
 
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
+
+        #if distance < self.size:
+        #    distance = self.size
 
         animate(self, time, self._update_bounce, x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
@@ -189,8 +183,8 @@ class Sprite:
         return self
 
     def move_to(self, *points, **kwargs):
-        if self.moving:
-            return self
+        #if self.moving:
+        #    return self
         self.moving = True
 
         callback = partial(self._complete_move, kwargs.get('callback', None))
@@ -284,27 +278,31 @@ class Sprite:
         return self
 
     def rotate(self, angle):
+
         self.rotate_angle += angle
         if self.rotate_angle > 360:
             self.rotate_angle -= 360
 
         x, y, width, height = self.virt_rect[:]
-        center = x + width / 2, y + height / 2
+
+        #center = x + width / 2, y + height / 2
+        center = (x + width/2), (y + height/2)
+        #x = x - width/2
+        #y = x - height/2
 
         scale_width = self.sprite_scale * globs.GRID_SIZE
         scale_height = self.sprite_scale * globs.GRID_SIZE
-        if self.width >= self.height:
-            scale_height = scale_height * (self.height / self.width)
-        else:
-            scale_width = scale_width * (self.width / self.height)
 
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
-
+        self.rect = self.surface.get_rect(center=center)
+        #self.rect.center = center
         new_rect = self.surface.get_rect()
         self.virt_rect[2] = new_rect[2]
         self.virt_rect[3] = new_rect[3]
-        self.virt_rect[0], self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
+        #self.virt_rect[0] = center[0]
+        #self.virt_rect[1] = center[1]
+        #, self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
 
         return self
 
@@ -363,8 +361,8 @@ class Sprite:
         return self
 
     def spin(self, time = 1, **kwargs):
-        if self.moving and not kwargs.get('spinning', False):
-            return self
+        #if self.moving and not kwargs.get('spinning', False):
+        #    return self
         self.moving = True
         animate(self, time, partial(self.spin, time, spinning = True), angle = self.angle + 360)
 
