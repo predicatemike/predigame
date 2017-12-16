@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'predigame',
-    version = '0.7.3',
+    version = '0.7.0',
     description = 'A Python based game development platform',
     url = 'http://predicate.us',
     author = 'Predicate Academy',
