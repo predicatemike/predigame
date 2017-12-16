@@ -88,10 +88,13 @@ def spawn():
     # draw our sprite
     s = image(target, arc[0], 2)
 
+    # pick a random speed
+    speed = randint(2, 10)
+
     # if our target is a bomb
     if target == 'bomb':
         # register the 'explode' callback function
-        s.speed(5).clicked(explode)
+        s.speed(speed).spin(0.2).clicked(explode)
 
         # move to second and third points of arc
         # destroy if not hit
@@ -100,7 +103,7 @@ def spawn():
     else:
         # this is food
         # register the 'point' callback function
-        s.speed(5).clicked(point)
+        s.speed(speed).clicked(point)
 
         # move to second and third points of arc
         # destroy if not hit

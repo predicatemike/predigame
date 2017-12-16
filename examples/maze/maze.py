@@ -3,18 +3,16 @@ HEIGHT = 18
 TITLE = 'MAZE'
 
 def evaluate(action, sprite, pos):
-	#print('evaluate ' + str(pos))
 	obj = at(pos)
 	if obj:
-		if obj.name == 'destination':
+		if obj.tag == 'destination':
 			return True
 		else:
 			return False
 	else:
 		return True
 
-#p = shape(CIRCLE, BLUE, (1, 1)).keys(direction = 'down')
-p = image('zombie', (1, 1)).speed(7).flip().pulse().keys(precondition=evaluate)
+p = image('zombie', (1, 1)).speed(7).flip().keys(precondition=evaluate)
 
 def win(b, p):
     text('YOU WIN', BLUE)
@@ -26,8 +24,8 @@ for y in range(HEIGHT):
             continue
         if rand(1, 3) > 2.5:
             shape(RECT, RED, (x, y))
+    
 
-d = shape(RECT, GREEN, (28, 16)).collides(p, win)
-d.name = 'destination'
+d = shape(RECT, GREEN, (28, 16), tag='destination').collides(p, win)
 
 keydown('r', reset)

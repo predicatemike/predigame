@@ -134,10 +134,10 @@ class Sprite:
 
         x_dist = self.x
         if self.bounce_vec[0] >= 1:
-            x_dist = globs.WIDTH / globs.GRID_SIZE - x_dist - self.width
+            x_dist = globs.WIDTH / globs.GRID_SIZE - x_dist
         y_dist = self.y
         if self.bounce_vec[1] >= 1:
-            y_dist = globs.HEIGHT / globs.GRID_SIZE - y_dist - self.height
+            y_dist = globs.HEIGHT / globs.GRID_SIZE - y_dist
 
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
@@ -284,8 +284,9 @@ class Sprite:
             self.rotate_angle -= 360
 
         x, y, width, height = self.virt_rect[:]
+
         #center = x + width / 2, y + height / 2
-        center = x, y
+        center = (x + width/2), (y + height/2)
         #x = x - width/2
         #y = x - height/2
 
