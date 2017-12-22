@@ -61,8 +61,27 @@ def point(s):
     # add 5 points to score
     score(5)
 
+# callback function
+# this code will run if you click on the taco
+def taco(s):
+
+    # play sounds/swoosh.wav
+    sound('swoosh')
+
+    # delete the sprite (we don't need it anymore)
+    s.destroy()
+
+    # add 50 points to score
+    score(50)
+
 # the "main" part of our game
 def spawn():
+
+    # pick a random speed
+    speed = randint(2, 10)
+
+    # pick a random size
+    size = randint(1,4)
 
     # all of our food
     # this is a python list where choice
@@ -75,6 +94,12 @@ def spawn():
     if randint(1, 4) == 2:
         target = 'bomb'
 
+    # there is a 10% chance to draw a taco
+    # override size
+    if randint(1, 10) == 5:
+        target = 'taco'
+        size = 3
+
     # a virual "arc" -- three positions where
     # the object will move
     # 1. bottom/off screen
@@ -86,10 +111,7 @@ def spawn():
     sound('launch')
 
     # draw our sprite
-    s = image(target, arc[0], 2)
-
-    # pick a random speed
-    speed = randint(2, 10)
+    s = image(target, arc[0], size)
 
     # if our target is a bomb
     if target == 'bomb':
@@ -99,6 +121,16 @@ def spawn():
         # move to second and third points of arc
         # destroy if not hit
         s.move_to(arc[1], arc[2], callback = s.destroy)
+
+    # if our target is a taco
+    elif target == 'taco':
+
+        # register the 'taco' callback function
+        s.speed(5).spin().clicked(taco)
+
+        # move to second and third points of arc
+        # destroy if not hit
+        s.move_to((-10, -2), (-5, HEIGHT/2), (WIDTH+1, HEIGHT/2), callback = s.destroy)
 
     else:
         # this is food
