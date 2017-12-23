@@ -89,8 +89,6 @@ class Sprite:
         if self.needs_rotation:
             self.rotate(0)
             self.needs_rotation = False
-        #self.rect.topleft = self.virt_rect[0:2]
-        #self.rect.size = self.virt_rect[2:]
         self._handle_collisions()
 
     def _draw(self, surface):
@@ -142,9 +140,6 @@ class Sprite:
 
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
-
-        #if distance < self.size:
-        #    distance = self.size
 
         animate(self, time, self._update_bounce, x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
@@ -285,25 +280,18 @@ class Sprite:
             self.rotate_angle -= 360
 
         x, y, width, height = self.virt_rect[:]
-
-        #center = x + width / 2, y + height / 2
         center = (x + width/2), (y + height/2)
-        #x = x - width/2
-        #y = x - height/2
 
         scale_width = self.sprite_scale * globs.GRID_SIZE
         scale_height = self.sprite_scale * globs.GRID_SIZE
 
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
+
         self.rect = self.surface.get_rect(center=center)
-        #self.rect.center = center
         new_rect = self.surface.get_rect()
         self.virt_rect[2] = new_rect[2]
         self.virt_rect[3] = new_rect[3]
-        #self.virt_rect[0] = center[0]
-        #self.virt_rect[1] = center[1]
-        #, self.virt_rect[1] = center[0] - self.virt_rect[2] / 2, center[1] - self.virt_rect[3] / 2
 
         return self
 
