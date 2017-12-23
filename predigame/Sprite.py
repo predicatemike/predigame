@@ -4,7 +4,7 @@ from .utils import register_keydown, register_keyup, animate, randrange_float, s
 from . import globs
 
 class Sprite:
-    def __init__(self, surface, rect, tag=None):
+    def __init__(self, surface, rect, tag=None, name=None):
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
@@ -21,6 +21,7 @@ class Sprite:
         self.rotate_angle = 0
         self.collisions = []
         self.clicks = []
+        self.name = name
         self._tag = tag
         if tag not in globs.tags.keys():
             globs.tags[tag] = [self]

@@ -1,35 +1,27 @@
 # predigame example: the click ninja
 # objective of the game is to survive the longest
-# +5 points is given for each non-bomb successfully swiped
-# -20 points is deducted if you miss
 
-
-# create a game board 20x14 blocks
+# create a game board 20x14 blocks with a title
 WIDTH = 20
 HEIGHT = 14
-
-# the title of this window
 TITLE = 'Click Ninja'
 
-# load 'background/board.jpg' as the 
-# wallpaper background image
+# load 'background/board.jpg' as the wallpaper
 BACKGROUND = 'board'
 
-# callback function
-# this code will run if a bomb is clicked
+# this callback code will run if a bomb is clicked
 def explode(s):
 
     # play sounds/scream.wav (it's scary)
     sound('scream')
 
     # print text on the center of the screen
-    text('You Survived %s seconds' % time(), MAROON)
+    text('You Survived %s' % time(), MAROON)
 
     # pause the game
     pause()
 
-# callback function
-# this code will run if you miss something
+# this callbak code will run if you miss something
 def hurt(s):
 
     # delete the sprite (we don't need it anymore)
@@ -44,15 +36,13 @@ def hurt(s):
         text('You Survived %s' % time(), MAROON)
         pause()
 
-# callback function
-# this code will run if you click on an object
+# this callback code will run if you click on an object
 def point(s):
 
     # play sounds/swoosh.wav
     sound('swoosh')
 
-    # draw a splatting image at the position of
-    # the sprite
+    # draw a splatting image at the position of the strike
     image('redsplat', s.pos, 2)
 
     # delete the sprite (we don't need it anymore)
@@ -61,8 +51,7 @@ def point(s):
     # add 5 points to score
     score(5)
 
-# callback function
-# this code will run if you click on the taco
+# this callback code will run if you click on the taco
 def taco(s):
 
     # play sounds/swoosh.wav
@@ -83,8 +72,6 @@ def spawn():
     # pick a random size
     size = randint(1,4)
 
-    # all of our food
-    # this is a python list where choice
     # picks one item at random
     target = choice(['bananas', 'cherries', 
                      'olives', 'ham', 'hotdog', 
@@ -118,8 +105,7 @@ def spawn():
         # register the 'explode' callback function
         s.speed(speed).spin(0.2).clicked(explode)
 
-        # move to second and third points of arc
-        # destroy if not hit
+        # move to second and third points of arc, destroy at end
         s.move_to(arc[1], arc[2], callback = s.destroy)
 
     # if our target is a taco
@@ -128,17 +114,14 @@ def spawn():
         # register the 'taco' callback function
         s.speed(5).spin().clicked(taco)
 
-        # move to second and third points of arc
-        # destroy if not hit
+        # move to second and third points of arc, destroy at end
         s.move_to((-10, -2), (-5, HEIGHT/2), (WIDTH+1, HEIGHT/2), callback = s.destroy)
 
     else:
-        # this is food
         # register the 'point' callback function
         s.speed(speed).clicked(point)
 
-        # move to second and third points of arc
-        # destroy if not hit
+        # move to second and third points of arc, call hurt if not hit
         s.move_to(arc[1], arc[2], callback = lambda: hurt(s))
 
     #tell this code to run again -- sometime between 100ms to 3secs

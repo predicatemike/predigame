@@ -53,7 +53,7 @@ def _create_image(name, pos, size, tag):
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
 
-    return Sprite(img, rect, tag)
+    return Sprite(img, rect, tag, name=name)
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
