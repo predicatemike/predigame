@@ -10,10 +10,10 @@ def destroy(s):
     else:
        score(5)
     
-    # draw a splatting image at the position of the strike
-    image('redsplat', s.pos, 1)
+    # draw a splatting image at the center position of the image
+    image('redsplat', s.center, 2)
 
-    s.destroy()
+    s.fade(0.75)
 
 def failure(s):
     score(-20)

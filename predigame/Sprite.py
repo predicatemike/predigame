@@ -21,6 +21,7 @@ class Sprite:
         self.rotate_angle = 0
         self.collisions = []
         self.clicks = []
+        self.alpha = 255
         self.name = name
         self._tag = tag
         if tag not in globs.tags.keys():
@@ -85,6 +86,11 @@ class Sprite:
     def tag(self):
         return self._tag
 
+    @property
+    def center(self):
+        x, y, width, height = self.virt_rect[:]
+        return (x + width/2.0)/ globs.GRID_SIZE, (y + height/2.0)/ globs.GRID_SIZE
+
     def _update(self, delta):
         if self.needs_rotation:
             self.rotate(0)
@@ -92,7 +98,15 @@ class Sprite:
         self._handle_collisions()
 
     def _draw(self, surface):
-        surface.blit(self.surface, self.rect)
+        if self.alpha != 255:
+            #http://www.nerdparadise.com/programming/pygameblitopacity
+            temp = pygame.Surface((self.surface.get_width(), self.surface.get_height())).convert()
+            temp.blit(surface, (-self.rect[0], -self.rect[1]))
+            temp.blit(self.surface, (0, 0))
+            temp.set_alpha(self.alpha)        
+            surface.blit(temp, self.rect)            
+        else:
+            surface.blit(self.surface, self.rect)
 
     def _handle_collisions(self):
         for collision in self.collisions:
@@ -163,6 +177,10 @@ class Sprite:
         self.moving = False
         if callback:
             callback()
+
+    def fade(self, time=1, **kwargs):
+        callback = kwargs.get('callback', None)
+        animate(self, time, partial(self.destroy), alpha = 0)
 
     def move(self, vector, **kwargs):
         self.moving = True
