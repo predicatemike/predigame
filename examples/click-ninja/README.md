@@ -58,7 +58,7 @@ def spawn():
         s.move_to(arc[1], arc[2], callback = s.destroy)
 
     else:
-        # register the 'onclick' callback function
+        # register the 'point' callback function
         s.speed(5).clicked(point)
 
         # move to second and third points of arc
