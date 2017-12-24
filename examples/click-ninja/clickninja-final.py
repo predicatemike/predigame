@@ -9,7 +9,7 @@ def destroy(s):
        score(50)
     else:
        score(5)
-    
+
     # draw a splatting image at the center position of the image
     image('redsplat', s.center, 2).fade(30.0)
 

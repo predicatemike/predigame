@@ -23,6 +23,7 @@ class Sprite:
         self.clicks = []
         self.alpha = 255
         self._pixelated = 0
+        self.event_pos = None
         self.name = name
         self._tag = tag
         if tag not in globs.tags.keys():
@@ -63,8 +64,8 @@ class Sprite:
 
     @pos.setter
     def pos(self, value):
-        self.x = int(value[0])
-        self.y = int(value[1])
+        self.x = value[0]
+        self.y = value[1]
 
     @property
     def width(self):
@@ -167,9 +168,10 @@ class Sprite:
 
         animate(self, time, self._update_bounce, x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
-    def _handle_click(self, button):
+    def _handle_click(self, button, pos):
         for click in self.clicks:
             if button == click['btn']:
+                self.event_pos = (1.0*pos[0])/globs.GRID_SIZE, (1.0*pos[1])/globs.GRID_SIZE
                 click['cb'](self)
 
     def _calc_time(self, vector, position = None):

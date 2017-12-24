@@ -41,8 +41,6 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
 def _create_image(name, pos, size, tag):
     img = images[name]
     rect = img.get_rect()
-    rect.topleft = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
-
     new_width = 0
     new_height = 0
     if rect.width >= rect.height:
@@ -52,6 +50,7 @@ def _create_image(name, pos, size, tag):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
+    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
 
     return Sprite(img, rect, tag, name=name)
 
@@ -384,7 +383,7 @@ def main_loop():
         if event.type == MOUSEBUTTONDOWN:
             for sprite in globs.sprites:
                 if sprite.rect.collidepoint(event.pos):
-                    sprite._handle_click(event.button)
+                    sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
             global update_game
