@@ -22,12 +22,22 @@ class Sprite:
         self.collisions = []
         self.clicks = []
         self.alpha = 255
+        self._pixelated = 0
         self.name = name
         self._tag = tag
         if tag not in globs.tags.keys():
             globs.tags[tag] = [self]
         else:
             globs.tags[tag].append(self)
+
+    @property
+    def pixelated(self):
+        return self._pixelated
+
+    @pixelated.setter
+    def pixelated(self, value):
+        self._pixelated = value
+        self.pixelate(math.ceil(value))
 
     @property
     def x(self):
@@ -179,8 +189,8 @@ class Sprite:
             callback()
 
     def fade(self, time=1, **kwargs):
-        callback = kwargs.get('callback', None)
-        animate(self, time, partial(self.destroy), alpha = 0)
+        #callback = kwargs.get('callback', None)
+        animate(self, time, partial(self.destroy), pixelated = 100, alpha = 0)
 
     def move(self, vector, **kwargs):
         self.moving = True

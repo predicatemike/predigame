@@ -11,7 +11,7 @@ def destroy(s):
        score(5)
     
     # draw a splatting image at the center position of the image
-    image('redsplat', s.center, 2)
+    image('redsplat', s.center, 2).fade(30.0)
 
     s.fade(0.75)
 
@@ -50,8 +50,8 @@ def spawn():
        s.speed(speed).clicked(destroy)    
        s.move_to(arc[1], arc[2], callback = lambda: failure(s))
 
-    callback(spawn, 1)
+    callback(spawn, rand(0.1, 3))
 
 score(color = PURPLE)
-callback(spawn, rand(0.1, 3))
+callback(spawn, 1)
 keydown('r', reset)  

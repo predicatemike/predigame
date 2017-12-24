@@ -7,3 +7,6 @@ def on_click(s):
 
 p1 = image('kenny', (10,5), 10).bouncy()
 p1.clicked(on_click)
+
+p2 = shape(CIRCLE, 2).bouncy()
+p2.clicked(on_click)
