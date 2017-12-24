@@ -11,12 +11,16 @@ def destroy(s):
        score(5)
 
     # draw a splatting image at the center position of the image
-    image('redsplat', s.center, 2).fade(30.0)
+    image('redsplat', s.event_pos, 2).fade(30.0)
 
     s.fade(0.75)
 
 def failure(s):
     score(-20)
+    if s.name == 'bomb':
+        s.destroy()
+        image('explode', s.center, 10).pulse(0.05)
+
     if s.name == 'bomb' or score() < 0:
         sound('scream')
         text('You Survived %s seconds' % time(), MAROON)
@@ -41,7 +45,7 @@ def spawn():
 
     s = image(target, arc[0], size)
     if target == 'bomb':
-       s.speed(speed).spin(0.1).clicked(failure)
+       s.speed(speed).spin(1).clicked(failure)
        s.move_to(arc[1], arc[2], callback = s.destroy)
     elif target == 'taco':
        s.speed(5).spin().clicked(destroy)

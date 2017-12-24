@@ -515,6 +515,19 @@ def failure(s):
         text('You Survived %s seconds' % time(), MAROON)
         pause()
 ```
+## Effects
+While it's cool to click away on our food. We can also introduce a fading effect that makes it slowly dissolve on contact. To do this, simply change the last line in the `destroy` function.
+```python
+def destroy(s):
+    sound('swoosh')
+    if s.name == 'taco':
+       score(50)
+    else:
+       score(5)
+    # s.destroy()
+    # have the sprite fade out in 750 ms
+    s.fade(0.75)
+```
 
 ## Red Splat on Contact
 Another fun thing is to leave a splat mark behind for each food item the player strikes. To do this, it's a simple extension to the `destroy` callback function.
@@ -528,7 +541,8 @@ def destroy(s):
        score(5)
     
     # draw a splatting image at the position of the strike
-    image('redsplat', s.pos, 2)
+    # make it fade away after 30 seconds
+    image('redsplat', s.event_pos, 2).fade(30.0)
 
     s.destroy()
 ```
