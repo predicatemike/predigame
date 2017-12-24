@@ -547,3 +547,20 @@ def destroy(s):
     s.destroy()
 ```
 Here the `s` variable (which is short for sprite) has a position. So we want to draw the red splat image at the location of the strike.
+
+## Exploding Bombs
+Accidents happen! If the player accidentally clicks on a bomb, we should have them explode. It's a simple modification to the `failure` function.
+```python
+def failure(s):
+    score(-20)
+    # make the bomb explode
+    if s.name == 'bomb':
+        s.destroy()
+        image('explode', s.center, 10).pulse(0.05)
+
+    if s.name == 'bomb' or score() < 0:
+        sound('scream')
+        text('You Survived %s seconds' % time(), MAROON)
+        pause()
+```
+The key to the explosion is the `.pulse(0.05)` function call. The game will quickly pause, but the pulse is fast enough to provide an explosion effect.
