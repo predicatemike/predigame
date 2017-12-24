@@ -1,3 +1,4 @@
+
 def pop(s):
     s.scale(1.1)
     if s.width > 3:
@@ -10,7 +11,7 @@ def pop(s):
 
 shapes = []
 
-for i in range(10):
+for i in range(5):
      s = shape(CIRCLE).bouncy()
      s.clicked(pop, 1)
      shapes.append(s)

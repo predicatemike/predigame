@@ -150,22 +150,20 @@ class Sprite:
             self.bounce(True, False)
         elif self.virt_rect[0] <= 0 and self.bounce_vec[0] < 0:
             self.bounce(True, False)
-
-        if self.virt_rect[1] + self.virt_rect[3] >= globs.HEIGHT and self.bounce_vec[1] > 0:
+        elif self.virt_rect[1] + self.virt_rect[3] >= globs.HEIGHT and self.bounce_vec[1] > 0:
             self.bounce(False, True)
         elif self.virt_rect[1] <= 0 and self.bounce_vec[1] < 0:
             self.bounce(False, True)
 
         x_dist = self.x
         if self.bounce_vec[0] >= 1:
-            x_dist = globs.WIDTH / globs.GRID_SIZE - x_dist
+            x_dist = (globs.WIDTH - (self.virt_rect[0] + self.virt_rect[2])) / (globs.GRID_SIZE * 1.0)
         y_dist = self.y
         if self.bounce_vec[1] >= 1:
-            y_dist = globs.HEIGHT / globs.GRID_SIZE - y_dist
+            y_dist = (globs.HEIGHT - (self.virt_rect[1] + self.virt_rect[3])) / (globs.GRID_SIZE * 1.0)
 
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
-
         animate(self, time, self._update_bounce, x = self.x + distance * self.bounce_vec[0], y = self.y + distance * self.bounce_vec[1])
 
     def _handle_click(self, button, pos):
@@ -352,13 +350,6 @@ class Sprite:
         if bounce_y:
             y_dir = -y_dir
         self.bounce_vec = x_dir, y_dir
-
-        for animation in globs.animations:
-            if animation.obj == self and animation.callback == self._update_bounce:
-                globs.animations.remove(animation)
-                break
-
-        self._update_bounce()
 
         return self
 
