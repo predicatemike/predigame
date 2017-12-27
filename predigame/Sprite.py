@@ -17,7 +17,8 @@ class Sprite:
         self.moving = False
         self.float_vec = (self.rect.x, self.rect.y)
         self.bounce_vec = (0, 0)
-        self.sprite_scale = max(self.width, self.height)
+        self.sprite_scale_x = self.width
+        self.sprite_scale_y = self.height
         self.rotate_angle = 0
         self.collisions = []
         self.clicks = []
@@ -77,12 +78,15 @@ class Sprite:
 
     @property
     def size(self):
-        return self.sprite_scale
+        print('Sprite.size() get needs fixing')
+        return self.sprite_scale_x
 
     @size.setter
     def size(self, value):
+        print('Sprite.size() set needs fixing')        
         self.needs_rotation = True
-        self.sprite_scale = value
+        self.sprite_scale_x = value
+        self.sprite_scale_y = value
 
     @property
     def angle(self):
@@ -192,7 +196,12 @@ class Sprite:
         #callback = kwargs.get('callback', None)
         animate(self, time, partial(self.destroy), pixelated = 100, alpha = 0)
 
+    def stop(self):
+        if self in globs.animations:
+            globs.animations.remove(self)
+
     def move(self, vector, **kwargs):
+        self.stop()
         self.moving = True
         callback = kwargs.get('callback', None)
         precondition = kwargs.get('precondition', None)
@@ -230,12 +239,12 @@ class Sprite:
         callback()
 
     def _continue_key(self, key, distance, **kwargs):
-        precondition = kwargs.get('precondition', None)
+        p = kwargs.get('precondition', None)
         if key in globs.keys_pressed:
-            self.move(distance, callback = partial(self._continue_key, key, distance, precondition = precondition), precondition = precondition)
+            self.move(distance, callback = partial(self._continue_key, key, distance, precondition = p), precondition = p)
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
-        precondition = kwargs.get('precondition', None)
+        p = kwargs.get('precondition', None)
         distance = kwargs.get('spaces', 1)
 
         register_key = None
@@ -245,13 +254,13 @@ class Sprite:
             register_key = register_keyup
 
         if right:
-            register_key(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0), precondition = precondition), precondition = precondition))
+            register_key(right, partial(self.move, (1 * distance, 0), callback = partial(self._continue_key, right, (1 * distance, 0), precondition = p), precondition = p))
         if left:
-            register_key(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0), precondition = precondition), precondition = precondition))
+            register_key(left, partial(self.move, (-1 * distance, 0), callback = partial(self._continue_key, left, (-1 * distance, 0), precondition = p), precondition = p))
         if up:
-            register_key(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance), precondition = precondition), precondition = precondition))
+            register_key(up, partial(self.move, (0, -1 * distance), callback = partial(self._continue_key, up, (0, -1 * distance), precondition = p), precondition = p))
         if down:
-            register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance), precondition = precondition), precondition = precondition))
+            register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance), precondition = p), precondition = p))
 
         return self
 
@@ -310,9 +319,8 @@ class Sprite:
         x, y, width, height = self.virt_rect[:]
         center = (x + width/2), (y + height/2)
 
-        scale_width = self.sprite_scale * globs.GRID_SIZE
-        scale_height = self.sprite_scale * globs.GRID_SIZE
-
+        scale_width = self.sprite_scale_x * globs.GRID_SIZE
+        scale_height = self.sprite_scale_y * globs.GRID_SIZE
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
 
@@ -337,7 +345,8 @@ class Sprite:
 
         self.virt_rect[2] = width
         self.virt_rect[3] = height
-        self.sprite_scale = self.sprite_scale * size
+        self.sprite_scale_x = self.sprite_scale_x * size
+        self.sprite_scale_y = self.sprite_scale_y * size
 
         self.surface = pygame.transform.smoothscale(self.origin_surface, (int(self.virt_rect[2]), int(self.virt_rect[3]))).convert_alpha()
 

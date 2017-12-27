@@ -3,6 +3,7 @@ from time import sleep
 WIDTH = 30
 HEIGHT = 18
 TITLE = 'ZOMBIE'
+BACKGROUND = 'grass'
 
 
 def end(b, p):

@@ -32,8 +32,9 @@ def main():
         TITLE = getattr(dummy_mod, 'TITLE', 'PrediGame')
         SIZE = getattr(dummy_mod, 'SIZE', 50)
         BACKGROUND = getattr(dummy_mod, 'BACKGROUND', (220, 220, 220))
+        FULLSCREEN = getattr(dummy_mod, 'FULLSCREEN', False)
 
-    predigame.init(path, WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE, background = BACKGROUND)
+    predigame.init(path, WIDTH * SIZE, HEIGHT * SIZE, TITLE, grid = SIZE, background = BACKGROUND, fullscreen = FULLSCREEN)
 
     exec(code, mod.__dict__)
 
