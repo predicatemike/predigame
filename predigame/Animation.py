@@ -1,7 +1,7 @@
 from . import globs
 import math
 class Animation:
-    def __init__(self, obj, duration, callback, **kwargs):
+    def __init__(self, obj, duration, callback, abortable=False, **kwargs):
         self.obj = obj
         self.start = {}
         self.attributes = kwargs
@@ -16,6 +16,7 @@ class Animation:
 
         self.callback = callback
         self.finished = False
+        self.abortable = abortable
 
     def update(self, delta):
         self.time += delta / 1000
@@ -30,10 +31,11 @@ class Animation:
             setattr(self.obj, attribute, n * step + self.start[attribute])
 
     def abort(self):
-        self.finished = True
-        if self.progress() > 50:
-            for attribute in self.attributes:
-                setattr(self.obj, attribute, self.attributes[attribute])
+        if self.abortable:
+            self.finished = True
+            if self.progress() > 50:
+                for attribute in self.attributes:
+                    setattr(self.obj, attribute, self.attributes[attribute])
 
     def progress(self):
         min_progress = 100.0

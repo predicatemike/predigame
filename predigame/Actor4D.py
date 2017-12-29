@@ -1,34 +1,19 @@
 import sys, random, math, pygame
 from time import time
 from .Sprite import Sprite
+from .Actor import Actor
 from .constants import *
 from . import globs
 
 
 # actor class for four directional movement
-class Actor4D(Sprite):
-	def __init__(self, actions, rect, tag=None, name=None):
-
-		# - scale images
-		self.actions = {}
-		for action in actions:
-			self.actions[action] = []
-			for img in actions[action]:
-				img = img.convert_alpha()
-				img = pygame.transform.scale(img, rect.size)
-				self.actions[action].append(img)
-
+class Actor4D(Actor):
+	def __init__(self, actions, rect, tag=None, abortable=False, name=None):
 		self.frame_count = 0
 		self.frame_rate = 1
-		self.index = 0
-		self.action_iterations = 0
-		self.action = IDLE
-		self.action_loop = FOREVER
 		self.prev_vector = None
 		self.direction = LEFT
-
-		surface = actions[self.action][self.index]
-		Sprite.__init__(self, surface, rect, tag, name)
+		Actor.__init__(self, actions, rect, tag, abortable, name)
 
 	def move(self, vector, **kwargs):
 
@@ -72,10 +57,16 @@ class Actor4D(Sprite):
 			self.action = IDLE + '_' + self.direction
 			self.action_loop = FOREVER		
 
-	def _draw(self, surface):
-		Sprite._draw(self, surface)
+	def act(self, action, loop=FOREVER):
+		if action in self.actions:
+			Actor.act(self, action, loop)
+		else:
+			# infer the action based on direction
+			if str(action + '_' + self.direction) in self.actions:
+				Actor.act(self, str(action + '_' + self.direction), loop)
+			else:
+				Actor.act(self, action, loop)
 
-	# number
 	def rate(self, frame_rate):
 		""" the rate to swap animation frames, default is 1 per update call """
 		if frame_rate < 0:
@@ -85,14 +76,25 @@ class Actor4D(Sprite):
 		self.frame_rate = frame_rate
 		return self
 
-	def act(self, action, loop=FOREVER):
-		if not action in self.actions:
-			print('Unsupported action ' + str(action) + '. Valid options are:')
-			for action in self.actions:
-				print(action.upper())
-			sys.exit(0)
-		self.index = 0
-		self.action = action
-		self.action_loop = loop
-		self.action_iterations = 0
+	def facing(self):
+		""" returns a position (off the screen) where this actor is facing """
+		if self.direction == BACK:
+			return self.x, -1
+		elif self.direction == FRONT:
+			return self.x, int(globs.HEIGHT/globs.GRID_SIZE)+1
+		elif self.direction == LEFT:
+			return -1, self.y
+		elif self.direction == RIGHT:
+			return int(globs.WIDTH/globs.GRID_SIZE)+1, self.y
+
+	def next(self):
+		""" the next position (in the current direction) """
+		if self.direction == BACK:
+			return self.x, self.y - 1
+		elif self.direction == FRONT:
+			return self.x, self.y + 1
+		elif self.direction == LEFT:
+			return self.x - 1, self.y
+		elif self.direction == RIGHT:
+			return self.x + 1, self.y
 

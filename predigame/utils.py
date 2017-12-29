@@ -26,8 +26,8 @@ def register_keyup(key, callback):
     else:
         globs.keys_registered['keyup'][key] = set([callback])
 
-def animate(obj, duration = 1, callback = None, **kwargs):
-    globs.animations.append(Animation(obj, duration, callback, **kwargs))
+def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
+    globs.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
 
 def rand_pos(x_padding = 0, y_padding = 0):
     grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)

@@ -29,10 +29,12 @@ JUMP = 'jump'
 RUN = 'run'
 WALK = 'walk'
 HURT = 'hurt'
+DIE = 'die'
 ATTACK = 'attack'
 ATTACK1 = 'attack1'
 ATTACK2 = 'attack2'
 ATTACK3 = 'attack3'
+SHOOT = 'shoot'
 
 # Actor4D actions
 ATTACK_BACK = 'attack_back'
@@ -81,7 +83,6 @@ RIGHT = 'right'
 BACK = 'back'
 FRONT = 'front'
 POSE = 'pose'
-DIE = 'doe'
 
 # other contants
 FOREVER = -1

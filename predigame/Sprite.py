@@ -4,7 +4,7 @@ from .utils import register_keydown, register_keyup, animate, randrange_float, s
 from . import globs
 
 class Sprite:
-    def __init__(self, surface, rect, tag=None, name=None):
+    def __init__(self, surface, rect, tag=None, abortable=False, name=None):
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
@@ -27,6 +27,7 @@ class Sprite:
         self.event_pos = None
         self.name = name
         self._tag = tag
+        self.abortable = abortable
         if tag not in globs.tags.keys():
             globs.tags[tag] = [self]
         else:
@@ -205,9 +206,9 @@ class Sprite:
         y_dest = int(self.y + vector[1])
         time = self._calc_time(vector)
         if precondition == None or precondition('move', self, (x_dest, y_dest)):
-            animate(self, time, partial(self._complete_move, callback), x = x_dest, y = y_dest)
+            animate(self, time, partial(self._complete_move, callback), abortable=self.abortable, x = x_dest, y = y_dest)
         else:
-            animate(self, time, partial(self._complete_move, callback), x = self.x, y = self.y)
+            animate(self, time, partial(self._complete_move, callback), abortable=self.abortable, x = self.x, y = self.y)
         return self
 
     def move_to(self, *points, **kwargs):
@@ -229,7 +230,7 @@ class Sprite:
 
         for point in reversed(points):
             time = times.pop(-1)
-            callback = partial(animate, self, time, callback, x = point[0], y = point[1])
+            callback = partial(animate, self, time, callback, abortable=self.abortable, x = point[0], y = point[1])
 
         callback()
 

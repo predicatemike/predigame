@@ -60,7 +60,7 @@ def _create_image(name, pos, size, tag):
 
     return Sprite(img, rect, tag, name=name)
 
-def _create_actor(actions, name, pos, size, directions, tag):
+def _create_actor(actions, name, pos, size, directions, abortable, tag):
     img = actions['idle'][0]
     rect = img.get_rect()
     new_width = 0
@@ -75,9 +75,9 @@ def _create_actor(actions, name, pos, size, directions, tag):
     rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
 
     if directions == 4:
-        return Actor4D(actions, rect, tag, name=name)
+        return Actor4D(actions, rect, tag, abortable, name=name)
     else:
-        return Actor(actions, rect, tag, name=name)
+        return Actor(actions, rect, tag, abortable, name=name)
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
@@ -144,10 +144,9 @@ def image(name = None, pos = None, size = 1, tag = ''):
     globs.sprites.append(img)
     return globs.sprites[-1]
 
-def actor(name = None, pos = None, size = 1, directions = 2, tag = ''):
+def actor(name = None, pos = None, size = 1, directions = 2, abortable = False, tag = ''):
     if not name:
         sys.exit('Actor name is missing!')
-
     loaded = False
     states = {}
     path = 'actors/' + name
@@ -171,7 +170,7 @@ def actor(name = None, pos = None, size = 1, directions = 2, tag = ''):
     if not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_actor(states, name, pos, size, directions, tag)
+    img = _create_actor(states, name, pos, size, directions, abortable, tag)
     globs.sprites.append(img)
     return globs.sprites[-1]    
 

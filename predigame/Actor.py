@@ -5,7 +5,7 @@ from .constants import *
 from . import globs
 
 class Actor(Sprite):
-	def __init__(self, actions, rect, tag=None, name=None):
+	def __init__(self, actions, rect, tag=None, abortable = False, name=None):
 
 		# - scale images
 		self.actions = {}
@@ -23,7 +23,7 @@ class Actor(Sprite):
 		self.flip_x = False
 		self.flip_y = False
 		surface = actions[self.action][self.index]
-		Sprite.__init__(self, surface, rect, tag, name)
+		Sprite.__init__(self, surface, rect, tag, abortable, name)
 
 	def flip(self, flip_x = True, flip_y = False):
 
@@ -36,8 +36,6 @@ class Actor(Sprite):
 		for img in self.actions[IDLE]:
 			actions.append(pygame.transform.flip(img, flip_x, flip_y))
 		self.actions[IDLE] = actions
-
-
 		return self
 
 	def move(self, vector, **kwargs):
@@ -70,8 +68,6 @@ class Actor(Sprite):
 			self.action = IDLE
 			self.action_loop = FOREVER		
 
-	def _draw(self, surface):
-		Sprite._draw(self, surface)
 
 	def act(self, action, loop=FOREVER):
 		if not action in self.actions:
