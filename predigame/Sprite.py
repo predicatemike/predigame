@@ -12,6 +12,7 @@ class Sprite:
         self.rect = rect
         self.virt_rect = [float(self.rect.x), float(self.rect.y), float(self.rect.width), float(self.rect.height)]
         self.surface = pygame.transform.scale(self.origin_surface, rect.size)
+        self.surface_temp = None #used for fadeout
         self.needs_rotation = False
         self.move_speed = 5
         self.moving = False
@@ -112,15 +113,17 @@ class Sprite:
             self.rotate(0)
             self.needs_rotation = False
         self._handle_collisions()
-
-    def _draw(self, surface):
         if self.alpha != 255:
             #http://www.nerdparadise.com/programming/pygameblitopacity
             temp = pygame.Surface((self.surface.get_width(), self.surface.get_height())).convert()
             temp.blit(surface, (-self.rect[0], -self.rect[1]))
             temp.blit(self.surface, (0, 0))
             temp.set_alpha(self.alpha)        
-            surface.blit(temp, self.rect)            
+            self.surface_temp = temp
+
+    def _draw(self, surface):
+        if self.alpha != 255:
+            surface.blit(self.surface_temp, self.rect)            
         else:
             surface.blit(self.surface, self.rect)
 

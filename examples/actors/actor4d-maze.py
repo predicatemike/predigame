@@ -51,9 +51,9 @@ def wander(sprite) :
 		vector = (best[0] - x, best[1] - y)
 		sprite.move(vector)
 
-actor('Zombie-1', rand_pos(), tag = 'zombie1', directions=4).wander(wander, time=0.5)
-actor('Zombie-2', rand_pos(), tag = 'zombie2', directions=4).wander(wander, time=0.5)
-actor('Zombie-3', rand_pos(), tag = 'zombie3', directions=4).wander(wander, time=0.5)
+actor('Zombie-1', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
+actor('Zombie-2', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
+actor('Zombie-3', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
 
 def win(b, p):
     text('YOU WIN', BLUE)
@@ -64,19 +64,31 @@ for y in range(HEIGHT):
         if (x, y) == (1, 1) or (x, y) == (28, 16):
             continue
         if rand(1, 3) > 2.5:
-            image('stone', (x, y)).move_to((x,y))
+            image('stone', (x, y), tag = 'wall').move_to((x,y))
 
     
 # destination block
 d = shape(RECT, GREEN, (28, 16), tag='destination').collides(p, win)
+
+def destroy(bullet, wall):
+	bullet.destroy()
+	wall.destroy()
 
 def shoot(p):
 	p.act(SHOOT, loop=1)
 	# add a little buffer to the position to center the bullet
 	x, y = p.pos
 	fx, fy = p.facing()
-	bullet = shape(CIRCLE, BLACK, (x+0.5, y+0.5), 0.25).speed(20)
+	bullet = shape(CIRCLE, BLACK, (x+0.5, y+0.5), 0.25).speed(9)
+	for wall in get('wall'):
+		bullet.collides(wall, callback = lambda bullet, wall: destroy(bullet, wall)) 
+	for zombie in get('zombie'): 
+		bullet.collides(zombie, callback = lambda bullet, zombie: destroy(bullet, zombie)) 
+
+
+
 	bullet.move_to((fx+0.5, fy+0.5))
+
 
 keydown('space', lambda: shoot(p))
 keydown('r', reset)
