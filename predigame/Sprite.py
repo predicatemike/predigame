@@ -116,14 +116,15 @@ class Sprite:
         if self.alpha != 255:
             #http://www.nerdparadise.com/programming/pygameblitopacity
             temp = pygame.Surface((self.surface.get_width(), self.surface.get_height())).convert()
-            temp.blit(surface, (-self.rect[0], -self.rect[1]))
-            temp.blit(self.surface, (0, 0))
-            temp.set_alpha(self.alpha)        
-            self.surface_temp = temp
+            self.surface_temp = temp        
+
 
     def _draw(self, surface):
-        if self.alpha != 255:
-            surface.blit(self.surface_temp, self.rect)            
+        if self.alpha != 255 and self.surface_temp is not None:
+            self.surface_temp.blit(surface, (-self.rect[0], -self.rect[1]))
+            self.surface_temp.blit(self.surface, (0, 0))
+            self.surface_temp.set_alpha(self.alpha)            
+            surface.blit(self.surface_temp, self.rect)
         else:
             surface.blit(self.surface, self.rect)
 
