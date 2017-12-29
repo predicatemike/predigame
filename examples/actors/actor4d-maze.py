@@ -13,7 +13,7 @@ def evaluate(action, sprite, pos):
 	else:
 		return True
 
-p = actor('Zombie-2', (1, 1), directions=4).speed(2).keys(precondition=evaluate)
+p = actor('Soldier-2', (1, 1), directions=4).speed(2).keys(precondition=evaluate)
 
 def win(b, p):
     text('YOU WIN', BLUE)

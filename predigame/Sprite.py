@@ -196,12 +196,7 @@ class Sprite:
         #callback = kwargs.get('callback', None)
         animate(self, time, partial(self.destroy), pixelated = 100, alpha = 0)
 
-    def stop(self):
-        if self in globs.animations:
-            globs.animations.remove(self)
-
     def move(self, vector, **kwargs):
-        self.stop()
         self.moving = True
         callback = kwargs.get('callback', None)
         precondition = kwargs.get('precondition', None)

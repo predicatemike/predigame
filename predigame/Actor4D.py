@@ -18,6 +18,8 @@ class Actor4D(Sprite):
 				img = pygame.transform.scale(img, rect.size)
 				self.actions[action].append(img)
 
+		self.frame_count = 0
+		self.frame_rate = 1
 		self.index = 0
 		self.action_iterations = 0
 		self.action = IDLE
@@ -34,7 +36,7 @@ class Actor4D(Sprite):
 		if vector[0] == 1:
 			direction = RIGHT
 		elif vector[0] == -1:
-			direction = LEFT
+			direction = LEFT	
 		elif vector[1] == 1:
 			direction = FRONT
 		elif vector[1] == -1:
@@ -58,7 +60,10 @@ class Actor4D(Sprite):
 		self.origin_surface = img
 		Sprite._update(self, delta)
 		if self.action_loop == FOREVER or self.action_iterations < self.action_loop:
-			self.index = self.index + 1
+			self.frame_count = self.frame_count + 1
+			if self.frame_count >= self.frame_rate:
+				self.index = self.index + 1
+				self.frame_count = 0
 			if self.index >= len(self.actions[self.action]):
 				self.index = 0
 				self.action_iterations = self.action_iterations + 1
@@ -69,6 +74,16 @@ class Actor4D(Sprite):
 
 	def _draw(self, surface):
 		Sprite._draw(self, surface)
+
+	# number
+	def rate(self, frame_rate):
+		""" the rate to swap animation frames, default is 1 per update call """
+		if frame_rate < 0:
+			frame_rate = 1
+		if frame_rate > 60:
+			frame_rate = 60
+		self.frame_rate = frame_rate
+		return self
 
 	def act(self, action, loop=FOREVER):
 		if not action in self.actions:

@@ -41,7 +41,6 @@ class Actor(Sprite):
 		return self
 
 	def move(self, vector, **kwargs):
-		print(str(vector) + ' - ' + str(self.flip_x))
 		if vector[0] < 0 and not self.flip_x:
 			self.flip_x = True
 			self.flip(flip_x=True)

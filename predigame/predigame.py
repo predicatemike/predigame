@@ -77,7 +77,7 @@ def _create_actor(actions, name, pos, size, directions, tag):
     if directions == 4:
         return Actor4D(actions, rect, tag, name=name)
     else:
-        return Actor4D(actions, rect, tag, name=name)
+        return Actor(actions, rect, tag, name=name)
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
@@ -412,13 +412,17 @@ def main_loop():
             pygame.quit()
             sys.exit()
 
-        print(event)
-
         if event.type == KEYDOWN:            
 
-            #ignore all the other key presses
+            # ignore all the other key presses
+            # complete any in process animations
+            # TODO: there should be restrictions on
+            #       on how this can be used
             for key in globs.keys_pressed:
                 globs.keys_pressed.remove(key)
+
+            for animation in globs.animations:
+                animation.abort()
 
             key = pygame.key.name(event.key)
             if key in globs.keys_registered['keydown']:

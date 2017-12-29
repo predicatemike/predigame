@@ -1,5 +1,5 @@
 from . import globs
-
+import math
 class Animation:
     def __init__(self, obj, duration, callback, **kwargs):
         self.obj = obj
@@ -29,7 +29,22 @@ class Animation:
             step = self.attributes[attribute] - self.start[attribute]
             setattr(self.obj, attribute, n * step + self.start[attribute])
 
+    def abort(self):
+        self.finished = True
+        if self.progress() > 50:
+            for attribute in self.attributes:
+                setattr(self.obj, attribute, self.attributes[attribute])
 
+    def progress(self):
+        min_progress = 100.0
+
+        for attribute in self.attributes:
+            if self.attributes[attribute] == 0:
+                continue
+            progress = math.fabs(100.0 - ((self.attributes[attribute] - getattr(self.obj, attribute))/(self.attributes[attribute])))
+            if progress < min_progress:
+                min_progress = progress
+        return min_progress
 
     def finish(self):
         if not self.obj in globs.sprites:
