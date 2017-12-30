@@ -79,4 +79,5 @@ class Actor(Sprite):
 		self.action = action
 		self.action_loop = loop
 		self.action_iterations = 0
+		return self
 

@@ -174,15 +174,7 @@ def actor(name = None, pos = None, size = 1, directions = 2, abortable = False, 
     globs.sprites.append(img)
     return globs.sprites[-1]    
 
-def at(pos):
-    if pos in globs.cells:
-        return globs.cells[pos]
 
-def get(name):
-    if name in globs.tags:
-        return globs.tags[name]
-    else:
-        return []
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:

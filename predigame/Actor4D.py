@@ -4,7 +4,7 @@ from .Sprite import Sprite
 from .Actor import Actor
 from .constants import *
 from . import globs
-
+from .utils import at, get
 
 # actor class for four directional movement
 class Actor4D(Actor):
@@ -16,6 +16,9 @@ class Actor4D(Actor):
 		Actor.__init__(self, actions, rect, tag, abortable, name)
 
 	def move(self, vector, **kwargs):
+
+		if self.action.startswith(DIE):
+			return
 
 		direction = LEFT
 		if vector[0] == 1:
@@ -58,6 +61,7 @@ class Actor4D(Actor):
 			self.action_loop = FOREVER		
 
 	def act(self, action, loop=FOREVER):
+
 		if action in self.actions:
 			Actor.act(self, action, loop)
 		else:
@@ -66,6 +70,7 @@ class Actor4D(Actor):
 				Actor.act(self, str(action + '_' + self.direction), loop)
 			else:
 				Actor.act(self, action, loop)
+		return self
 
 	def rate(self, frame_rate):
 		""" the rate to swap animation frames, default is 1 per update call """
@@ -97,4 +102,24 @@ class Actor4D(Actor):
 			return self.x - 1, self.y
 		elif self.direction == RIGHT:
 			return self.x + 1, self.y
+
+	def next_object(self):
+		""" returns the next thing along along the path where this actor is facing """
+		if self.direction == BACK:
+			for y in range(self.y-1, -1, -1):
+				if at((self.x, y)):
+					return at((self.x, y))
+		elif self.direction == FRONT:
+			for y in range(self.y+1, int(globs.HEIGHT/globs.GRID_SIZE)+1, 1):
+				if at((self.x, y)):
+					return at((self.x, y))
+		elif self.direction == LEFT:
+			for x in range(self.x-1, -1, -1):
+				if at((x, self.y)):
+					return at((x, self.y))
+		elif self.direction == RIGHT:
+			for x in range(self.x+1, int(globs.WIDTH/globs.GRID_SIZE)+1, 1):
+				if at((x, self.y)):
+					return at((x, self.y))
+		return None
 

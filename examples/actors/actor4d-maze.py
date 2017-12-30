@@ -3,7 +3,14 @@ HEIGHT = 18
 TITLE = 'MAZE'
 BACKGROUND = 'grass'
 #FULLSCREEN = True
-#SIZE = 75
+
+# TODO List
+# Zombie mating
+# Zombies attack player
+# Zombied can attack wall
+# Player throw and other movements
+
+
 def evaluate(action, sprite, pos):
 	obj = at(pos)
 	if obj:
@@ -75,20 +82,22 @@ def destroy(bullet, wall):
 	wall.destroy()
 
 def shoot(p):
+	# air shot -- don't animate the bullet movement
 	p.act(SHOOT, loop=1)
-	# add a little buffer to the position to center the bullet
-	x, y = p.pos
-	fx, fy = p.facing()
-	bullet = shape(CIRCLE, BLACK, (x+0.5, y+0.5), 0.25).speed(9)
-	for wall in get('wall'):
-		bullet.collides(wall, callback = lambda bullet, wall: destroy(bullet, wall)) 
-	for zombie in get('zombie'): 
-		bullet.collides(zombie, callback = lambda bullet, zombie: destroy(bullet, zombie)) 
 
+	target = p.next_object()
+	if target and target.tag == 'wall':
+		target.fade(0.5)
+	elif target and target.tag == 'zombie':
+		#stop other movements when dead
+		target.act(DIE, loop=1).rate(1).fade(2)
 
-
-	bullet.move_to((fx+0.5, fy+0.5))
+def put(p):
+	x, y = p.next()
+	if not at((x,y)):
+		image('stone', (x, y), tag = 'wall').move_to((x,y))
 
 
 keydown('space', lambda: shoot(p))
 keydown('r', reset)
+keydown('p', lambda: put(p))

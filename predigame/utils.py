@@ -81,3 +81,13 @@ def visible(p1):
     else:
         return False
 
+def at(pos):
+    if pos in globs.cells:
+        return globs.cells[pos]
+
+def get(name):
+    if name in globs.tags:
+        return globs.tags[name]
+    else:
+        return []
+
