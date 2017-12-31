@@ -3,9 +3,12 @@ from time import time
 from .Sprite import Sprite
 from .constants import *
 from . import globs
+from .utils import at, get
 
+# actor class for four directional movement
 class Actor(Sprite):
-	def __init__(self, actions, rect, tag=None, abortable = False, name=None):
+	def __init__(self, actions, rect, tag=None, abortable=False, name=None):
+
 
 		# - scale images
 		self.actions = {}
@@ -20,37 +23,55 @@ class Actor(Sprite):
 		self.action_iterations = 0
 		self.action = IDLE
 		self.action_loop = FOREVER
-		self.flip_x = False
-		self.flip_y = False
+
+		self.frame_count = 0
+		self.frame_rate = 1
+		self.prev_vector = None
+		self.direction = LEFT
+		self._life = 100.0
+
 		surface = actions[self.action][self.index]
 		Sprite.__init__(self, surface, rect, tag, abortable, name)
 
-	def flip(self, flip_x = True, flip_y = False):
+	@property
+	def life(self):
+		return self._life
 
-		actions = []
-		for img in self.actions[WALK]:
-			actions.append(pygame.transform.flip(img, flip_x, flip_y))
-		self.actions[WALK] = actions
-
-		actions = []
-		for img in self.actions[IDLE]:
-			actions.append(pygame.transform.flip(img, flip_x, flip_y))
-		self.actions[IDLE] = actions
-		return self
+	@life.setter
+	def life(self, value):
+		if value >= 0 and value < 100:
+			self._life = value
+		if self._life == 0:
+			self.act(DIE, loop=1)
 
 	def move(self, vector, **kwargs):
-		if vector[0] < 0 and not self.flip_x:
-			self.flip_x = True
-			self.flip(flip_x=True)
-		elif vector[0] > 0 and self.flip_x:
-			self.flip_x = False
-			self.flip(flip_x=True)
 
-		self.act(WALK, FOREVER)					
+		if self.life == 0:
+			return
+
+		direction = LEFT
+		if vector[0] == 1:
+			direction = RIGHT
+		elif vector[0] == -1:
+			direction = LEFT	
+		elif vector[1] == 1:
+			direction = FRONT
+		elif vector[1] == -1:
+			direction = BACK
+
+		if direction != self.direction:
+			self.index = 0
+
+		self.direction = direction
+
+		self.act(WALK + '_' + direction, FOREVER)					
 		Sprite.move(self, vector, **kwargs)
 
 	def _complete_move(self, callback = None):
-		self.act(IDLE, FOREVER)
+		if self.life == 0:
+			return
+
+		self.act(IDLE + '_' + self.direction, FOREVER)
 		Sprite._complete_move(self, callback)
 
 	def _update(self, delta):
@@ -59,17 +80,23 @@ class Actor(Sprite):
 		self.origin_surface = img
 		Sprite._update(self, delta)
 		if self.action_loop == FOREVER or self.action_iterations < self.action_loop:
-			self.index = self.index + 1
+			self.frame_count = self.frame_count + 1
+			if self.frame_count >= self.frame_rate:
+				self.index = self.index + 1
+				self.frame_count = 0
 			if self.index >= len(self.actions[self.action]):
-				self.index = 0
 				self.action_iterations = self.action_iterations + 1
-		else:
+				if self.action_loop == FOREVER or self.action_iterations < self.action_loop:
+					self.index = 0
+				else:
+					self.index = self.index - 1
+		elif self.life > 0:
 			self.index = 0
-			self.action = IDLE
+			self.action = IDLE + '_' + self.direction
 			self.action_loop = FOREVER		
 
-
-	def act(self, action, loop=FOREVER):
+	# TODO: this needs to be merged with act
+	def actit(self, action, loop=FOREVER):
 		if not action in self.actions:
 			print('Unsupported action ' + str(action) + '. Valid options are:')
 			for action in self.actions:
@@ -80,4 +107,72 @@ class Actor(Sprite):
 		self.action_loop = loop
 		self.action_iterations = 0
 		return self
+
+
+	def act(self, action, loop=FOREVER):
+
+		if self.life > 0 or action.startswith(DIE):
+			if action in self.actions:
+				self.actit(action, loop)
+			else:
+				# infer the action based on direction
+				if str(action + '_' + self.direction) in self.actions:
+					self.actit(str(action + '_' + self.direction), loop)
+				else:
+					self.actit(action, loop)
+		return self
+
+	def rate(self, frame_rate):
+		""" the rate to swap animation frames, default is 1 per update call """
+		if frame_rate < 0:
+			frame_rate = 1
+		if frame_rate > 60:
+			frame_rate = 60
+		self.frame_rate = frame_rate
+		return self
+
+	def facing(self):
+		""" returns a position (off the screen) where this actor is facing """
+		if self.direction == BACK:
+			return self.x, -1
+		elif self.direction == FRONT:
+			return self.x, int(globs.HEIGHT/globs.GRID_SIZE)+1
+		elif self.direction == LEFT:
+			return -1, self.y
+		elif self.direction == RIGHT:
+			return int(globs.WIDTH/globs.GRID_SIZE)+1, self.y
+
+	def next():
+		return next(self.direction)
+
+	def next(self, direction):
+		""" the next position (in the current direction or relative board position) """
+		if direction == BACK:
+			return self.x, self.y - 1
+		elif direction == FRONT:
+			return self.x, self.y + 1
+		elif direction == LEFT:
+			return self.x - 1, self.y
+		elif direction == RIGHT:
+			return self.x + 1, self.y
+
+	def next_object(self):
+		""" returns the next thing along along the path where this actor is facing """
+		if self.direction == BACK:
+			for y in range(self.y-1, -1, -1):
+				if at((self.x, y)):
+					return at((self.x, y))
+		elif self.direction == FRONT:
+			for y in range(self.y+1, int(globs.HEIGHT/globs.GRID_SIZE)+1, 1):
+				if at((self.x, y)):
+					return at((self.x, y))
+		elif self.direction == LEFT:
+			for x in range(self.x-1, -1, -1):
+				if at((x, self.y)):
+					return at((x, self.y))
+		elif self.direction == RIGHT:
+			for x in range(self.x+1, int(globs.WIDTH/globs.GRID_SIZE)+1, 1):
+				if at((x, self.y)):
+					return at((x, self.y))
+		return None
 

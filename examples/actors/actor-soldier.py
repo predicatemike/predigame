@@ -43,7 +43,7 @@ def register(p1):
 offset = 2
 actors = []
 for i in range(10):
-	a = actor('Soldier-'+str(i+1), (offset, 3), 5, 4)
+	a = actor('Soldier-'+str(i+1), (offset, 3), 5)
 	register(a)
 	actors.append(a)
 	offset = offset + 3

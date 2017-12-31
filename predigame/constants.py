@@ -1,5 +1,6 @@
 # shapes
 RECT = 'rect' #:
+SQUARE = 'rect'
 CIRCLE = 'circle' #:
 ELLIPSE = 'ellipse' #:
 
@@ -23,7 +24,7 @@ CYAN = (0, 200, 200) #:
 PINK = (255, 0, 255) #:
 PURPLE = (128, 0, 128) #:
 
-# Actor actions
+# Actor actions (omnidirectional)
 IDLE = 'idle'
 JUMP = 'jump'
 RUN = 'run'
@@ -31,12 +32,9 @@ WALK = 'walk'
 HURT = 'hurt'
 DIE = 'die'
 ATTACK = 'attack'
-ATTACK1 = 'attack1'
-ATTACK2 = 'attack2'
-ATTACK3 = 'attack3'
 SHOOT = 'shoot'
 
-# Actor4D actions
+# Actor actions (directional)
 ATTACK_BACK = 'attack_back'
 ATTACK_FRONT = 'attack_front'
 ATTACK_LEFT = 'attack_left'
