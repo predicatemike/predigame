@@ -468,5 +468,5 @@ def main_loop():
         _update(clock.get_time())
         _draw(SURF)
 
-    pygame.display.update()
+    pygame.display.flip()
     clock.tick(FPS)

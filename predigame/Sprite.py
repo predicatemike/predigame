@@ -3,8 +3,8 @@ from functools import partial
 from .utils import register_keydown, register_keyup, animate, randrange_float, sign
 from . import globs
 
-class Sprite:
-    def __init__(self, surface, rect, tag=None, abortable=False, name=None):
+class Sprite():
+    def __init__(self, surface, rect, tag=None, abortable=False, name=None):        
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
