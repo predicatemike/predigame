@@ -11,6 +11,7 @@ show_grid = False
 update_game = True
 sounds = {}
 images = {}
+actors = {}
 callbacks = []
 
 def init(path, width = 800, height = 800, title = 'PrediGame', background = (220, 220, 220), fullscreen = False, **kwargs):
@@ -29,9 +30,9 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     pygame.display.set_caption(title)
     SURF = None
     if fullscreen:
-        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
     else:
-        SURF = pygame.display.set_mode((WIDTH, HEIGHT))
+        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
 
     SURF.fill((0, 0, 0))
@@ -147,25 +148,31 @@ def image(name = None, pos = None, size = 1, tag = ''):
 def actor(name = None, pos = None, size = 1, directions = 2, abortable = False, tag = ''):
     if not name:
         sys.exit('Actor name is missing!')
+
     loaded = False
     states = {}
-    path = 'actors/' + name
-    if os.path.isdir(path):
-        for state in os.listdir(path):
-            if os.path.isdir(path + '/' + state):
-                for img_file in os.listdir(path + '/' + state):
-                    if not state in states:
-                        states[state] = []
-                    try:
-                        print(path + '/' + state + '/' + img_file)
-                        states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
-                        loaded = True
-                    except:
-                        continue
+
+    if name in actors:
+        loaded = True
+        states = actors[name]
+    else:
+        path = 'actors/' + name
+        if os.path.isdir(path):
+            for state in os.listdir(path):
+                if os.path.isdir(path + '/' + state):
+                    for img_file in os.listdir(path + '/' + state):
+                        if not state in states:
+                            states[state] = []
+                        try:
+                            print(path + '/' + state + '/' + img_file)
+                            states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
+                            loaded = True
+                        except:
+                            continue
+        actors[name] = states
 
     if not loaded:
         sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')    
-
 
     if not pos:
         pos = rand_pos(size - 1, size - 1)
@@ -402,6 +409,13 @@ def main_loop():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+
+        # lost focus
+        if event.type == ACTIVEEVENT and event.gain == 0:
+            pause()
+        elif event.type == ACTIVEEVENT:
+            resume()
+
 
         if event.type == KEYDOWN:            
 

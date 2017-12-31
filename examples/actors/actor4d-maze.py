@@ -10,6 +10,9 @@ BACKGROUND = 'grass'
 # Zombied can attack wall
 # Player throw and other movements
 
+# Pause game when screen not in focus
+# Caching actors
+
 
 def evaluate(action, sprite, pos):
 	obj = at(pos)
@@ -61,7 +64,6 @@ def wander(sprite) :
 actor('Zombie-1', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
 actor('Zombie-2', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
 actor('Zombie-3', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
-
 def win(b, p):
     text('YOU WIN', BLUE)
     pause()
@@ -91,6 +93,7 @@ def shoot(p):
 	elif target and target.tag == 'zombie':
 		#stop other movements when dead
 		target.act(DIE, loop=1).rate(1).fade(2)
+		actor('Zombie-3', rand_pos(), tag = 'zombie', directions=4).wander(wander, time=0.5)
 
 def put(p):
 	x, y = p.next()

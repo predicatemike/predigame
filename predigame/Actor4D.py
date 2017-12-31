@@ -17,9 +17,6 @@ class Actor4D(Actor):
 
 	def move(self, vector, **kwargs):
 
-		if self.action.startswith(DIE):
-			return
-
 		direction = LEFT
 		if vector[0] == 1:
 			direction = RIGHT
