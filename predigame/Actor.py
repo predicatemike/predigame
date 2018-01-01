@@ -1,15 +1,15 @@
 import sys, random, math, pygame
 from time import time
 from .Sprite import Sprite
+from .Thing import Thing
 from .constants import *
 from . import globs
 from .utils import at, get
 
+
 # actor class for four directional movement
 class Actor(Sprite):
 	def __init__(self, actions, rect, tag=None, abortable=False, name=None):
-
-
 		# - scale images
 		self.actions = {}
 		for action in actions:
@@ -28,25 +28,31 @@ class Actor(Sprite):
 		self.frame_rate = 1
 		self.prev_vector = None
 		self.direction = LEFT
-		self._life = 100.0
+
+
+		# TODO: this will matter later
+		self._health = 100.0
+		self._wealth = 0.0
+		self._energy = 100.0
+		self._inventory = {}
 
 		surface = actions[self.action][self.index]
 		Sprite.__init__(self, surface, rect, tag, abortable, name)
 
 	@property
-	def life(self):
-		return self._life
+	def health(self):
+		return self._health
 
-	@life.setter
-	def life(self, value):
+	@health.setter
+	def health(self, value):
 		if value >= 0 and value < 100:
-			self._life = value
-		if self._life == 0:
+			self._health = value
+		if self._health == 0:
 			self.act(DIE, loop=1)
 
 	def move(self, vector, **kwargs):
 
-		if self.life == 0:
+		if self.health == 0:
 			return
 
 		direction = LEFT
@@ -68,7 +74,7 @@ class Actor(Sprite):
 		Sprite.move(self, vector, **kwargs)
 
 	def _complete_move(self, callback = None):
-		if self.life == 0:
+		if self.health == 0:
 			return
 
 		self.act(IDLE + '_' + self.direction, FOREVER)
@@ -90,10 +96,30 @@ class Actor(Sprite):
 					self.index = 0
 				else:
 					self.index = self.index - 1
-		elif self.life > 0:
+		elif self.health > 0:
 			self.index = 0
 			self.action = IDLE + '_' + self.direction
 			self.action_loop = FOREVER		
+
+	def use(self, name):
+		""" use a given object (e.g. a gun, medicine) """
+		if name in self._inventory:
+			self._inventory[name].use(self)
+		return self
+
+	def take(self, name, object):		
+		""" take this object and add to inventory """
+		self._inventory[name] = object
+		return self
+
+	def buy(self, obj):
+		""" buy this object and add it to inventory """
+		return self
+
+	def rest(self, obj):
+		""" take a rest to improve energy """
+		return self
+
 
 	# TODO: this needs to be merged with act
 	def actit(self, action, loop=FOREVER):
@@ -111,7 +137,7 @@ class Actor(Sprite):
 
 	def act(self, action, loop=FOREVER):
 
-		if self.life > 0 or action.startswith(DIE):
+		if self.health > 0 or action.startswith(DIE):
 			if action in self.actions:
 				self.actit(action, loop)
 			else:
@@ -142,7 +168,7 @@ class Actor(Sprite):
 		elif self.direction == RIGHT:
 			return int(globs.WIDTH/globs.GRID_SIZE)+1, self.y
 
-	def next():
+	def next(self):
 		return next(self.direction)
 
 	def next(self, direction):

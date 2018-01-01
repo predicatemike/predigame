@@ -8,9 +8,13 @@ BACKGROUND = 'grass'
 # Zombie mating
 # Zombies attack player
 # Zombied can attack wall
-# Player throw and other movements
 
+# Player throw and other movements
 # proper animations for non-walking actions
+# add more sprites
+
+# https://creativemarket.com/pasilan/1739697-4-Directional-Game-Character-Sprite/screenshots/#screenshot1
+#https://graphicriver.net/item/pigy-4-directional-3d-rendered-spritesheets-07/19013844
 
 def evaluate(action, sprite, pos):
 	obj = at(pos)
@@ -23,48 +27,78 @@ def evaluate(action, sprite, pos):
 	else:
 		return True
 
+GUN = 'gun'
+class Gun(Thing):
+	def __init__(self):
+		self.damange = 100
+		self.quantity = 10
+	def use(self, actor, object = None):
+		if self.quantity <= 0:
+			return
+
+		# air shot -- don't animate the bullet movement
+		actor.act(SHOOT, loop=1)
+
+		target = actor.next_object()
+		if target and target.tag == 'wall':
+			target.fade(0.5)
+		elif target and target.tag == 'zombie':
+			#stop other movements when dead
+			target.act(DIE, loop=1).rate(1).fade(2)
+			for x in range(5):
+				create_zombie()
+
+		self.quantity -= 1
+
+PUNCH = 'punch'
+class Punch(Thing):
+	def __init__(self):
+		self.damange = 100
+	def use(self, actor, object = None):
+		actor.act(THROW, loop=1)
+		target = at(actor.next(actor.direction))
+		if target is not None:
+			target.fade(0.5)
+
+
 p = actor('Soldier-2', (1, 1), tag = 'player', abortable=True).speed(2).keys(precondition=evaluate)
 p.move_to((0,0))
 p.rate(2)
+p.take(GUN, Gun()).take(PUNCH, Punch())
 
 def wander(sprite) :
 	obj_list = get('player')
 	hero = obj_list[0]
 	x, y = sprite.pos
-	#choices = [(up),(down),(left),(right)]
+
 	choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
 	distances  = [distance(p, hero.pos) for p in choices]
 	obstacles  = [at(p) for p in choices]
 	visibility = [visible(p) for p in choices]
-	#print('i am at ' + str(sprite.pos)) 
-	#print('my choices are ' + str(choices))
-	#print('with distances ' + str(distances))
-	#print('and obstacles  ' + str(obstacles))
-	#print('and visibility ' + str(visibility))
+
 	best = None
 	min_dist = 999999
 	for i in range(len(choices)):
 		if obstacles[i] is None and visibility[i]:
 			#every now and then make a random "bad" move
 			rnd = rand(1,10)
-			if rnd > 8:
-				#print('print making a random choice - ' + str(rnd))
+			if rnd > 9:
 				best = choices[i]
 				break
 			elif distances[i] < min_dist:
 				best = choices[i]
 				min_dist = distances[i]
-	#print('my best option is ' + str(best))
 	if best is not None and best != (x,y):
-		vector = (best[0] - x, best[1] - y)
-		sprite.move(vector)
+		sprite.move((best[0] - x, best[1] - y))
 
 def lose(z, p):
-	p.life = 0
+	p.health = 0
+
+image('zombie_house', (WIDTH-1, 1), 2)
 
 def create_zombie():
 	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
-	z = actor(name, rand_pos(), tag = 'zombie')
+	z = actor(name, (WIDTH-1, 0), tag = 'zombie')
 	z.wander(wander, time=0.5)
 	z.collides(p, lose)
 
@@ -93,26 +127,14 @@ def win(b, p):
 d = shape(RECT, GREEN, (29, 17), tag='destination').collides(p, win)
 
 
-def shoot(p):
-	# air shot -- don't animate the bullet movement
-	p.act(SHOOT, loop=1)
-
-	target = p.next_object()
-	if target and target.tag == 'wall':
-		target.fade(0.5)
-	elif target and target.tag == 'zombie':
-		#stop other movements when dead
-		target.act(DIE, loop=1).rate(1).fade(2)
-		for x in range(5):
-			create_zombie()
-
 def put(p, direction):
 	x, y = p.next(direction)
 	if not at((x,y)):
 		image('stone', (x, y), tag = 'wall').move_to((x,y))
 
 callback(schedule_zombie, 30)
-keydown('space', lambda: shoot(p))
+keydown('space', lambda: p.use(GUN))
+keydown('p', lambda: p.use(PUNCH))
 keydown('r', reset)
 keydown('w', callback = lambda: put(p, BACK))
 keydown('a', callback = lambda: put(p, LEFT))
