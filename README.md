@@ -8,7 +8,14 @@ Install via PIP
 ```bash
 pip install http://predicate.us/pigm.tar.gz
 ```
-Run the example file with
-```bash
-pigm example.py
-```
+Check out some cool examples in the `examples` directory.
+
+## Helpful Resources
+
+### Finding Images (useful for Predicate Classes)
+
+  [Click Here](https://vimeo.com/249465338) to View Video
+
+### Resizing Images Using GIMP
+
+  [Click Here](https://vimeo.com/249465409) to View Video
