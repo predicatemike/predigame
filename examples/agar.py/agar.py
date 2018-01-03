@@ -5,7 +5,7 @@ TITLE = 'Agar.py'
 p1 = image('kenny').scale(1.5).speed(10).keys()
 
 def eat(p, f):
-    p.scale(1.25)
+    p.scale(1.1)
     sound('eat')
     f.destroy()
 

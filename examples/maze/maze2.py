@@ -56,7 +56,8 @@ def wander(sprite) :
 				min_dist = distances[i]
 	#print('my best option is ' + str(best))
 	if best is not None and best != (x,y):
-		sprite.move_to(best)
+		vector = (best[0] - x, best[1] - y)
+		sprite.move(vector)
 
 
 h = image('hero', (1, 1), tag = 'hero1').speed(7).keys(precondition=evaluate)
