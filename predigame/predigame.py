@@ -4,14 +4,16 @@ from pygame.locals import *
 from . import globs
 from .utils import load_module, register_keydown, rand_pos, rand_color, roundup, animate
 from .Sprite import Sprite
+from .Actor import Actor
 
 show_grid = False
 update_game = True
 sounds = {}
 images = {}
+actors = {}
 callbacks = []
 
-def init(path, width = 800, height = 800, title = 'PrediGame', background = (220, 220, 220), **kwargs):
+def init(path, width = 800, height = 800, title = 'PrediGame', background = (220, 220, 220), fullscreen = False, **kwargs):
     global RUN_PATH, WIDTH, HEIGHT, BACKGROUND, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
     RUN_PATH = path
@@ -25,7 +27,11 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
     pygame.display.set_caption(title)
-    SURF = pygame.display.set_mode((WIDTH, HEIGHT))
+    SURF = None
+    if fullscreen:
+        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
+    else:
+        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
 
     SURF.fill((0, 0, 0))
@@ -53,6 +59,22 @@ def _create_image(name, pos, size, tag):
     rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
 
     return Sprite(img, rect, tag, name=name)
+
+def _create_actor(actions, name, pos, size, abortable, tag):
+    img = actions['idle'][0]
+    rect = img.get_rect()
+    new_width = 0
+    new_height = 0
+    if rect.width >= rect.height:
+        new_width = size * float(globs.GRID_SIZE)
+        new_height = rect.height * (new_width / rect.width)
+    elif rect.width < rect.height:
+        new_height = size * float(globs.GRID_SIZE)
+        new_width = rect.width * (new_height / rect.height)
+    rect.size = new_width, new_height
+    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    
+    return Actor(actions, rect, tag, abortable, name=name)
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
@@ -119,15 +141,43 @@ def image(name = None, pos = None, size = 1, tag = ''):
     globs.sprites.append(img)
     return globs.sprites[-1]
 
-def at(pos):
-    if pos in globs.cells:
-        return globs.cells[pos]
+def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
+    if not name:
+        sys.exit('Actor name is missing!')
 
-def get(name):
-    if name in globs.tags:
-        return globs.tags[name]
+    loaded = False
+    states = {}
+
+    if name in actors:
+        loaded = True
+        states = actors[name]
     else:
-        return []
+        path = 'actors/' + name
+        if os.path.isdir(path):
+            for state in os.listdir(path):
+                if os.path.isdir(path + '/' + state):
+                    for img_file in os.listdir(path + '/' + state):
+                        if not state in states:
+                            states[state] = []
+                        try:
+                            print(path + '/' + state + '/' + img_file)
+                            states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
+                            loaded = True
+                        except:
+                            continue
+        actors[name] = states
+
+    if not loaded:
+        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')    
+
+    if not pos:
+        pos = rand_pos(size - 1, size - 1)
+
+    img = _create_actor(states, name, pos, size, abortable, tag)
+    globs.sprites.append(img)
+    return globs.sprites[-1]    
+
+
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
@@ -356,7 +406,25 @@ def main_loop():
             pygame.quit()
             sys.exit()
 
-        if event.type == KEYDOWN:
+        # lost focus
+        if event.type == ACTIVEEVENT and event.gain == 0:
+            pause()
+        elif event.type == ACTIVEEVENT:
+            resume()
+
+
+        if event.type == KEYDOWN:            
+
+            # ignore all the other key presses
+            # complete any in process animations
+            # TODO: there should be restrictions on
+            #       on how this can be used
+            for key in globs.keys_pressed:
+                globs.keys_pressed.remove(key)
+
+            for animation in globs.animations:
+                animation.abort()
+
             key = pygame.key.name(event.key)
             if key in globs.keys_registered['keydown']:
                 for callback in globs.keys_registered['keydown'][key]:
@@ -396,5 +464,5 @@ def main_loop():
         _update(clock.get_time())
         _draw(SURF)
 
-    pygame.display.update()
+    pygame.display.flip()
     clock.tick(FPS)

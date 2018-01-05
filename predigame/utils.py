@@ -26,8 +26,8 @@ def register_keyup(key, callback):
     else:
         globs.keys_registered['keyup'][key] = set([callback])
 
-def animate(obj, duration = 1, callback = None, **kwargs):
-    globs.animations.append(Animation(obj, duration, callback, **kwargs))
+def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
+    globs.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
 
 def rand_pos(x_padding = 0, y_padding = 0):
     grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
@@ -80,4 +80,14 @@ def visible(p1):
         return True
     else:
         return False
+
+def at(pos):
+    if pos in globs.cells:
+        return globs.cells[pos]
+
+def get(name):
+    if name in globs.tags:
+        return globs.tags[name]
+    else:
+        return []
 

@@ -21,6 +21,9 @@ def init(width, height, grid_size, background):
         BACKGROUND = get_image_file(BACKGROUND)
         if BACKGROUND is None:
             sys.exit('Background image doesn\'t exist. File must be saved in backgounds directory: ' + background)
+        else:
+            #size background to fix screen
+            BACKGROUND = pygame.transform.scale(BACKGROUND, (WIDTH, HEIGHT))
     else :
         BACKGROUND_COLOR = BACKGROUND
 
