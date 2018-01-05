@@ -20,7 +20,6 @@ snakeviz program.prof
 ```
 
 =======
-Check out some cool examples in the `examples` directory.
 
 ## Helpful Resources
 
