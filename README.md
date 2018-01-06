@@ -19,8 +19,6 @@ run_manual.py is a copy of pigm. Then to view the results:
 snakeviz program.prof
 ```
 
-=======
-
 ## Helpful Resources
 
 ### Finding Images (useful for Predicate Classes)

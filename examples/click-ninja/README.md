@@ -371,6 +371,7 @@ score(color = PURPLE)
 callback(spawn, 1)
 keydown('r', reset)   
 ```
+
 #Version 5: The Bonus Taco
 Just like a bomb, we can add a bonus taco that flies across the screen. We don't want to award our player too much, so we'll give the taco a 10% (1 out of 10) probability of showing on the screen. Here's what we'll need to change:
 
