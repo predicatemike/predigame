@@ -277,6 +277,16 @@ def callback(function, wait):
     callbacks.append({'cb': function, 'time': get_time() + wait})
 
 def score(value = 0, **kwargs):
+
+    if value > 1000:
+        print('Mean scoring rejected value %s'%str(value))
+        value = 1000
+
+    if value < -1000:
+        print('Mean scoring rejected value %s'%str(value))
+        value = -1000
+        
+
     global score_dict
     try:
         score_dict
