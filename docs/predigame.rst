@@ -9,8 +9,17 @@ predigame\.Sprite module
 
 .. automodule:: predigame.Sprite
     :members:
+    :show-inheritance:
+    :inherited-members:
+
+predigame\.Actor module
+------------------------
+
+.. automodule:: predigame.Actor
+    :members:
     :undoc-members:
     :show-inheritance:
+
 
 predigame\.constants module
 ---------------------------
