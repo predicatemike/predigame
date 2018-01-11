@@ -7,7 +7,7 @@ class Sprite():
     """
 
     The PrediGame Sprite - a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite
-    can consist of an bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in PrediGame
+    can consist of a bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in PrediGame
     have some fun properties - they can be clicked, collide with other sprites, even fade, spin or pulse.
 
     """
@@ -339,6 +339,7 @@ class Sprite():
             callback = partial(animate, self, time, callback, abortable=self.abortable, x = point[0], y = point[1])
 
         callback()
+        return self
 
     def _continue_key(self, key, distance, **kwargs):
         p = kwargs.get('precondition', None)
