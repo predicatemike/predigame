@@ -99,7 +99,7 @@ class Sprite():
     def pos(self, value):
         """ 
             set the x and y positions as a tuple (pair of numbers).
-            this is basically the same as calling `Sprite.x = value` and `Spite.y = value`
+            this is basically the same as calling `Sprite.x = value` and `Sprite.y = value`
             separately.
 
             :return: a position tuple (x, y)
@@ -384,6 +384,14 @@ class Sprite():
         if down:
             register_key(down, partial(self.move, (0, 1 * distance), callback = partial(self._continue_key, down, (0, 1 * distance), precondition = p), precondition = p))
 
+        return self
+
+    def follow(self):
+        """
+            tell the sprite to follow the mouse cursor as it moves around the screen
+        """
+        if self not in globs.mouse_motion:
+            globs.mouse_motion.append(self)
         return self
 
     def speed(self, speed = 5):

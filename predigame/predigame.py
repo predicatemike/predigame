@@ -422,7 +422,6 @@ def main_loop():
         elif event.type == ACTIVEEVENT:
             resume()
 
-
         if event.type == KEYDOWN:            
 
             # ignore all the other key presses
@@ -470,7 +469,17 @@ def main_loop():
                 _update(clock.get_time())
                 _draw(SURF)
 
+        #if event.type == MOUSEMOTION:
+        #    for sprite in globs.mouse_motion:
+        #        sprite.pos = (event.pos[0]/globs.GRID_SIZE - sprite.width/2, 
+        #            event.pos[1]/globs.GRID_SIZE - sprite.height/2)
+
+
     if update_game:
+        mx, my = pygame.mouse.get_pos()
+        for sprite in globs.mouse_motion:
+                sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2, 
+                    my/globs.GRID_SIZE - sprite.height/2)
         _update(clock.get_time())
         _draw(SURF)
 

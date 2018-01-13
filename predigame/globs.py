@@ -9,7 +9,7 @@ def get_image_file(name):
     return None
 
 def init(width, height, grid_size, background):
-    global WIDTH, HEIGHT, GRID_SIZE, BACKGROUND, BACKGROUND_COLOR, sprites, cells, tags, animations, keys_registered, keys_pressed
+    global WIDTH, HEIGHT, GRID_SIZE, BACKGROUND, BACKGROUND_COLOR, sprites, cells, tags, animations, keys_registered, keys_pressed, mouse_motion
 
     WIDTH = width
     HEIGHT = height
@@ -36,3 +36,4 @@ def init(width, height, grid_size, background):
         'keyup': {}
     }
     keys_pressed = []
+    mouse_motion = []
