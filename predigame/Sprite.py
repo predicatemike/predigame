@@ -4,6 +4,13 @@ from .utils import register_keydown, register_keyup, animate, randrange_float, s
 from . import globs
 
 class Sprite():
+    """
+
+    The PrediGame Sprite - a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite
+    can consist of a bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in PrediGame
+    have some fun properties - they can be clicked, collide with other sprites, even fade, spin or pulse.
+
+    """
     def __init__(self, surface, rect, tag=None, abortable=False, name=None):        
         if len(globs.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
@@ -45,62 +52,124 @@ class Sprite():
 
     @property
     def x(self):
+        """ 
+            get the x (left/right) position of the sprite 
+
+            :return: the x position of the sprite as an integer 
+        """
         return int(self.virt_rect[0] / globs.GRID_SIZE)
 
     @x.setter
     def x(self, value):
+        """ 
+            set the x (left/right) position of the sprite 
+        """        
         self.needs_rotation = True
         self.virt_rect[0] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def y(self):
+        """ 
+            get the y (up/down) position of the sprite 
+
+            :return: the y position of the sprite as an integer 
+        """        
         return int(self.virt_rect[1] / globs.GRID_SIZE)
 
     @y.setter
     def y(self, value):
+        """ 
+            set the y (up/down) position of the sprite 
+        """          
         self.needs_rotation = True
         self.virt_rect[1] = int(float(value) * globs.GRID_SIZE)
 
     @property
     def pos(self):
+        """ 
+            get the x and y positions as a tuple (pair of numbers).
+            this is basically the same as calling `Sprite.x` and `Spite.y`
+            separately.
+
+            :return: a position tuple (x, y)
+        """          
         return self.x, self.y
 
     @pos.setter
     def pos(self, value):
+        """ 
+            set the x and y positions as a tuple (pair of numbers).
+            this is basically the same as calling `Sprite.x = value` and `Sprite.y = value`
+            separately.
+
+            :return: a position tuple (x, y)
+        """ 
         self.x = value[0]
         self.y = value[1]
 
     @property
     def width(self):
+        """
+            get the width of a sprite in terms of the grid block size.
+        """
         return self.virt_rect[2] / globs.GRID_SIZE
 
     @property
     def height(self):
+        """
+            get the width of a sprite in terms of the grid block size.
+        """
         return self.virt_rect[3] / globs.GRID_SIZE
 
     @property
     def size(self):
-        print('Sprite.size() get needs fixing')
+        """
+            get the size of the sprite. sprites have a default size of 1 grid block.
+            they can be increased or decreased as desired. the `Sprite.pulse()` effect
+            will call size many times to create the desired effect.
+
+            :todo: this method only returns the size along the x dimension. sprites should maintain separate sizes, one for each dimension.
+        """
         return self.sprite_scale_x
 
     @size.setter
     def size(self, value):
-        print('Sprite.size() set needs fixing')        
+        """
+            set the size of the sprite. sprites have a default size of 1 grid block.
+            they can be increased or decreased as desired. the `Sprite.pulse()` effect
+            will call size many times to create the desired effect.
+
+            :todo: this method applies the same magnification to both x and y dimensions. sprites should maintain separate sizes, one for each dimension.
+        """
         self.needs_rotation = True
         self.sprite_scale_x = value
         self.sprite_scale_y = value
 
     @property
     def angle(self):
+        """ 
+            get the current rotated angle of the sprite
+          
+            :return: display angle in degrees
+        """
+
         return self.rotate_angle
 
     @angle.setter
     def angle(self, value):
+        """
+            rotate the sprite by some `value` of degrees
+        """
         self.needs_rotation = True
         self.rotate_angle = value
 
     @property
     def tag(self):
+        """
+            sprites can be "tagged" with extra information. for example,
+            many zombie sprites can all have the singular tag "zombie".
+            :return: the tag of the sprite (can be None if no tag provided)
+        """
         return self._tag
 
     @property
@@ -197,11 +266,29 @@ class Sprite():
         if callback:
             callback()
 
+
     def fade(self, time=1, **kwargs):
+        """
+            make this sprite fade away and automatically self-destruct. this can be slow to run on some computers.
+            
+            :param time: the amount of time (in seconds) to run the fade effect. 
+
+            :todo: the final effect, like `destroy` should be configurable
+        """
         #callback = kwargs.get('callback', None)
         animate(self, time, partial(self.destroy), pixelated = 100, alpha = 0)
+        return self
 
     def move(self, vector, **kwargs):
+        """
+            move this sprite along a particular vector to the next grid cell (x and/or y dimensions)
+
+            :param vector: the movement vector (x, y). `x` or `y` can take the values 0 (no movement), 1 (right or down movement), -1 (up or left movement). For example a vector of (1, 0) will move the sprite right and a vector of (1, -1) will move the sprite up and right.
+
+            :param callback: an optional callback function to invoke when movement is complete.
+
+            :param precondition: an optional callback function to invoke prior to a movement. preconditions all the sprite to avoid making a certain move (e.g. to avoid a wall)           
+        """
         self.moving = True
         callback = kwargs.get('callback', None)
         precondition = kwargs.get('precondition', None)
@@ -216,6 +303,21 @@ class Sprite():
         return self
 
     def move_to(self, *points, **kwargs):
+        """
+            move the sprite to a given point or set of points. movement will be set according to the `speed` of the sprite.
+
+            :param points: one or more positions (x, y) pairs.
+
+            :param callback: an optional callback function to invoke when movement is complete.
+
+    
+            Example:
+
+            `s.move_to((0,0), (5,5), (10, 10), callback=s.destroy)`
+
+            will move the sprite to position (0, 0) then (5,5) then (10,10) and then destroy itself.
+
+        """
         #if self.moving:
         #    return self
         self.moving = True
@@ -237,6 +339,7 @@ class Sprite():
             callback = partial(animate, self, time, callback, abortable=self.abortable, x = point[0], y = point[1])
 
         callback()
+        return self
 
     def _continue_key(self, key, distance, **kwargs):
         p = kwargs.get('precondition', None)
@@ -244,6 +347,25 @@ class Sprite():
             self.move(distance, callback = partial(self._continue_key, key, distance, precondition = p), precondition = p)
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
+        """
+            make this sprite move to keyboard events. by default movements will be directional, by grid location - 
+            meaning that the sprite will move up, down, left, or right by one (default) grid cell. 
+
+            :param right: the keyboard button for right direction movement. default is the `right` arrow.
+
+            :param left: the keyboard button for left direction movement. default is the `left` arrow.
+
+            :param up: the keyboard button for up direction movement. default is the `up` arrow.
+
+            :param down: the keyboard button for down direction movement. default is the `down` arrow.
+
+            :param spaces: the number of grid cell. to move for each keyboard event. default is `1` grid cell.
+
+            :param precondition: an optional callback function to invoke prior to a movement. preconditions all the sprite to avoid making a certain move (e.g. to avoid a wall)           
+
+            :param direction: the direction of the keyboard button and when to fire the event event. options are `down` for keyboard push down events or `up` for when the keyboard button is released. default is `down`.
+
+        """
         p = kwargs.get('precondition', None)
         distance = kwargs.get('spaces', 1)
 
@@ -264,12 +386,33 @@ class Sprite():
 
         return self
 
-    def speed(self, speed):
+    def follow(self):
+        """
+            tell the sprite to follow the mouse cursor as it moves around the screen
+        """
+        if self not in globs.mouse_motion:
+            globs.mouse_motion.append(self)
+        return self
+
+    def speed(self, speed = 5):
+        """
+            set the speed of the sprite for movement actions. by default the sprite will move five grid cells per second. 
+        
+            :param speed: the speed for movement actions. default is `5`. 
+
+        """
         self.move_speed = abs(speed)
 
         return self
 
     def float(self, distance = 0.25):
+        """
+            make the sprite float around on the screen. this provides a simple movement animation.
+
+            :param distance: the amount of grid cell distance a sprite should float. default is `0.25`.
+
+        """
+
         if self.moving:
             return self
         self.moving = True
@@ -282,6 +425,16 @@ class Sprite():
         return self
 
     def collides(self, sprites, callback):
+        """
+            register a callback function for when this sprite collides with another sprite. collision checks will occur as part of each update invocation. 
+
+            :param sprites: one (single object) or more (a list) of sprites to check for collisions.
+
+            :param callback: the callback function to invoke when a collision is detected.
+
+            :todo: confirm that collides are bi-directional events.
+
+        """        
         if not isinstance(sprites, list):
             sprites = [sprites]
 
@@ -293,11 +446,27 @@ class Sprite():
         return self
 
     def clicked(self, callback, button = 1):
+        """
+            register a callback function for when this sprite is clicked with a mouse button.
+
+            :param callback: the callback function to invoke when a mouse click event is detected on this sprite.
+
+            :param button: the mouse button to register for click events. options are left button `1` (default), right button `2` or middle button/track wheel `3`.
+
+            :todo: confirm that collides are bi-directional events.
+
+        """                
         self.clicks.append({'btn': button, 'cb': callback})
 
         return self
 
     def pixelate(self, pixel_size = 10):
+        """
+            a simple effect for blurring or `pixelating` a sprite. 
+
+            :param pixel_size: the size of the pixels. default is `10`.
+        """
+
         x_start = 0
         x_range = int(self.virt_rect[2])
         y_start = 0
@@ -311,7 +480,12 @@ class Sprite():
         return self
 
     def rotate(self, angle):
+        """
+            rotate the sprite by some angle (in degrees)
 
+            :param angle: the directional angle (in degrees) to rotate this sprite.
+
+        """
         self.rotate_angle += angle
         if self.rotate_angle > 360:
             self.rotate_angle -= 360
@@ -332,12 +506,29 @@ class Sprite():
         return self
 
     def flip(self, flip_x = True, flip_y = False):
+        """
+            flip the sprite image along x axis - left/right (default) or y axis - up/down. 
+
+            :param flip_x: flip the sprite along the x axis. default is `True`.
+
+            :param flip_y: flip the sprite along the y axis. default is `False`.
+
+        """
+
         self.origin_surface = pygame.transform.flip(self.origin_surface, flip_x, flip_y)
         self.surface = pygame.transform.flip(self.surface, flip_x, flip_y)
 
         return self
 
     def scale(self, size):
+        """
+            scale (increase or decrease) the size of the sprite. applies to both with and height.
+
+            :param size: multiplier for modifying sprite scale. if greater than 1 sprite will increase in scale. if less than one (a decimal) sprite will decrease in case. if value is 1 sprite will left intact.
+
+            :todo: scale needs to be applied separately to x and y axis.
+        """
+
         if self.virt_rect[2] > globs.WIDTH and self.virt_rect[3] > globs.HEIGHT:
             return self
         width = self.virt_rect[2] * size
@@ -363,6 +554,9 @@ class Sprite():
         return self
 
     def bouncy(self):
+        """ 
+            make this sprite a little bouncy. the `speed` attribute will control the speed of movement.
+        """
         if self.moving:
             return self
         self.moving = True
@@ -373,6 +567,14 @@ class Sprite():
         return self
 
     def pulse(self, time = 1, size = None):
+        """
+            add a pulsing effect. make the sprite simultaneously increase then decrease in size.
+
+            :param time: the amount of time (in seconds) to complete a pulse. default is `1` second.
+
+            :param size: the maximum size to pulse. default is to pulse until the size is doubled and then contract back to original size.
+
+        """
         if not size:
             size = self.size * 2
         animate(self, time, partial(self.pulse, time, self.size), size = size)
@@ -380,6 +582,13 @@ class Sprite():
         return self
 
     def spin(self, time = 1, **kwargs):
+        """
+            make this sprite spin.
+
+            :param time: the amount of time (in seconds) to complete a revolution. default is `1` second.
+        """
+
+
         #if self.moving and not kwargs.get('spinning', False):
         #    return self
         self.moving = True
@@ -388,11 +597,22 @@ class Sprite():
         return self
 
     def destroy(self, *args):
+        """
+            destroy this sprite and remove from the game canvas.
+        """
         globs.sprites.remove(self)
         globs.tags[self._tag].remove(self)
         return self
 
     def wander(self, callback, time = 1):
+        """
+            turn your sprite into a bot by allowing the sprite to wander around. how the sprite "wanders" is based on the `callback` function.
+
+            :param callback: the callback function to determine how the sprite should wander. this function should call a move operation.
+
+            :param time: the frequency (in seconds) in order to call the wander function. default is `1` second.
+
+        """
         callback(self)
 
         animate(self, time, partial(self.wander, callback, time))

@@ -91,3 +91,6 @@ def get(name):
     else:
         return []
 
+def sprites():
+    """ return a list of all loaded sprites """
+    return globs.sprites
