@@ -7,7 +7,7 @@ def pop(s):
 
         if len(shapes) == 0:
             text('You won in %s seconds' % time())
-            pause()
+            gameover()
 
 shapes = []
 

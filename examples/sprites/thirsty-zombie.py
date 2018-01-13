@@ -12,7 +12,7 @@ def consume(target, zombie):
 	if target.name == 'coke':
 		zombie.destroy()
 		image('kaboom', (15, 10), size=25)
-		pause()
+		gameover()
 	else:
 		score(1)
 
@@ -27,7 +27,7 @@ def miss(target):
 	if score() < 0:
 		text("TOTAL DEHYDRATION")
 		zombie.rotate(90)
-		pause()
+		gameover()
 
 def throw():
 	# pick a random position and select the y coordinate

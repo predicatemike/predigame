@@ -146,7 +146,7 @@ def win(b, p):
 		text('YOU WIN', BLUE)
 	else:
 		text('I SEE WALLS! YOU FAILED!', RED)		
-	pause()
+	gameover()
 d = shape(RECT, GREEN, (29, 17), tag='destination').collides(p, win)
 
 

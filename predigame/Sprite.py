@@ -145,6 +145,13 @@ class Sprite():
         self.sprite_scale_x = value
         self.sprite_scale_y = value
 
+    def resize(self, value):
+        """
+            similar to `Sprite.size()` but callable as a method.
+        """
+        self.size = value
+        return self        
+
     @property
     def angle(self):
         """ 
@@ -495,6 +502,7 @@ class Sprite():
 
         scale_width = self.sprite_scale_x * globs.GRID_SIZE
         scale_height = self.sprite_scale_y * globs.GRID_SIZE
+        # is this needed?
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
 

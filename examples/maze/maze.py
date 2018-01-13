@@ -16,7 +16,7 @@ p = image('zombie', (1, 1)).speed(7).flip().keys(precondition=evaluate)
 
 def win(b, p):
     text('YOU WIN', BLUE)
-    pause()
+    gameover()
 
 for y in range(HEIGHT):
     for x in range(WIDTH):

@@ -10,7 +10,7 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 
 def spawn():
     speed = randint(2, 10)

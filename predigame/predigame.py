@@ -8,6 +8,7 @@ from .Actor import Actor
 
 show_grid = False
 update_game = True
+game_over = False
 sounds = {}
 images = {}
 actors = {}
@@ -331,7 +332,14 @@ def resume():
     global update_game
     update_game = True
 
+def gameover():
+    global game_over
+    game_over = True
+
 def reset(*kwargs):
+    global game_over
+    game_over = False
+
     destroyall()
     globs.keys_registered['keydown'] = {}
     globs.keys_registered['keyup'] = {}
@@ -463,19 +471,13 @@ def main_loop():
                     sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
-            global update_game
+            global update_game            
             if event.action == 'pause' and update_game:
                 update_game = False
                 _update(clock.get_time())
                 _draw(SURF)
 
-        #if event.type == MOUSEMOTION:
-        #    for sprite in globs.mouse_motion:
-        #        sprite.pos = (event.pos[0]/globs.GRID_SIZE - sprite.width/2, 
-        #            event.pos[1]/globs.GRID_SIZE - sprite.height/2)
-
-
-    if update_game:
+    if update_game and not game_over:
         mx, my = pygame.mouse.get_pos()
         for sprite in globs.mouse_motion:
                 sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2, 
