@@ -2,6 +2,9 @@ WIDTH = 30
 HEIGHT = 20
 TITLE = 'Thirsty Zombie'
 
+# load in the stormy background
+BACKGROUND = 'stormy'
+
 # create a zombie sprite. flip the sprite so the zombie faces to the right
 zombie = image('zombie-2', (5, 15), size = 3).speed(10).flip()
 
@@ -87,7 +90,11 @@ def spinner(b, z):
 	global spinning
 	spinning = True
 
+	# destroy the ball
 	b.destroy()
+
+	# spin the zombie.. time probably can't go much smaller than 0.5
+	# execute callback done_spinning after completing two rotations
 	z.spin(time=0.5, rotations=2, callback=done_spinning)
 
 # this is a callback function to launch the ball
@@ -112,7 +119,7 @@ def launch():
 keydown('b', launch)
 
 # add this so we can keep score of the game
-score()
+score(color=WHITE)
 
 # press the r key to reset
 keydown('r', reset)
