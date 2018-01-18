@@ -25,14 +25,40 @@ text("(" + str(WIDTH-1) + ", 0)", PINK, pos = (WIDTH-2.5,1), size = 1.25)
 shape(RECT, PURPLE, (WIDTH-1, HEIGHT-1))
 text("(" + str(WIDTH-1) + ", " + str(HEIGHT-1) + ")", PURPLE, pos = (WIDTH-3,HEIGHT-2), size = 1.25)
 
+# instruct the sprite to move left to right
+# when finished invoke callback for right_to_left
 def left_to_right(s):
+	# s.pos[1] is the y-axis
 	s.move_to((WIDTH-1, s.pos[1]), callback=lambda: right_to_left(s))
 
+# instruct the sprite to move right to left
+# when finished invoke callback for left_to_right
 def right_to_left(s):
 	s.move_to((0, s.pos[1]), callback=lambda: left_to_right(s))
 
+# shape will move left to right and back
+# this one appears above the text
 s = shape(RECT, MAROON, (0,5)).speed(8)
 left_to_right(s)
 
+# shape will move right to and back
+# this one appears below the text
 s = shape(RECT, MAROON, (WIDTH-1, HEIGHT-5)).speed(8)
 right_to_left(s)
+
+# this is a callback function to launch the ball
+def launch():
+	# create a ball and position off the right side of the screen
+	random_y_position = rand_pos()[1]
+
+	# we can't see WIDTH+5
+	ball = image('ball', (WIDTH+5, random_y_position), size=2).spin(0.2).speed(5)
+
+	# move the ball to the left, destroy after movement complete
+	ball.move_to((-5, random_y_position), callback=ball.destroy)
+
+	# prepare to launch another
+	callback(launch, rand(0, 0.5))
+
+# hitting 'b' starts launching balls!
+keydown('b', launch)
