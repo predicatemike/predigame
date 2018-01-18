@@ -145,6 +145,13 @@ class Sprite():
         self.sprite_scale_x = value
         self.sprite_scale_y = value
 
+    def resize(self, value):
+        """
+            similar to `Sprite.size()` but callable as a method.
+        """
+        self.size = value
+        return self        
+
     @property
     def angle(self):
         """ 
@@ -581,18 +588,33 @@ class Sprite():
 
         return self
 
-    def spin(self, time = 1, **kwargs):
+    def spin(self, time = 1, rotations = None, **kwargs):
         """
             make this sprite spin.
 
             :param time: the amount of time (in seconds) to complete a revolution. default is `1` second.
+
+            :param rotations: the amount of time (in seconds) to run the spin effect. default will run forever.
+
+            :param callback: a function to call back when done spinning (rotations must be specified)
+
         """
 
 
         #if self.moving and not kwargs.get('spinning', False):
         #    return self
+        callback = kwargs.get('callback', None)
         self.moving = True
-        animate(self, time, partial(self.spin, time, spinning = True), angle = self.angle + 360)
+        if rotations is not None:
+            if rotations > 0:
+                animate(self, time, partial(self.spin, time, rotations-1, spinning = True, callback=callback), angle = self.angle + 360)
+            else:
+                self.angle = 0
+                if callback is not None:
+                    callback()                
+
+        else:
+            animate(self, time, partial(self.spin, time, spinning = True), angle = self.angle + 360)
 
         return self
 

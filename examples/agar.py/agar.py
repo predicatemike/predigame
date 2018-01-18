@@ -11,7 +11,7 @@ def eat(p, f):
 
     if p.size > 10:
         text(time(), PURPLE)
-        pause()
+        gameover()
 
 for i in range(25):
     f = image('pizza').speed(1).float(0.5)

@@ -128,7 +128,7 @@ Let's make sure we create the failure function. We'll put that right under our `
 ```python
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    pause()
+    gameover()
 ```
 That's it! Here's the complete code if you need it. Go ahead and enjoy Version 1. How many circles can you click?
 ```python
@@ -142,7 +142,7 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    pause()
+    gameover()
 
 def spawn():
     target = choice([BLACK, ORANGE, AQUA, NAVY])
@@ -208,7 +208,7 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    pause()
+    gameover()
 
 def spawn():
 
@@ -275,7 +275,7 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    pause()
+    gameover()
 
 def spawn():
 
@@ -324,7 +324,7 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 ```
 Notice that in `failure` we added the line `if s.name == 'bomb' or score() < 0:`? Since our failure function is called if we don't click on a food or if we click on a bomb, we need to make sure that we end the game **immediately** if the player clicks on the bomb. It's a simple adjustment that will allow our code to be general enough for multiple cases.
 
@@ -342,7 +342,7 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 
 def spawn():
     speed = randint(2, 10)
@@ -420,7 +420,7 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 
 def spawn():
     speed = randint(2, 10)
@@ -514,7 +514,7 @@ def failure(s):
     if s.name == 'bomb' or score() < 0:
         sound('scream')
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 ```
 ## Effects
 While it's cool to click away on our food. We can also introduce a fading effect that makes it slowly dissolve on contact. To do this, simply change the last line in the `destroy` function.
@@ -562,6 +562,6 @@ def failure(s):
     if s.name == 'bomb' or score() < 0:
         sound('scream')
         text('You Survived %s seconds' % time(), MAROON)
-        pause()
+        gameover()
 ```
 The key to the explosion is the `.pulse(0.05)` function call. The game will quickly pause, but the pulse is fast enough to provide an explosion effect.

@@ -8,7 +8,7 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    pause()
+    gameover()
 
 def spawn():
     target = choice([BLACK, ORANGE, AQUA, NAVY])

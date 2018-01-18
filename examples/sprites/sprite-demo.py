@@ -11,7 +11,7 @@ shape(CIRCLE, RED, (2, 2))
 # create a big blue circle next to the red one
 shape(CIRCLE, BLUE, (5, 1), 3)
 
-# create a 2x2 ORANGE square at position (8,2)
+# create a 2x2 ORANGE square at position (10,2)
 shape(RECT, ORANGE, (10, 2), (2,2))
 
 # create a 6x1 rectangle
