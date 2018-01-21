@@ -17,7 +17,8 @@ grid()
 maze_file = 0
 label = None
 
-# mark a shape red
+# mark a shape red (left click)
+# reset a selected shape (right click)
 def mark(s):
     s.destroy()
     print(s.tag)

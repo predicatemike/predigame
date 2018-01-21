@@ -38,6 +38,9 @@ d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 # if the player reaches this cell, execute the 'win' callback
 d.collides(p, win)
 
+# register the 'r' key for resetting the game
+keydown('r', reset)
+
 # a callback function for when the player runs into
 # a red cell
 def lose(b, p):
@@ -48,5 +51,4 @@ def lose(b, p):
 # if the player 'collides' with any cell, execute the 'lose' callback
 p.collides(sprites(), lose)
 
-# register the 'r' key for resetting the game
-keydown('r', reset)
+

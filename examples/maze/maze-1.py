@@ -38,4 +38,5 @@ d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 # if the player reaches this cell, execute the 'win' callback
 d.collides(p, win)
 
+# register the 'r' key for resetting the game
 keydown('r', reset)
