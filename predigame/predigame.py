@@ -1,4 +1,4 @@
-import sys, os, random, datetime, mimetypes, pygame
+import sys, os, random, datetime, mimetypes, pygame, json
 from time import time as get_time
 from pygame.locals import *
 from . import globs
@@ -178,7 +178,20 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
     globs.sprites.append(img)
     return globs.sprites[-1]    
 
+def maze(name, callback):
+    if not name:
+        sys.exit('Maze name is missing!')
 
+    if not callback:
+        sys.exit('Maze object callback is missing!')
+
+    path = 'mazes/' + name + '.json'
+
+    cells = json.load(open(path, 'r'))
+
+    for cell in cells:
+        s = callback()
+        s.speed(50).move_to(cell)    
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:

@@ -1,10 +1,16 @@
-import glob
-import json
-import pathlib
- 
+import glob, json, os
+import pathlib, contextlib
+
 WIDTH = 30
 HEIGHT = 18
 TITLE = 'MAZE EDITOR (click to draw)'
+
+print('The Maze Editor')
+print('Left Click to draw / Right Click to undo a selection')
+print('p - preview saved mazes (hit again for next)')
+print('d - delete the current saved maze')
+print('s - save the current maze in a new file')
+print('r - reset and clear screen')
 
 grid()
 
@@ -38,9 +44,15 @@ def get_mazes():
     return glob.glob('./mazes/*.json')
 
 def get_next_file():
-    return 'mazes/' + str(len(get_mazes()) + 1) + '.json'
+    max_num = 1
+    for a in get_mazes():
+        num = int(a.split('/')[-1].split('.')[0])
+        if num > max_num:
+            max_num = num
 
-def next_preview():
+    return 'mazes/' + str(max_num + 1) + '.json'
+
+def preview():
     global maze_file
     global label
     clear()
@@ -57,19 +69,24 @@ def next_preview():
 
     cells = json.load(open(mazes[maze_file], 'r'))
 
+    for cell in cells:
+        shape(RECT, RED, (cell[0], cell[1]), tag='cell').clicked(mark, button=3)
+    
     if label is not None:
         label.destroy()
     label = text('Maze ' + mazes[maze_file], BLACK)
 
-    for cell in cells:
-        print(cell)
-        shape(RECT, RED, (cell[0], cell[1]), tag='cell').clicked(mark, button=3)
     maze_file += 1
 
-
-def start_preview():
-    next_preview()
-
+def delete():
+    global maze_file
+    # only run in preview mode
+    if label is not None:
+        mazes = get_mazes()
+        print(maze_file)
+        if maze_file <= len(mazes):
+            os.remove(mazes[maze_file-1])
+            reset()
 
 def save():
     pathlib.Path('mazes').mkdir(parents=True, exist_ok=True) 
@@ -80,7 +97,7 @@ def save():
     json.dump(objs, open(get_next_file(), 'w'))
     reset()
 
-keydown('p', start_preview)
-keydown('n', next_preview)
+keydown('p', preview)
+keydown('d', delete)
 keydown('s', save)
 keydown('r', reset)
