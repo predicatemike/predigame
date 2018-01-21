@@ -475,7 +475,7 @@ class Sprite():
 
             :param callback: the callback function to invoke when a mouse click event is detected on this sprite.
 
-            :param button: the mouse button to register for click events. options are left button `1` (default), right button `2` or middle button/track wheel `3`.
+            :param button: the mouse button to register for click events. options are left button `1` (default), right button `3` or middle button/track wheel `2`.
 
             :todo: confirm that collides are bi-directional events.
 
