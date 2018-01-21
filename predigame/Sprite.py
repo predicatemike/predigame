@@ -30,6 +30,7 @@ class Sprite():
         self.rotate_angle = 0
         self.collisions = []
         self.clicks = []
+        self.lifespan = -1
         self.alpha = 255
         self._pixelated = 0
         self.event_pos = None
@@ -273,6 +274,22 @@ class Sprite():
         if callback:
             callback()
 
+    def destruct(self, time=1, **kwargs):
+        """
+            self destruct this sprite after `time` seconds
+            
+            :param time: the amount of time (in seconds) to stay alive before self destructing. 
+
+            :param callback: optional callback to execute after time is up (you'll need to do your own destructing)
+        """
+        
+        self.lifespan = 0
+
+        callback = kwargs.get('callback', None)
+        if callback is None:
+            callback = partial(self.destroy)
+        animate(self, time, callback, lifespan=time)
+        return self        
 
     def fade(self, time=1, **kwargs):
         """
@@ -458,7 +475,7 @@ class Sprite():
 
             :param callback: the callback function to invoke when a mouse click event is detected on this sprite.
 
-            :param button: the mouse button to register for click events. options are left button `1` (default), right button `2` or middle button/track wheel `3`.
+            :param button: the mouse button to register for click events. options are left button `1` (default), right button `3` or middle button/track wheel `2`.
 
             :todo: confirm that collides are bi-directional events.
 
