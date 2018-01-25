@@ -264,8 +264,7 @@ class Sprite():
         new_x = cur_x + vector[0] * globs.GRID_SIZE
         new_y = cur_y + vector[1] * globs.GRID_SIZE
         distance = math.sqrt((new_x - cur_x)**2 + (new_y - cur_y)**2)
-        time = (abs(distance) / self.move_speed) / 60
-
+        time = (abs(distance) / self.move_speed) / 60.0
         return time
 
     def _complete_move(self, callback = None):
