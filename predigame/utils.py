@@ -49,6 +49,16 @@ def rand_pos(x_padding = 0, y_padding = 0):
 
     return x, y
 
+def rand_maze(callback):
+    from daedalus import Maze
+    maze = Maze(globs.WIDTH/globs.GRID_SIZE, globs.HEIGHT/globs.GRID_SIZE)
+    maze.create_perfect()
+    for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
+        for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
+            if maze[x,y] == True:
+                s = callback(tag='wall')
+                s.speed(50).move_to((x,y))
+
 def rand_color():
     r = random.randrange(0, 255)
     g = random.randrange(0, 255)
@@ -94,3 +104,17 @@ def get(name):
 def sprites():
     """ return a list of all loaded sprites """
     return globs.sprites
+
+def graze(sprite) :
+    """ a sprite.wander() operation. randomly move around """
+    x, y = sprite.pos
+    choices    = [(x,y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
+    random.shuffle(choices)
+    obstacles  = [at(p) for p in choices]
+    visibility = [visible(p) for p in choices]  
+
+    for i in range(len(choices)):
+        if obstacles[i] is None and visibility[i]:
+            if choices[i] != (x, y):
+                sprite.move((choices[i][0] - x, choices[i][1] - y))
+                break

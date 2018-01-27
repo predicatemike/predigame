@@ -2,46 +2,63 @@ WIDTH = 30
 HEIGHT = 18
 TITLE = 'MAZE'
 BACKGROUND = 'grass'
+PIGGIES = 10
+
+maze(callback=partial(image, 'stone'))
+
+# a callback that keeps the player from running
+# into walls. 
+def evaluate(action, sprite, pos):
+    obj = at(pos)
+    if obj and obj.tag == 'wall':
+    	return False
+    else:
+        return True
 
 # create a soldier actor with keyboard movements 
 # these movements that can be aborted (if other movements are made)
-player = actor('Soldier-2', (1, 1), tag='player', abortable=True).keys(immediate=True)
+player = actor('Soldier-2', (0, HEIGHT-1), tag='player', abortable=True).keys(precondition=evaluate)
+# player moves at a speed of 5 with an animation rate of 2
+# which flips the sprite image every other frame
+player.speed(5).rate(2).move_to((0, HEIGHT-1))
 
-# player moves at a speed of 2 with an animation rate of 2
-# which flips the sprite image every other move
-player.speed(50).rate(2)
-
-# wander method for the piggies
-# move this to utils
-def graze(sprite) :
-	x, y = sprite.pos
-	choices    = [(x,y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-	shuffle(choices)
-	obstacles  = [at(p) for p in choices]
-	visibility = [visible(p) for p in choices]	
-
-	for i in range(len(choices)):
-		if obstacles[i] is None and visibility[i]:
-			if choices[i] != (x, y):
-				sprite.move((choices[i][0] - x, choices[i][1] - y))
-				break
+# create a piggy function
+def create_piggy(num):
+	for x in range(num):
+		pos = rand_pos()
+		piggy = actor('Piggy', pos, tag='piggy')
+		piggy.move_to((pos))
+		# graze is a random walking
+		piggy.wander(graze, time=0.4)
 
 # create some piggies
-def create_piggy():
-    piggy = actor('Piggy', rand_pos(), tag='piggy')
-    piggy.wander(graze, time=0.4)
-    callback(create_piggy, rand(0, 2))
-callback(create_piggy, 1)
+create_piggy(PIGGIES)
 
-
-# air shot -- don't animate the bullet movement
+# it's an air shot
 def shoot():
 	player.act(SHOOT, loop=1)
+
+	#find the next object that is facing the player
 	target = player.next_object()
-	if target and target.tag == 'piggy':
-		#stop other movements when dead
-		target.act(DIE, loop=1).rate(1).fade(2)
+
+	# if it's a piggy and that piggy is alive
+	if target and target.tag == 'piggy' and target.health > 0:
+		# kill the piggy
+		target.health = 0
+		# make the piggy disappear in 10 seconds
+		target.destruct(5)
+		# get a point
+		score(1)
+
+	# check to see if there are any piggys left
+	if score() == PIGGIES:
+		text('Time for some BACON!! (%s secs)' % time(), color=BLACK)
+
+#we're keeping score
+score()
 
 # register the 'r' key for resetting the game
 keydown('r', reset)
+
+# register space to shoot
 keydown('space', shoot)

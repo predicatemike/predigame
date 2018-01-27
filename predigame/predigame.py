@@ -1,10 +1,12 @@
 import sys, os, random, datetime, mimetypes, pygame, json
+from functools import partial
 from time import time as get_time
 from pygame.locals import *
 from . import globs
-from .utils import load_module, register_keydown, rand_pos, rand_color, roundup, animate
+from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate
 from .Sprite import Sprite
 from .Actor import Actor
+from .constants import *
 
 show_grid = False
 update_game = True
@@ -178,19 +180,20 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
     globs.sprites.append(img)
     return globs.sprites[-1]    
 
-def maze(name, callback):
-    if not name:
-        sys.exit('Maze name is missing!')
+def maze(name=None, callback=None):
 
     if not callback:
-        sys.exit('Maze object callback is missing!')
+        callback = partial(shape, RECT)
+
+    if not name:
+        return rand_maze(callback)
 
     path = 'mazes/' + name + '.json'
 
     cells = json.load(open(path, 'r'))
 
     for cell in cells:
-        s = callback()
+        s = callback(tag='wall')
         s.speed(50).move_to(cell)    
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
