@@ -1,5 +1,5 @@
 WIDTH = 30
 HEIGHT = 18
-TITLE = 'MAZE From File'
+TITLE = 'Daedalus Monochrome Maze'
 
-maze()
+maze(callback=partial(image, 'stone'))
