@@ -1,18 +1,18 @@
-WIDTH = 30
-HEIGHT = 18
+WIDTH = 31
+HEIGHT = 19
 TITLE = 'Making Bacon'
 
 # use a grass background
 BACKGROUND = 'grass'
 
 # how many piggies to create
-PIGGIES = 10
+PIGGIES = 1
 
 # create a daedalus maze with stone images
 maze(callback=partial(image, 'stone'))
 
 # a callback that keeps the player from running
-# into walls. 
+# into walls.
 def evaluate(action, sprite, pos):
     obj = at(pos)
     if obj and obj.tag == 'wall':
@@ -21,7 +21,7 @@ def evaluate(action, sprite, pos):
         return True
 
 # create a soldier on the bottom left grid cell
-player = actor('Soldier-2', (0, HEIGHT-1), tag='player', abortable=True)
+player = actor('Soldier-2', (1, HEIGHT-2), tag='player', abortable=True)
 
 # have the solider attach to the keyboard arrows
 # each move is "evaluated" to make sure the player
@@ -30,7 +30,7 @@ player.keys(precondition=evaluate)
 
 # player moves at a speed of 5 with an animation rate of 2
 # which flips the sprite image every other frame
-player.speed(5).rate(2).move_to((0, HEIGHT-1))
+player.speed(5).rate(2).move_to((1, HEIGHT-2))
 
 # create a piggy function
 def create_piggy(num):
@@ -55,7 +55,7 @@ def shoot():
 	if target and target.tag == 'piggy' and target.health > 0:
 		# kill the piggy
 		target.health = 0
-		# make the piggy disappear in 10 seconds
+		# make the piggy disappear in 5 seconds
 		target.destruct(5)
 		# get a point
 		score(1)
@@ -70,7 +70,8 @@ keydown('space', shoot)
 #we're keeping score
 score()
 
+# keep track of the time
+score(pos=LOWER_LEFT, method=TIMER, step=1, goal=1000)
+
 # register the 'r' key for resetting the game
 keydown('r', reset)
-
-

@@ -1,12 +1,14 @@
 import sys, os, random, datetime, mimetypes, pygame, json
+from numbers import Number
 from functools import partial
-from time import time as get_time
+from time import time as get_time, gmtime, strftime
 from pygame.locals import *
 from . import globs
-from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate
+from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
 from .constants import *
+import traceback
 
 show_grid = False
 update_game = True
@@ -76,7 +78,7 @@ def _create_actor(actions, name, pos, size, abortable, tag):
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
     rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
-    
+
     return Actor(actions, rect, tag, abortable, name=name)
 
 def _create_rectangle(color, pos, size, outline, tag):
@@ -171,14 +173,14 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
         actors[name] = states
 
     if not loaded:
-        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')    
+        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')
 
     if not pos:
         pos = rand_pos(size - 1, size - 1)
 
     img = _create_actor(states, name, pos, size, abortable, tag)
     globs.sprites.append(img)
-    return globs.sprites[-1]    
+    return globs.sprites[-1]
 
 def maze(name=None, callback=None):
 
@@ -194,7 +196,7 @@ def maze(name=None, callback=None):
 
     for cell in cells:
         s = callback(tag='wall')
-        s.speed(50).move_to(cell)    
+        s.speed(50).move_to(cell)
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
@@ -293,50 +295,102 @@ def time():
 def callback(function, wait):
     callbacks.append({'cb': function, 'time': get_time() + wait})
 
+def reset_score(**kwargs):
+    """
+        forces a reset for a given scoreboard element
+    """
+    pos = kwargs.get('pos', UPPER_LEFT)
+    global score_dict
+    try:
+        globs.sprites.remove(score_dict[pos]['sprite'])
+        del score_dict[pos]
+        score(**kwargs)
+    except:
+        return
+
 def score(value = 0, **kwargs):
+    """
+        enable scoring in a game
 
-    if value > 1000:
-        print('Mean scoring rejected value %s'%str(value))
-        value = 1000
+        TODO: add ability to reset
+    """
+    if isinstance(value, Number):
+        if value > 1000 or value < -1000:
+            print('Mean scoring rejected value %s'%str(value))
+            value = 0
 
-    if value < -1000:
-        print('Mean scoring rejected value %s'%str(value))
-        value = -1000
-        
+    color = kwargs.get('color', (25,25,25))
+    size = kwargs.get('size', 0.75)
+    pos = kwargs.get('pos', UPPER_LEFT)
+    method = kwargs.get('method', ACCUMULATE)
+    cb = kwargs.get('callback', None)
+    sformat = kwargs.get('format', '%H:%M:%S')
+    goal = kwargs.get('goal', 0)
+    step = kwargs.get('step', -1)
+    prefix = kwargs.get('prefix', None)
+    grid_position = score_pos(pos)
 
     global score_dict
     try:
         score_dict
-        globs.sprites.remove(score_dict['sprite'])
     except:
-        score_dict = {
-            'value': 0,
+        score_dict = {}
+
+    scoreboard = None
+    try:
+        scoreboard = score_dict[pos]
+        if scoreboard['sprite']:
+            globs.sprites.remove(scoreboard['sprite'])
+    except:
+        scoreboard = {
+            'value': value,
+            'step' : step,
             'sprite': None,
-            'size': 28,
-            'color': (25, 25, 25),
-            'pos': (25, 25)
+            'size': size,
+            'color': color,
+            'pos': grid_position,
+            'method' : method,
+            'callback' : cb,
+            'format' : sformat,
+            'goal' : goal,
+            'prefix' : prefix
         }
 
-    score_dict['color'] = kwargs.get('color', score_dict['color'])
-    size = kwargs.get('size', None)
-    pos = kwargs.get('pos', None)
 
-    if size:
-        score_dict['size'] = int(size * globs.GRID_SIZE)
-    if pos:
-        score_dict['pos'] = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
+    scoreboard['size'] = int(size * globs.GRID_SIZE)
 
-    score_dict['value'] += value
+    if scoreboard['method'] == TIMER:
+        scoreboard['value'] += scoreboard['step']
+        if (scoreboard['step'] > 0 and scoreboard['value'] < scoreboard['goal']) or (scoreboard['step'] < 0 and scoreboard['value'] > scoreboard['goal']):
+            callback(partial(score, pos=pos), 1)
+        elif scoreboard['callback'] is not None:
+            scoreboard['callback']()
+    elif scoreboard['method'] == ACCUMULATE:
+        if isinstance(value, Number):
+            scoreboard['value'] += value
+        else:
+            scoreboard['value'] = value
+    elif scoreboard['method'] == VALUE:
+        scoreboard['value'] = value
 
-    string = str(score_dict['value'])
-    font = pygame.font.Font(None, score_dict['size'])
+    string = str(scoreboard['value'])
+    if scoreboard['method'] == TIMER:
+        string = strftime(scoreboard['format'], gmtime(scoreboard['value']))
+
+    if scoreboard['prefix']:
+        string = scoreboard['prefix'] + ' ' + string
+    font = pygame.font.Font(None, scoreboard['size'])
     font_width, font_height = font.size(string)
-    surface = font.render(string, True, score_dict['color'])
-    score_dict['sprite'] = Sprite(surface, pygame.Rect(score_dict['pos'][0], score_dict['pos'][1], font_width, font_height))
-
-    globs.sprites.append(score_dict['sprite'])
-
-    return score_dict['value']
+    scoreboard['color'] = color
+    surface = font.render(string, True, scoreboard['color'])
+    scoreboard['pos'] = grid_position[0] * globs.GRID_SIZE, grid_position[1] * globs.GRID_SIZE
+    if pos == UPPER_RIGHT or pos == LOWER_RIGHT:
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height))
+    else:
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height))
+    globs.sprites.append(scoreboard['sprite'])
+    score_dict[pos] = scoreboard
+    return scoreboard['value']
 
 def destroyall():
     del globs.sprites[:]
@@ -424,7 +478,7 @@ def _draw(SURF):
         SURF.blit(globs.BACKGROUND, (0,0))
     else:
         SURF.fill(globs.BACKGROUND)
-    
+
     globs.cells = {}
     for sprite in globs.sprites:
         globs.cells[sprite.pos] = sprite
@@ -446,7 +500,7 @@ def main_loop():
         elif event.type == ACTIVEEVENT:
             resume()
 
-        if event.type == KEYDOWN:            
+        if event.type == KEYDOWN:
 
             # ignore all the other key presses
             # complete any in process animations
@@ -487,7 +541,7 @@ def main_loop():
                     sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
-            global update_game            
+            global update_game
             if event.action == 'pause' and update_game:
                 update_game = False
                 _update(clock.get_time())
@@ -496,7 +550,7 @@ def main_loop():
     if update_game and not game_over:
         mx, my = pygame.mouse.get_pos()
         for sprite in globs.mouse_motion:
-                sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2, 
+                sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2,
                     my/globs.GRID_SIZE - sprite.height/2)
         _update(clock.get_time())
         _draw(SURF)

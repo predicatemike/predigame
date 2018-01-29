@@ -2,6 +2,7 @@ import random, math, os, sys
 from types import ModuleType
 from . import globs
 from .Animation import Animation
+from .constants import *
 
 def load_module(path, api):
     src = open(path).read()
@@ -29,7 +30,7 @@ def register_keyup(key, callback):
 def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
     globs.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
 
-def rand_pos(x_padding = 0, y_padding = 0):
+def rand_pos(x_padding = 0, y_padding = 0, empty=False):
     grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
     grid_height = (globs.HEIGHT / globs.GRID_SIZE) - math.ceil(y_padding)
     x = 0
@@ -51,9 +52,10 @@ def rand_pos(x_padding = 0, y_padding = 0):
 
 def rand_maze(callback):
     from daedalus import Maze
-    maze = Maze(globs.WIDTH/globs.GRID_SIZE, globs.HEIGHT/globs.GRID_SIZE)
+    maze = Maze((globs.WIDTH/globs.GRID_SIZE), (globs.HEIGHT/globs.GRID_SIZE))
     maze.create_perfect()
     for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
+        print(x)
         for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
             if maze[x,y] == True:
                 s = callback(tag='wall')
@@ -101,6 +103,15 @@ def get(name):
     else:
         return []
 
+def score_pos(pos = UPPER_LEFT):
+    """ return the grid position of the score sprite """
+    return {
+        UPPER_LEFT : (0.5, 0.5),
+        UPPER_RIGHT: ((globs.WIDTH/globs.GRID_SIZE) - 0.5, 0.5),
+        LOWER_LEFT:  (0.5, (globs.HEIGHT/globs.GRID_SIZE) - 1),
+        LOWER_RIGHT: ((globs.WIDTH/globs.GRID_SIZE) - 0.5, (globs.HEIGHT/globs.GRID_SIZE) - 1)
+    }.get(pos, UPPER_LEFT)
+
 def sprites():
     """ return a list of all loaded sprites """
     return globs.sprites
@@ -111,7 +122,7 @@ def graze(sprite) :
     choices    = [(x,y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
     random.shuffle(choices)
     obstacles  = [at(p) for p in choices]
-    visibility = [visible(p) for p in choices]  
+    visibility = [visible(p) for p in choices]
 
     for i in range(len(choices)):
         if obstacles[i] is None and visibility[i]:
