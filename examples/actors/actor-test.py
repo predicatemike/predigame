@@ -6,7 +6,7 @@ TITLE = 'Making Bacon'
 BACKGROUND = 'grass'
 
 # how many piggies to create
-PIGGIES = 1
+PIGGIES = 50
 
 # create a daedalus maze with stone images
 maze(callback=partial(image, 'stone'))
@@ -33,16 +33,20 @@ player.keys(precondition=evaluate)
 player.speed(5).rate(2).move_to((1, HEIGHT-2))
 
 # create a piggy function
-def create_piggy(num):
-	for x in range(num):
-		pos = rand_pos()
-		piggy = actor('Piggy', pos, tag='piggy')
-		piggy.move_to((pos))
-		# graze is a random walk
-		piggy.wander(graze, time=0.4)
+def create_piggy():
+   for x in range(PIGGIES):
+      pos = rand_pos()
+
+      if at(pos) is not None:
+         print('something is already here')
+
+      piggy = actor('Piggy', pos, tag='piggy')
+      piggy.pos = pos
+      # graze is a random walk
+      piggy.wander(graze, time=0.75)
 
 # create some piggies
-create_piggy(PIGGIES)
+callback(create_piggy,1)
 
 # shoot a weapon
 def shoot():

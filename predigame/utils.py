@@ -30,6 +30,16 @@ def register_keyup(key, callback):
 def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
     globs.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
 
+def at(pos):
+    if pos in globs.cells:
+        return globs.cells[pos]
+
+def get(name):
+    if name in globs.tags:
+        return globs.tags[name]
+    else:
+        return []
+
 def rand_pos(x_padding = 0, y_padding = 0, empty=False):
     grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
     grid_height = (globs.HEIGHT / globs.GRID_SIZE) - math.ceil(y_padding)
@@ -42,10 +52,7 @@ def rand_pos(x_padding = 0, y_padding = 0, empty=False):
         if len(globs.sprites) >= grid_width * grid_height:
             break
 
-        for sprite in globs.sprites:
-            if sprite.rect.x / globs.GRID_SIZE == x and sprite.rect.y / globs.GRID_SIZE == y:
-                break
-        else:
+        if at((x, y)) is None:
             break
 
     return x, y
@@ -55,11 +62,10 @@ def rand_maze(callback):
     maze = Maze((globs.WIDTH/globs.GRID_SIZE), (globs.HEIGHT/globs.GRID_SIZE))
     maze.create_perfect()
     for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
-        print(x)
         for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
             if maze[x,y] == True:
                 s = callback(tag='wall')
-                s.speed(50).move_to((x,y))
+                s.pos = (x,y)
 
 def rand_color():
     r = random.randrange(0, 255)
@@ -92,16 +98,6 @@ def visible(p1):
         return True
     else:
         return False
-
-def at(pos):
-    if pos in globs.cells:
-        return globs.cells[pos]
-
-def get(name):
-    if name in globs.tags:
-        return globs.tags[name]
-    else:
-        return []
 
 def score_pos(pos = UPPER_LEFT):
     """ return the grid position of the score sprite """
