@@ -9,7 +9,7 @@ BACKGROUND = 'grass'
 PIGGIES = 50
 
 # create a daedalus maze with stone images
-maze(callback=partial(image, 'stone'))
+#maze(callback=partial(image, 'stone'))
 
 # a callback that keeps the player from running
 # into walls.
@@ -17,6 +17,8 @@ def evaluate(action, sprite, pos):
     obj = at(pos)
     if obj and obj.tag == 'wall':
     	return False
+    elif not visible(pos):
+        return False
     else:
         return True
 
