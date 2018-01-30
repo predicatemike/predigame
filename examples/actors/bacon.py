@@ -9,7 +9,7 @@ BACKGROUND = 'grass'
 PIGGIES = 50
 
 # create a daedalus maze with stone images
-#maze(callback=partial(image, 'stone'))
+maze(callback=partial(image, 'stone'))
 
 # a callback that keeps the player from running
 # into walls.
