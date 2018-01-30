@@ -227,6 +227,17 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwa
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1, tag = ''):
+    """
+        draw a text sprite
+
+        :param string: the text to display
+
+        :param color: the color to use to display (default is to select a random color)
+
+        :param pos: the position of the sprite in grid coordinates (default is on center of game canvas)
+
+        :param size: the size of the text font (default is 1)
+    """
     string = str(string)
     size = int(size * globs.GRID_SIZE)
     font = pygame.font.Font(None, size)
@@ -247,6 +258,15 @@ def text(string, color = None, pos = None, size = 1, tag = ''):
     return globs.sprites[-1]
 
 def sound(name = None, plays = 1, duration = 0):
+    """
+        play a sound (wav or ogg file). Sounds must be stored in the `sounds/` directory.
+
+        :param name: the name of the sound to play
+
+        :param plays: the number of times to play the sound (default is 1)
+
+        :param duration: the amount of time (in seconds) to play the sound clip (default plays the entire clip)
+    """
     plays = plays - 1
     duration = int(duration * 1000)
 
@@ -286,18 +306,33 @@ def sound(name = None, plays = 1, duration = 0):
     sounds[name].play(plays, duration)
 
 def grid():
+    """
+        show the grid cells on the game canvas
+    """
     global show_grid
     show_grid = True
 
 def time():
+    """
+        returns the time (in seconds) since the start of the game
+    """
     return float('%.3f'%(get_time() - start_time))
 
 def callback(function, wait):
+    """
+        register a time based callback function
+
+        :param function: pointer to a callback function
+
+        :param wait: the amount of time to **wait** for the callback to execute.
+    """
     callbacks.append({'cb': function, 'time': get_time() + wait})
 
 def reset_score(**kwargs):
     """
         forces a reset for a given scoreboard element
+
+        :param pos: the corner position of the scoreboard. Default is `UPPER_LEFT`. Options inclue `UPPER_RIGHT`, `LOWER_LEFT`, and `LOWER_RIGHT`.
     """
     pos = kwargs.get('pos', UPPER_LEFT)
     global score_dict
@@ -310,9 +345,28 @@ def reset_score(**kwargs):
 
 def score(value = 0, **kwargs):
     """
-        enable scoring in a game
+        Predigame scoring functions. Any game may have four separate
+        scoreboards on the game - one in each corner. *NOTE:* all parameters,
+        besides value, are only applied at scoreboard construction time.
 
-        TODO: add ability to reset
+        :param value: some scoring value (default is 0). the semantics of the value depends on the scoring `method`
+
+        :param pos: the corner position of the scoreboard. Default is `UPPER_LEFT`. Options inclue `UPPER_RIGHT`, `LOWER_LEFT`, and `LOWER_RIGHT`.
+
+        :param color: the color of the scoring block (default is (25, 25, 25)).
+
+        :param size: the size (in grid cells) of the scoreboard text (default is 0.75).
+
+        :param method: the type of scoreboard to create. options include `ACCUMULATE` (value added/subtracted to score), `VALUE` (simply display the current value), `TIMER` (count time as defined by `step`)
+
+        :param step: applies to `method=TIMER` and sets the operation of the timer. Default is -1 (count up by seconds).
+
+        :param goal: applies to `method=TIMER`. a goal metric of the scoreboard. If the goal is reached a `callback` will be invoked.
+
+        :param prefix: optional text that can be provided to the start of the scoreboard.
+
+        :param callback: optional callback to invoke when the `method=TIMER` reaches a goal.
+
     """
     if isinstance(value, Number):
         if value > 1000 or value < -1000:
