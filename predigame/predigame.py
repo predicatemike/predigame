@@ -596,7 +596,7 @@ def main_loop():
 
         if event.type == USEREVENT:
             global update_game
-            if event.action == 'pause' and update_game:
+            if event.action == 'pause' and update_game and not game_over:
                 update_game = False
                 _update(clock.get_time())
                 _draw(SURF)
