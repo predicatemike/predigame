@@ -63,7 +63,9 @@ def _create_image(name, pos, size, tag):
     rect.size = new_width, new_height
     rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
 
-    return Sprite(img, rect, tag, name=name)
+    s = Sprite(img, rect, tag, name=name)
+    s.pos = pos
+    return s
 
 def _create_actor(actions, name, pos, size, abortable, tag):
     img = actions['idle'][0]
@@ -79,7 +81,9 @@ def _create_actor(actions, name, pos, size, abortable, tag):
     rect.size = new_width, new_height
     rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
 
-    return Actor(actions, rect, tag, abortable, name=name)
+    s = Actor(actions, rect, tag, abortable, name=name)
+    s.pos = pos
+    return s
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
@@ -144,6 +148,7 @@ def image(name = None, pos = None, size = 1, tag = ''):
 
     img = _create_image(name, pos, size, tag)
     globs.sprites.append(img)
+    globs.cells[pos] = img
     return globs.sprites[-1]
 
 def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
@@ -180,6 +185,7 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
 
     img = _create_actor(states, name, pos, size, abortable, tag)
     globs.sprites.append(img)
+    globs.cells[pos] = img
     return globs.sprites[-1]
 
 def maze(name=None, callback=None):
@@ -196,7 +202,10 @@ def maze(name=None, callback=None):
 
     for cell in cells:
         s = callback(tag='wall')
-        s.speed(50).move_to(cell)
+        del globs.cells[s.pos]
+        s.pos = cell
+        globs.cells[s.pos] = s
+        
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
@@ -224,6 +233,7 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwa
         return False
 
     globs.sprites.append(shape)
+    globs.cells[pos] = shape
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1, tag = ''):

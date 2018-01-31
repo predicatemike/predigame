@@ -43,8 +43,8 @@ keydown('r', reset)
 
 # a callback function for when the player runs into
 # a red cell
-def lose(b, p):
-	if b.tag != 'destination':
+def lose(player, block):
+	if block.tag != 'destination':
 		text('GAME OVER', BLACK)
 		gameover()
 

@@ -6,7 +6,7 @@ TITLE = 'Making Bacon'
 BACKGROUND = 'grass'
 
 # how many piggies to create
-PIGGIES = 50
+PIGGIES = 10
 
 # create a daedalus maze with stone images
 maze(callback=partial(image, 'stone'))
@@ -48,7 +48,7 @@ def create_piggy():
       piggy.wander(graze, time=0.75)
 
 # create some piggies
-callback(create_piggy,1)
+callback(create_piggy,0.1)
 
 # shoot a weapon
 def shoot():

@@ -137,8 +137,8 @@ Now let's modify the code to end the game if the player sprite bumps into a wall
 ```python
 # a callback function for when the player runs into
 # a red cell
-def lose(b, p):
-    if b.tag != 'destination':
+def lose(player, block):
+    if block.tag != 'destination':
         text('GAME OVER', BLACK)
         gameover()
 
@@ -181,7 +181,7 @@ Next we'll set the `evaluate` callback function and assign to execute on `keys()
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys(precondition=evaluate)
 ```
-The code from the prior step can be removed since it won't be called anymore. For context, here's the complete file in case you git a little lost making changes in the right locations.
+The code from the prior step can be removed since it won't be called anymore. For context, here's the complete file in case you get a little lost making changes in the right locations.
 
 ```python
 WIDTH = 30

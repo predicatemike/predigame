@@ -90,7 +90,10 @@ def delete():
             reset()
 
 def save():
-    pathlib.Path('mazes').mkdir(parents=True, exist_ok=True) 
+    try:
+       pathlib.Path('mazes').mkdir(parents=True)
+    except:
+       print('mazes directory already exists')
     objs = []
     for s in sprites():
         if s.tag == 'cell':
