@@ -59,7 +59,7 @@ class Actor(Sprite):
 		if vector[0] == 1:
 			direction = RIGHT
 		elif vector[0] == -1:
-			direction = LEFT	
+			direction = LEFT
 		elif vector[1] == 1:
 			direction = FRONT
 		elif vector[1] == -1:
@@ -70,7 +70,7 @@ class Actor(Sprite):
 
 		self.direction = direction
 
-		self.act(WALK + '_' + direction, FOREVER)					
+		self.act(WALK + '_' + direction, FOREVER)
 		Sprite.move(self, vector, **kwargs)
 
 	def _complete_move(self, callback = None):
@@ -99,7 +99,7 @@ class Actor(Sprite):
 		elif self.health > 0:
 			self.index = 0
 			self.action = IDLE + '_' + self.direction
-			self.action_loop = FOREVER		
+			self.action_loop = FOREVER
 
 	def use(self, name):
 		""" use a given object (e.g. a gun, medicine) """
@@ -107,7 +107,7 @@ class Actor(Sprite):
 			self._inventory[name].use(self)
 		return self
 
-	def take(self, name, object):		
+	def take(self, name, object):
 		""" take this object and add to inventory """
 		self._inventory[name] = object
 		return self
@@ -183,22 +183,43 @@ class Actor(Sprite):
 			return self.x + 1, self.y
 
 	def next_object(self):
-		""" returns the next thing along along the path where this actor is facing """
+		""" returns the next thing along along the path where this actor is facing.
+			if the next thing is an Actor, it must be alive.
+		"""
 		if self.direction == BACK:
 			for y in range(self.y-1, -1, -1):
 				if at((self.x, y)):
-					return at((self.x, y))
+					s = at((self.x, y))
+					if isinstance(s, Actor):
+						if s.health > 0:
+							return s
+					else:
+						return s
 		elif self.direction == FRONT:
 			for y in range(self.y+1, int(globs.HEIGHT/globs.GRID_SIZE)+1, 1):
 				if at((self.x, y)):
-					return at((self.x, y))
+					s = at((self.x, y))
+					if isinstance(s, Actor):
+						if s.health > 0:
+							return s
+					else:
+						return s
 		elif self.direction == LEFT:
 			for x in range(self.x-1, -1, -1):
 				if at((x, self.y)):
-					return at((x, self.y))
+					s = at((x, self.y))
+					if isinstance(s, Actor):
+						if s.health > 0:
+							return s
+					else:
+						return s
 		elif self.direction == RIGHT:
 			for x in range(self.x+1, int(globs.WIDTH/globs.GRID_SIZE)+1, 1):
 				if at((x, self.y)):
-					return at((x, self.y))
+					s = at((x, self.y))
+					if isinstance(s, Actor):
+						if s.health > 0:
+							return s
+					else:
+						return s
 		return None
-

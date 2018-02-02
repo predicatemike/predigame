@@ -1,6 +1,6 @@
 Working with Sprites
 ===================
-The Predigame sprite is a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite can consist of a bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in Predigame have some fun properties - they can be clicked, collide with other sprites, even fade, spin or pulse. 
+The Predigame sprite is a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite can consist of a bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in Predigame have some fun properties - they can be clicked, collide with other sprites, even fade, spin or pulse.
 
 Let's have fun working with Sprites!
 
@@ -13,7 +13,7 @@ WIDTH = 30
 HEIGHT = 20
 TITLE = 'Sprites Demo'
 ```
-Save your changes. Let's call the file `sprite-demo.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file). 
+Save your changes. Let's call the file `sprite-demo.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file).
 
     my_machine$ pigm sprite-demo.py
 
@@ -39,7 +39,7 @@ The result should look like the figure below. Counting the grid coordinates will
 
 ![alt text](http://predicate.us/predigame/images/sprites_grid.png "Predigame Grid Coordinates")
 
-The following code will show how to place rectangle sprites in each of the four corners of the window. 
+The following code will show how to place rectangle sprites in each of the four corners of the window.
 
 ```python
 # top/left
@@ -160,13 +160,14 @@ Creating Images
 Like shapes, the Predigame platform also supports creating images. The formal *function definition* (or signature) for creating an image is as follows:
 
 ```python
-image(name = None, pos = None, size = 1)
+image(name = None, pos = None, center = None, size = 1)
 ```
 Notice that it is similar, yet slightly different than the code for creating a shape. An image in Predigame is defined by:
 
 1. `name` - the name (without extension) of the image file. The image file should be stored in the **images/** directory. For example, if we had an image "coke.png" in our **images/** directory, the name of the image would be "coke".
 2. `pos` -  the grid cell of the shape. Officially, this will be the top-left cell of the image.
-3. `size` - the size of the shape in terms of grid cells. By default, the image will be fit into a single grid cell.
+3. `center` - used as an alternative to `pos` to use this position as the center point.
+4. `size` - the size of the shape in terms of grid cells. By default, the image will be fit into a single grid cell.
 
 Notice again that each of these attributes have default values. This means that they are option, and if not specified, PrediGame will select a random image from the **images/** directory of size `1` (so it will fit into a single cell) and will be placed at a random position.
 
@@ -198,7 +199,7 @@ image('sprite', (2,14)).spin(time=1)
 ```
 This sprite will spin and complete a revolution every second. It's possible to change `time` to a smaller or larger number to increase or decrease the spin rate.
 
-### Pulsing 
+### Pulsing
 ```python
 image('sprite', (7,14)).pulse(time=0.5, size=3)
 ```
@@ -236,7 +237,7 @@ We already briefly covered a click example, but let's look at one that is a litt
 ```python
 def doit(s):
     s.destroy()
-    image('kaboom', (15, 10), size=25)
+    image('kaboom', center=(15, 10), size=25)
 
 image('clickme', (19, 15), size = 2).pulse(time=0.05, size= 1.25).clicked(doit)
 ```
@@ -266,7 +267,7 @@ def eatit(z, s):
     z.scale(1.2)
 
 image('zombie-1', (28, 18), size = 2).keys().collides(sprites(), eatit)
-image('zombie-2', (25, 18), size = 2).keys(right='d', left='a', up='w', down='s').collides(sprites(), eatit) 
+image('zombie-2', (25, 18), size = 2).keys(right='d', left='a', up='w', down='s').collides(sprites(), eatit)
 ```
 Here we **chain** the `.collides()` callback which takes in a list of sprites and registers a callback function. As coded, we register both zombies to check for collisions with all sprites, the `sprites()` call will return all sprites on the canvas, and invite the `eatit` callback function.
 
@@ -308,7 +309,7 @@ zombie = image('zombie-2', (5, 15), size = 3).speed(10).flip()
 # tell the zombie to follow the mouse movement
 zombie.follow()
 ```
-We use the `.flip()` function to have the zombie face towards right right side of the screen. 
+We use the `.flip()` function to have the zombie face towards right right side of the screen.
 
 Here's how to throw a sprite object:
 ```python
@@ -339,7 +340,7 @@ def consume(target, zombie):
     if target.name == 'coke':
         # zombies don't like coke. end the game
         zombie.destroy()
-        image('kaboom', (15, 10), size=25)
+        image('kaboom', center=(15, 10), size=25)
         gameover()
     else:
         # we added a sprite. increase score
@@ -353,11 +354,11 @@ def miss(target):
 
     # destroy the can
     target.destroy()
-    
+
     # subtract a point if this was a sprite
     if target.name == 'sprite':
         score(-1)
-        
+
     # we lost
     if score() < 0:
         text("TOTAL DEHYDRATION")
@@ -442,7 +443,7 @@ def consume(target, zombie):
     if target.name == 'coke':
         # zombies don't like coke. end the game
         zombie.destroy()
-        image('kaboom', (15, 10), size=25)
+        image('kaboom', center=(15, 10), size=25)
         gameover()
     else:
         # we added a sprite. increase score
@@ -453,7 +454,7 @@ def miss(target):
 
     # destroy the can
     target.destroy()
-    
+
     # subtract a point if this was a sprite
     if target.name == 'sprite':
         score(-1)

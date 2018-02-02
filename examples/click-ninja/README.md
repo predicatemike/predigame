@@ -18,7 +18,7 @@ WIDTH = 20
 HEIGHT = 14
 TITLE = 'Click Ninja'
 ```
-Save your changes. Let's call the file `clickninja.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file). 
+Save your changes. Let's call the file `clickninja.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file).
 
     my_machine$ pigm clickninja.py
 
@@ -72,7 +72,7 @@ The Python program language requires that we specify our **functions** before re
 def destroy(s):
     s.destroy()
 ```
-This function will simply destroy a circle anytime one is clicked. Functions don't work until they are called, or in the case of callbacks, until they are registered. 
+This function will simply destroy a circle anytime one is clicked. Functions don't work until they are called, or in the case of callbacks, until they are registered.
 
 ```python
 s = shape(CIRCLE, target, arc[0]).clicked(destroy)
@@ -87,7 +87,7 @@ WIDTH = 20
 HEIGHT = 14
 TITLE = 'Click Ninja'
 
-def destroy(s): 
+def destroy(s):
     s.destroy()
 
 def spawn():
@@ -95,7 +95,7 @@ def spawn():
 
     arc = rand_arc()
 
-    s = shape(CIRCLE, target, arc[0]).clicked(destroy) 
+    s = shape(CIRCLE, target, arc[0]).clicked(destroy)
     s.move_to(arc[1], arc[2], callback = s.destroy)
     callback(spawn, rand(0.1, 3))
 
@@ -104,7 +104,7 @@ callback(spawn, 1)
 keydown('r', reset)    
 ```
 ### Keeping Score
-We can modify our destroy callback function to **score** the number of things we destroy. It's just requires adding a line of code. 
+We can modify our destroy callback function to **score** the number of things we destroy. It's just requires adding a line of code.
 ```python
 def destroy(s):
     # vvvv - add the line below - vvvv
@@ -128,7 +128,7 @@ Let's make sure we create the failure function. We'll put that right under our `
 ```python
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    gameover()
+    callback(gameover, 0.01)
 ```
 That's it! Here's the complete code if you need it. Go ahead and enjoy Version 1. How many circles can you click?
 ```python
@@ -149,7 +149,7 @@ def spawn():
 
     arc = rand_arc()
 
-    s = shape(CIRCLE, target, arc[0]).clicked(destroy) 
+    s = shape(CIRCLE, target, arc[0]).clicked(destroy)
     s.move_to(arc[1], arc[2], callback = lambda: failure(s))
     callback(spawn, rand(0.1, 3))
 
@@ -161,19 +161,19 @@ keydown('r', reset)
 Let's swap out circles for pictures of food. The predigame platform makes it easy to load pictures in your game. Just copy them to an `images` subdirectory.
 
     my_machine$ mkdir images
-    
+
 The click ninja includes a few food images to get started. Let's see what we have.
 
     my_machine$ ls images
     bananas.png  cherries.png ham.png      icee.png     pizza.png    taco.png
     bomb.png     fries.png    hotdog.png   olives.png   redsplat.png    
-    
+
 Let's say we want to load the hotdog image. We can do that with a single line of code.
 
 ```python
-image('hotdog', (x, y), size)
+image('hotdog', (x, y), size=size)
 ```
-We'll see that to load the image we need the first part of the file, the initial x and y coordinates, and the size (default is `1.0`). Notice that we don't need to include the `images` directory or the `.png` file extension. Predigame takes care of that for us. 
+We'll see that to load the image we need the first part of the file, the initial x and y coordinates, and the size (default is `1.0`). Notice that we don't need to include the `images` directory or the `.png` file extension. Predigame takes care of that for us.
 
 So, now let's replace the circles with images. To do that we're going to rewrite our `spawn()` function.
 ```python
@@ -182,14 +182,14 @@ def spawn():
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
-    s.speed(speed).clicked(destroy) 
+    s = image(target, arc[0], size=size)
+    s.speed(speed).clicked(destroy)
     s.move_to(arc[1], arc[2], callback = lambda: failure(s))
 
     callback(spawn, rand(0.1, 3))
@@ -208,21 +208,21 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    gameover()
+    callback(gameover, 0.01)
 
 def spawn():
 
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
-    s.speed(speed).clicked(destroy) 
+    s = image(target, arc[0], size=size)
+    s.speed(speed).clicked(destroy)
     s.move_to(arc[1], arc[2], callback = lambda: failure(s))
 
     callback(spawn, rand(0.1, 3))
@@ -236,8 +236,8 @@ keydown('r', reset)
 Instead of just drawing food, let's throw some bombs too! Unlike food, our players can't click on a bomb or else.. well, game over! For starters, let's assume there is a 25% (1 out of 4) chance a bomb will be thrown. In code we'll want to add two lines in our `spawn()` function.
 
 ```python
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
     # vvv - add this code - vvv
     if randint(1, 4) == 2:
@@ -247,21 +247,21 @@ Instead of just drawing food, let's throw some bombs too! Unlike food, our playe
 The two lines we just added will replace the `target` variable with bomb with a 25% probability. Now, we said the player can't click on a bomb (game over otherwise) and, unlike food, if they don't click, we don't want to stop the game (because not clicking the bomb is what we want). This means we'll need to change the following lines:
 ```python
     # old code
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     s.speed(speed).clicked(destroy)
-    s.move_to(arc[1], arc[2], callback = lambda: failure(s)) 
+    s.move_to(arc[1], arc[2], callback = lambda: failure(s))
 ```
 And check to see if target is a bomb.
 ```python
     # new code
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     if target == 'bomb':
        s.speed(speed).clicked(failure)
-       s.move_to(arc[1], arc[2], callback = s.destroy) 
+       s.move_to(arc[1], arc[2], callback = s.destroy)
     else:
        s.speed(speed).clicked(destroy)    
        s.move_to(arc[1], arc[2], callback = lambda: failure(s))
-   
+
 ```
 Let's try running our code. Here's the complete version.
 ```python
@@ -275,15 +275,15 @@ def destroy(s):
 
 def failure(s):
     text('You Survived %s seconds' % time(), MAROON)
-    gameover()
+    callback(gameover, 0.01)
 
 def spawn():
 
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     if randint(1, 4) == 2:
@@ -291,10 +291,10 @@ def spawn():
 
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     if target == 'bomb':
        s.speed(speed).clicked(failure)
-       s.move_to(arc[1], arc[2], callback = s.destroy) 
+       s.move_to(arc[1], arc[2], callback = s.destroy)
     else:
        s.speed(speed).clicked(destroy)    
        s.move_to(arc[1], arc[2], callback = lambda: failure(s))
@@ -342,14 +342,14 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        gameover()
+        callback(gameover, 0.01)
 
 def spawn():
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     if randint(1, 4) == 2:
@@ -357,10 +357,10 @@ def spawn():
 
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     if target == 'bomb':
        s.speed(speed).clicked(failure)
-       s.move_to(arc[1], arc[2], callback = s.destroy) 
+       s.move_to(arc[1], arc[2], callback = s.destroy)
     else:
        s.speed(speed).clicked(destroy)    
        s.move_to(arc[1], arc[2], callback = lambda: failure(s))
@@ -420,24 +420,24 @@ def failure(s):
     score(-20)
     if s.name == 'bomb' or score() < 0:
         text('You Survived %s seconds' % time(), MAROON)
-        gameover()
+        callback(gameover, 0.01)
 
 def spawn():
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     if randint(1, 4) == 2:
         target = 'bomb'
     if randint(1, 10) == 5:
         target = 'taco'
-        
+
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     if target == 'bomb':
        s.speed(speed).clicked(failure)
        s.move_to(arc[1], arc[2], callback = s.destroy)
@@ -488,8 +488,8 @@ BACKGROUND = 'board'
 ## Sound Effects
 Just like images, predigame supports sound effects. We've preloaded a few for the game. For instance, you can add a launching sound to the `spawn()` function:
 ```python
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     if randint(1, 4) == 2:
@@ -540,10 +540,10 @@ def destroy(s):
        score(50)
     else:
        score(5)
-    
+
     # draw a splatting image at the position of the strike
-    # make it fade away after 30 seconds
-    image('redsplat', s.event_pos, 2).fade(30.0)
+    # make it fade away after 10 seconds
+    image('redsplat', s.event_pos, 2).fade(10.0)
 
     s.destroy()
 ```
@@ -562,6 +562,6 @@ def failure(s):
     if s.name == 'bomb' or score() < 0:
         sound('scream')
         text('You Survived %s seconds' % time(), MAROON)
-        gameover()
+        callback(gameover, 0.01)
 ```
 The key to the explosion is the `.pulse(0.05)` function call. The game will quickly pause, but the pulse is fast enough to provide an explosion effect.

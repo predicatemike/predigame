@@ -11,27 +11,27 @@ def destroy(s):
        score(5)
 
     # draw a splatting image at the center position of the image
-    image('redsplat', s.event_pos, 2).fade(30.0)
+    image('redsplat', center=s.event_pos, size=2).fade(10.0)
 
-    s.fade(0.75)
+    s.fade(0.25)
 
 def failure(s):
     score(-20)
     if s.name == 'bomb':
         s.destroy()
-        image('explode', s.center, 10).pulse(0.05)
+        image('explode', center=s.center, size=10).pulse(0.05)
 
     if s.name == 'bomb' or score() < 0:
         sound('scream')
         text('You Survived %s seconds' % time(), MAROON)
-        gameover()
+        callback(gameover, 0.01)
 
 def spawn():
     speed = randint(2, 10)
     size = randint(1,4)
 
-    target = choice(['bananas', 'cherries', 
-                     'olives', 'ham', 'hotdog', 
+    target = choice(['bananas', 'cherries',
+                     'olives', 'ham', 'hotdog',
                      'fries','icee', 'pizza'])
 
     if randint(1, 4) == 2:
@@ -43,7 +43,7 @@ def spawn():
 
     arc = rand_arc()
 
-    s = image(target, arc[0], size)
+    s = image(target, arc[0], size=size)
     if target == 'bomb':
        s.speed(speed).spin(1).clicked(failure)
        s.move_to(arc[1], arc[2], callback = s.destroy)
@@ -51,11 +51,11 @@ def spawn():
        s.speed(5).spin().clicked(destroy)
        s.move_to((-10, -2), (-5, HEIGHT/2), (WIDTH+1, HEIGHT/2), callback = s.destroy)
     else:
-       s.speed(speed).clicked(destroy)    
+       s.speed(speed).clicked(destroy)
        s.move_to(arc[1], arc[2], callback = lambda: failure(s))
 
     callback(spawn, rand(0.1, 3))
 
 score(color = PURPLE)
 callback(spawn, 1)
-keydown('r', reset)  
+keydown('r', reset)

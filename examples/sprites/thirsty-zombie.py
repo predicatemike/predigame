@@ -27,7 +27,7 @@ def consume(target, zombie):
 	if target.name == 'coke':
 		# zombies don't like coke. end the game
 		zombie.destroy()
-		image('kaboom', (15, 10), size=25)
+		image('kaboom', center=(15, 10), size=25)
 		gameover()
 	else:
 		# we added a sprite. increase score
@@ -38,7 +38,7 @@ def miss(target):
 
 	# destroy the can
 	target.destroy()
-	
+
 	# subtract a point if this was a sprite
 	if target.name == 'sprite':
 		score(-1)
@@ -60,7 +60,7 @@ def throw_soda():
 
 	# roughly 50% of the cans are cokes
 	if randint(1, 2) == 2:
-		target = 'coke'		
+		target = 'coke'
 
 	# position the sprite off the right side of the screen
 	# make it move fast (speed 10)
@@ -123,4 +123,3 @@ score(color=WHITE)
 
 # press the r key to reset
 keydown('r', reset)
-

@@ -5,7 +5,7 @@ TITLE = 'MAZE'
 # create a sprite based on the "player" image
 # position at the top left corner
 # control the sprite with the arrow keys
-# the speed of the sprite enables "graceful" 
+# the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys()
 
@@ -26,12 +26,12 @@ for y in range(HEIGHT):
         if rand(1, 3) > 2.5:
             shape(RECT, RED, (x, y))
 
-# a callback function for when the player reaches 
+# a callback function for when the player reaches
 # the green destination
 def win(b, p):
     text('YOU WIN', BLUE)
     gameover()
-   
+
 # draw a green destination cell on the bottom right
 d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 
@@ -43,12 +43,10 @@ keydown('r', reset)
 
 # a callback function for when the player runs into
 # a red cell
-def lose(b, p):
-	if b.tag != 'destination':
+def lose(player, block):
+	if block.tag != 'destination':
 		text('GAME OVER', BLACK)
 		gameover()
 
 # if the player 'collides' with any cell, execute the 'lose' callback
 p.collides(sprites(), lose)
-
-

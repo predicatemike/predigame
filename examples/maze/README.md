@@ -1,3 +1,4 @@
+
 Drawing Mazes
 ===================
 We can code a number of games with mazes. From Pacman to avoiding the zombie apocalypse, mazes are a fun and easy way to plant obstacles or walls.  The Predigame platform supports a number of maze options that we'll explore in this README. For those familiar with the Predigame Sprite, mazes are nothing more than a collection of sprites, normally all of the same type and size.
@@ -13,22 +14,22 @@ WIDTH = 30
 HEIGHT = 20
 TITLE = 'MAZE'
 ```
-Save your changes. Let's call the file `maze.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file). 
+Save your changes. Let's call the file `maze.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file).
 
     my_machine$ pigm maze.py
 
 This program doesn't do much just yet. Just an empty window titled "MAZE" - that's missing the maze! Let's add that now.
 
 # Random Mazes
-The first type of maze we'll create is the computer generated randomized maze. The code below will iterate over every cell in the game and make a random decision to draw a maze. 
+The first type of maze we'll create is the computer generated randomized maze. The code below will iterate over every cell in the game and make a random decision to draw a maze.
 
 ```python
 # these two nested for loops iterate over
 # every grid cell on the canvas
 for y in range(HEIGHT):
     for x in range(WIDTH):
-    	# don't create a block on the location of
-    	# the player OR the location of the green cell
+        # don't create a block on the location of
+        # the player OR the location of the green cell
         if (x, y) == (0, 0) or (x, y) == (29, 16):
             continue
         # make a random decision to color the cell red
@@ -44,31 +45,27 @@ You'll also notice that with the if condition:
         if (x, y) == (0, 0) or (x, y) == (29, 16):
             continue
 ```
-Will never consider placing a **RED** cell at position `(0, 0)` (top left corner) or `(29, 16)` (bottom right corner). This where we will put the player and a green destination block. 
+Will never consider placing a **RED** cell at position `(0, 0)` (top left corner) or `(29, 16)` (bottom right corner). This where we will put the player and a green destination block.
 
 Now that we can draw a random maze, lets add a player sprite at the top of the code, under the `TITLE` line.
 ```python
 # create a sprite based on the "player" image
 # position at the top left corner
 # control the sprite with the arrow keys
-# the speed of the sprite enables "graceful" 
+# the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys()
-
-# center the player on the 0,0 grid cell
-p.move_to((0, 0))
 ```
-Notice that the `p.move_to((0, 0))` seems a bit redundant given that we already placed the player sprite at position `(0, 0)`? Well, it is! By default the position provided to Predigame places the center of the sprite image at that position. The `move_to` places the sprite inside the grid cell.
 
 Finally, to complete our simple game, let's add a **GREEN** destination block. We'll also add a callback to end the game when the player sprite collides with the destination block. Let's add this code to the bottom of the file.
 
 ```python
-# a callback function for when the player reaches 
+# a callback function for when the player reaches
 # the green destination
 def win(b, p):
     text('YOU WIN', BLUE)
     gameover()
-   
+
 # draw a green destination cell on the bottom right
 d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 
@@ -78,7 +75,7 @@ d.collides(p, win)
 # register the 'r' key for resetting the game
 keydown('r', reset)
 ```
-For context, here is the complete code: 
+For context, here is the complete code:
 
 ```python
 WIDTH = 30
@@ -88,7 +85,7 @@ TITLE = 'MAZE'
 # create a sprite based on the "player" image
 # position at the top left corner
 # control the sprite with the arrow keys
-# the speed of the sprite enables "graceful" 
+# the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys()
 
@@ -99,8 +96,8 @@ p.move_to((0, 0))
 # every grid cell on the canvas
 for y in range(HEIGHT):
     for x in range(WIDTH):
-    	# don't create a block on the location of
-    	# the player OR the location of the green cell
+        # don't create a block on the location of
+        # the player OR the location of the green cell
         if (x, y) == (0, 0) or (x, y) == (29, 16):
             continue
         # make a random decision to color the cell red
@@ -109,12 +106,12 @@ for y in range(HEIGHT):
         if rand(1, 3) > 2.5:
             shape(RECT, RED, (x, y))
 
-# a callback function for when the player reaches 
+# a callback function for when the player reaches
 # the green destination
 def win(b, p):
     text('YOU WIN', BLUE)
     gameover()
-   
+
 # draw a green destination cell on the bottom right
 d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 
@@ -136,14 +133,14 @@ Now let's modify the code to end the game if the player sprite bumps into a wall
 ```python
 # a callback function for when the player runs into
 # a red cell
-def lose(b, p):
-	if b.tag != 'destination':
-		text('GAME OVER', BLACK)
-		gameover()
+def lose(player, block):
+    if block.tag != 'destination':
+        text('GAME OVER', BLACK)
+        gameover()
 
 # if the player 'collides' with any cell, execute the 'lose' callback
 p.collides(sprites(), lose)
-``` 
+```
 Save the changes and try running the code:
 
     my_machine$ pigm maze.py
@@ -173,14 +170,14 @@ Next we'll set the `evaluate` callback function and assign to execute on `keys()
 
 ```python
 # create a sprite based on the "player" image
-# position at the top left corner. control the 
-# sprite with the arrow keys while checking a 
-# precondition to make sure we don't walk into 
-# walls. the speed of the sprite enables "graceful" 
+# position at the top left corner. control the
+# sprite with the arrow keys while checking a
+# precondition to make sure we don't walk into
+# walls. the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys(precondition=evaluate)
 ```
-The code from the prior step can be removed since it won't be called anymore. For context, here's the complete file in case you git a little lost making changes in the right locations.
+The code from the prior step can be removed since it won't be called anymore. For context, here's the complete file in case you get a little lost making changes in the right locations.
 
 ```python
 WIDTH = 30
@@ -202,23 +199,19 @@ def evaluate(action, sprite, pos):
 
 
 # create a sprite based on the "player" image
-# position at the top left corner. control the 
-# sprite with the arrow keys while checking a 
-# precondition to make sure we don't walk into 
-# walls. the speed of the sprite enables "graceful" 
+# position at the top left corner. control the
+# sprite with the arrow keys while checking a
+# precondition to make sure we don't walk into
+# walls. the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys(precondition=evaluate)
-
-# center the player on the 0,0 grid cell
-p.move_to((0, 0))
-
 
 # these two nested for loops iterate over
 # every grid cell on the canvas
 for y in range(HEIGHT):
     for x in range(WIDTH):
-    	# don't create a block on the location of
-    	# the player OR the location of the green cell
+        # don't create a block on the location of
+        # the player OR the location of the green cell
         if (x, y) == (0, 0) or (x, y) == (29, 16):
             continue
         # make a random decision to color the cell red
@@ -227,12 +220,12 @@ for y in range(HEIGHT):
         if rand(1, 3) > 2.5:
             shape(RECT, RED, (x, y))
 
-# a callback function for when the player reaches 
+# a callback function for when the player reaches
 # the green destination
 def win(b, p):
     text('YOU WIN', BLUE)
     gameover()
-   
+
 # draw a green destination cell on the bottom right
 d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 
@@ -281,7 +274,6 @@ maze('2', partial(image, 'stone'))
 
 # center the player on the 0,0 grid cell
 p = image('player', (0, 0)).speed(5).keys()
-p.move_to((0, 0))
 
 # register the 'r' key for resetting the game
 keydown('r', reset)
@@ -290,7 +282,7 @@ keydown('r', reset)
 This example loads two separate mazes into the game - one containing **RED** shapes, the other **stone** images. The code uses a concept called a "partial".  This is like a callback function, but provides the coder additional controls for how that callback can be used.
 
 #### Understanding Partials
-Here's an example shape sprite that will create a **RED** rectangle at a random position. 
+Here's an example shape sprite that will create a **RED** rectangle at a random position.
 ```python
 shape(RECT, RED)
 ```
@@ -299,3 +291,22 @@ Now, here's the above example coded as a partial definition:
 partial(shape, RECT, RED)
 ```
 Notice the similarities? Predigame and python will unpack the partial into the shape once it's ready to create the shape.
+
+# Daedalus Monochrome Maze
+
+This maze is pretty close to a Pacman-style game. We use the python implementation [pydaedalus](https://pypi.python.org/pypi/pydaedalus/) that "wraps" the Daedalus software.
+
+Daedalus mazes can be created with the basic function call:
+```python
+maze()
+```
+Notice this is **the exact same** function as before? This means that if the filename of a maze is not provide, Predigame will create a Daedalus maze instead.
+
+As with any maze, it's possible to provide a `partial` callback to describe the type of walls to create. For example, this maze will be constructed out of `'stone'` images:
+```python
+maze(callback=partial(image, 'stone'))
+```
+and this maze will be constructed out of black rectangles:
+```python
+maze(callback=partial(shape, RECT, BLACK))
+```

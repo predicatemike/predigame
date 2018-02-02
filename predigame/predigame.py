@@ -1,10 +1,14 @@
 import sys, os, random, datetime, mimetypes, pygame, json
-from time import time as get_time
+from numbers import Number
+from functools import partial
+from time import time as get_time, gmtime, strftime
 from pygame.locals import *
 from . import globs
-from .utils import load_module, register_keydown, rand_pos, rand_color, roundup, animate
+from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
+from .constants import *
+import traceback
 
 show_grid = False
 update_game = True
@@ -45,7 +49,7 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
 
     start_time = get_time()
 
-def _create_image(name, pos, size, tag):
+def _create_image(name, pos, center, size, tag):
     img = images[name]
     rect = img.get_rect()
     new_width = 0
@@ -57,11 +61,16 @@ def _create_image(name, pos, size, tag):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    if center is not None:
+        print('center is ' + str(center))
+        rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    else:
+        rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
 
-    return Sprite(img, rect, tag, name=name)
+    s = Sprite(img, rect, tag, name=name)
+    return s
 
-def _create_actor(actions, name, pos, size, abortable, tag):
+def _create_actor(actions, name, pos, center, size, abortable, tag):
     img = actions['idle'][0]
     rect = img.get_rect()
     new_width = 0
@@ -73,9 +82,13 @@ def _create_actor(actions, name, pos, size, abortable, tag):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
-    
-    return Actor(actions, rect, tag, abortable, name=name)
+    if center is not None:
+        rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    else:
+        rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
+
+    s = Actor(actions, rect, tag, abortable, name=name)
+    return s
 
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
@@ -104,7 +117,7 @@ def _create_ellipse(color, pos, size, outline, tag):
 
     return Sprite(surface, rect, tag)
 
-def image(name = None, pos = None, size = 1, tag = ''):
+def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
         if os.path.isdir('images/'):
             imgs = []
@@ -135,14 +148,19 @@ def image(name = None, pos = None, size = 1, tag = ''):
         else:
             name = '__error__'
 
-    if not pos:
+    if not center and not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_image(name, pos, size, tag)
+    img = _create_image(name, pos, center, size, tag)
     globs.sprites.append(img)
+    if center:
+        globs.cells[center] = img
+    else:
+        globs.cells[pos] = img
+
     return globs.sprites[-1]
 
-def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
+def actor(name = None, pos = None, center = None, size = 1, abortable = False, tag = ''):
     if not name:
         sys.exit('Actor name is missing!')
 
@@ -169,29 +187,35 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
         actors[name] = states
 
     if not loaded:
-        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')    
+        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')
 
-    if not pos:
+    if not center and not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_actor(states, name, pos, size, abortable, tag)
+    img = _create_actor(states, name, pos, center, size, abortable, tag)
     globs.sprites.append(img)
-    return globs.sprites[-1]    
+    if center:
+        globs.cells[center] = img
+    else:
+        globs.cells[pos] = img
+    return globs.sprites[-1]
 
-def maze(name, callback):
-    if not name:
-        sys.exit('Maze name is missing!')
+def maze(name=None, callback=None):
 
     if not callback:
-        sys.exit('Maze object callback is missing!')
+        callback = partial(shape, RECT)
+
+    if not name:
+        return rand_maze(callback)
 
     path = 'mazes/' + name + '.json'
 
     cells = json.load(open(path, 'r'))
 
     for cell in cells:
-        s = callback()
-        s.speed(50).move_to(cell)    
+        s = callback(pos=(cell[0], cell[1]), tag='wall')
+        globs.cells[s.pos] = s
+
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
@@ -219,9 +243,21 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwa
         return False
 
     globs.sprites.append(shape)
+    globs.cells[pos] = shape
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1, tag = ''):
+    """
+        draw a text sprite
+
+        :param string: the text to display
+
+        :param color: the color to use to display (default is to select a random color)
+
+        :param pos: the position of the sprite in grid coordinates (default is on center of game canvas)
+
+        :param size: the size of the text font (default is 1)
+    """
     string = str(string)
     size = int(size * globs.GRID_SIZE)
     font = pygame.font.Font(None, size)
@@ -242,6 +278,15 @@ def text(string, color = None, pos = None, size = 1, tag = ''):
     return globs.sprites[-1]
 
 def sound(name = None, plays = 1, duration = 0):
+    """
+        play a sound (wav or ogg file). Sounds must be stored in the `sounds/` directory.
+
+        :param name: the name of the sound to play
+
+        :param plays: the number of times to play the sound (default is 1)
+
+        :param duration: the amount of time (in seconds) to play the sound clip (default plays the entire clip)
+    """
     plays = plays - 1
     duration = int(duration * 1000)
 
@@ -281,59 +326,146 @@ def sound(name = None, plays = 1, duration = 0):
     sounds[name].play(plays, duration)
 
 def grid():
+    """
+        show the grid cells on the game canvas
+    """
     global show_grid
     show_grid = True
 
 def time():
+    """
+        returns the time (in seconds) since the start of the game
+    """
     return float('%.3f'%(get_time() - start_time))
 
 def callback(function, wait):
+    """
+        register a time based callback function
+
+        :param function: pointer to a callback function
+
+        :param wait: the amount of time to **wait** for the callback to execute.
+    """
     callbacks.append({'cb': function, 'time': get_time() + wait})
 
+def reset_score(**kwargs):
+    """
+        forces a reset for a given scoreboard element
+
+        :param pos: the corner position of the scoreboard. Default is `UPPER_LEFT`. Options inclue `UPPER_RIGHT`, `LOWER_LEFT`, and `LOWER_RIGHT`.
+    """
+    pos = kwargs.get('pos', UPPER_LEFT)
+    global score_dict
+    try:
+        globs.sprites.remove(score_dict[pos]['sprite'])
+        del score_dict[pos]
+        score(**kwargs)
+    except:
+        return
+
 def score(value = 0, **kwargs):
+    """
+        Predigame scoring functions. Any game may have four separate
+        scoreboards on the game - one in each corner. *NOTE:* all parameters,
+        besides value, are only applied at scoreboard construction time.
 
-    if value > 1000:
-        print('Mean scoring rejected value %s'%str(value))
-        value = 1000
+        :param value: some scoring value (default is 0). the semantics of the value depends on the scoring `method`
 
-    if value < -1000:
-        print('Mean scoring rejected value %s'%str(value))
-        value = -1000
-        
+        :param pos: the corner position of the scoreboard. Default is `UPPER_LEFT`. Options inclue `UPPER_RIGHT`, `LOWER_LEFT`, and `LOWER_RIGHT`.
+
+        :param color: the color of the scoring block (default is (25, 25, 25)).
+
+        :param size: the size (in grid cells) of the scoreboard text (default is 0.75).
+
+        :param method: the type of scoreboard to create. options include `ACCUMULATE` (value added/subtracted to score), `VALUE` (simply display the current value), `TIMER` (count time as defined by `step`)
+
+        :param step: applies to `method=TIMER` and sets the operation of the timer. Default is -1 (count up by seconds).
+
+        :param goal: applies to `method=TIMER`. a goal metric of the scoreboard. If the goal is reached a `callback` will be invoked.
+
+        :param prefix: optional text that can be provided to the start of the scoreboard.
+
+        :param callback: optional callback to invoke when the `method=TIMER` reaches a goal.
+
+    """
+    if isinstance(value, Number):
+        if value > 1000 or value < -1000:
+            print('Mean scoring rejected value %s'%str(value))
+            value = 0
+
+    color = kwargs.get('color', None)
+    size = kwargs.get('size', 0.75)
+    pos = kwargs.get('pos', UPPER_LEFT)
+    method = kwargs.get('method', ACCUMULATE)
+    cb = kwargs.get('callback', None)
+    sformat = kwargs.get('format', '%H:%M:%S')
+    goal = kwargs.get('goal', 0)
+    step = kwargs.get('step', -1)
+    prefix = kwargs.get('prefix', None)
+    grid_position = score_pos(pos)
 
     global score_dict
     try:
         score_dict
-        globs.sprites.remove(score_dict['sprite'])
     except:
-        score_dict = {
-            'value': 0,
+        score_dict = {}
+
+    scoreboard = None
+    try:
+        scoreboard = score_dict[pos]
+        if scoreboard['sprite']:
+            globs.sprites.remove(scoreboard['sprite'])
+    except:
+        scoreboard = {
+            'value': value,
+            'step' : step,
             'sprite': None,
-            'size': 28,
-            'color': (25, 25, 25),
-            'pos': (25, 25)
+            'size': size,
+            'color': (25,25,25),
+            'pos': grid_position,
+            'method' : method,
+            'callback' : cb,
+            'format' : sformat,
+            'goal' : goal,
+            'prefix' : prefix
         }
 
-    score_dict['color'] = kwargs.get('color', score_dict['color'])
-    size = kwargs.get('size', None)
-    pos = kwargs.get('pos', None)
 
-    if size:
-        score_dict['size'] = int(size * globs.GRID_SIZE)
-    if pos:
-        score_dict['pos'] = pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE
+    scoreboard['size'] = int(size * globs.GRID_SIZE)
 
-    score_dict['value'] += value
+    if scoreboard['method'] == TIMER:
+        scoreboard['value'] += scoreboard['step']
+        if (scoreboard['step'] > 0 and scoreboard['value'] < scoreboard['goal']) or (scoreboard['step'] < 0 and scoreboard['value'] > scoreboard['goal']):
+            callback(partial(score, pos=pos), 1)
+        elif scoreboard['callback'] is not None:
+            scoreboard['callback']()
+    elif scoreboard['method'] == ACCUMULATE:
+        if isinstance(value, Number):
+            scoreboard['value'] += value
+        else:
+            scoreboard['value'] = value
+    elif scoreboard['method'] == VALUE:
+        scoreboard['value'] = value
 
-    string = str(score_dict['value'])
-    font = pygame.font.Font(None, score_dict['size'])
+    string = str(scoreboard['value'])
+    if scoreboard['method'] == TIMER:
+        string = strftime(scoreboard['format'], gmtime(scoreboard['value']))
+
+    if scoreboard['prefix']:
+        string = scoreboard['prefix'] + ' ' + string
+    font = pygame.font.Font(None, scoreboard['size'])
     font_width, font_height = font.size(string)
-    surface = font.render(string, True, score_dict['color'])
-    score_dict['sprite'] = Sprite(surface, pygame.Rect(score_dict['pos'][0], score_dict['pos'][1], font_width, font_height))
-
-    globs.sprites.append(score_dict['sprite'])
-
-    return score_dict['value']
+    if color:
+        scoreboard['color'] = color
+    surface = font.render(string, True, scoreboard['color'])
+    scoreboard['pos'] = grid_position[0] * globs.GRID_SIZE, grid_position[1] * globs.GRID_SIZE
+    if pos == UPPER_RIGHT or pos == LOWER_RIGHT:
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height))
+    else:
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height))
+    globs.sprites.append(scoreboard['sprite'])
+    score_dict[pos] = scoreboard
+    return scoreboard['value']
 
 def destroyall():
     del globs.sprites[:]
@@ -421,7 +553,7 @@ def _draw(SURF):
         SURF.blit(globs.BACKGROUND, (0,0))
     else:
         SURF.fill(globs.BACKGROUND)
-    
+
     globs.cells = {}
     for sprite in globs.sprites:
         globs.cells[sprite.pos] = sprite
@@ -443,7 +575,7 @@ def main_loop():
         elif event.type == ACTIVEEVENT:
             resume()
 
-        if event.type == KEYDOWN:            
+        if event.type == KEYDOWN:
 
             # ignore all the other key presses
             # complete any in process animations
@@ -484,8 +616,8 @@ def main_loop():
                     sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
-            global update_game            
-            if event.action == 'pause' and update_game:
+            global update_game
+            if event.action == 'pause' and update_game and not game_over:
                 update_game = False
                 _update(clock.get_time())
                 _draw(SURF)
@@ -493,7 +625,7 @@ def main_loop():
     if update_game and not game_over:
         mx, my = pygame.mouse.get_pos()
         for sprite in globs.mouse_motion:
-                sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2, 
+                sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2,
                     my/globs.GRID_SIZE - sprite.height/2)
         _update(clock.get_time())
         _draw(SURF)

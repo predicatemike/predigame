@@ -76,7 +76,6 @@ WALK_AIM_FRONT = 'walk_aim_front'
 WALK_AIM_LEFT = 'walk_aim_left'
 WALK_AIM_RIGHT = 'walk_aim_right'
 
-
 LEFT = 'left'
 RIGHT = 'right'
 BACK = 'back'
@@ -85,3 +84,13 @@ POSE = 'pose'
 
 # other contants
 FOREVER = -1
+
+# positions for scoring
+UPPER_LEFT = 0
+UPPER_RIGHT = 1
+LOWER_LEFT = 2
+LOWER_RIGHT = 3
+
+ACCUMULATE = 0
+TIMER = 1
+VALUE = 2
