@@ -62,7 +62,6 @@ def _create_image(name, pos, center, size, tag):
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
     if center is not None:
-        print('center is ' + str(center))
         rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
     else:
         rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
@@ -122,8 +121,8 @@ def _check_image_size(ifile):
     from PIL import Image
     img = Image.open(ifile)
     basewidth = 250
-    print('checking image (' + ifile + ') size --> ' + str(img.size))
     if img.size[0] > basewidth or img.size[1] > basewidth:
+        print('checking image (' + ifile + ') size --> ' + str(img.size))
         wpercent = (basewidth/float(img.size[0]))
         hsize = int((float(img.size[1])*float(wpercent)))
         img = img.resize((basewidth,hsize), Image.ANTIALIAS)
