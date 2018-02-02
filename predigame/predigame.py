@@ -27,8 +27,6 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     GRID_SIZE = kwargs.get('grid', 50)
     BACKGROUND = background
 
-    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
-
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
     pygame.display.set_caption(title)
@@ -38,6 +36,8 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     else:
         SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
+
+    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
 
     SURF.fill((0, 0, 0))
     loading_font = pygame.font.Font(None, 72)
@@ -150,7 +150,6 @@ def image(name = None, pos = None, center = None, size = 1, tag = ''):
                 if os.path.splitext(img)[0] == name:
                     try:
                         ifile = os.path.join('images', img)
-                        print(ifile)
                         _check_image_size(ifile)
                         img = pygame.image.load(ifile)
                         images[name] = img
