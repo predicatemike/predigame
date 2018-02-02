@@ -4,7 +4,7 @@ def get_image_file(name):
     for ext in ['png', 'jpg', 'gif']:
         fname = 'backgrounds/' + name + '.' + ext
         if os.path.isfile(fname):
-            return pygame.image.load(fname)
+            return pygame.image.load(fname).convert()
 
     return None
 
