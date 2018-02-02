@@ -11,4 +11,4 @@ def on_click(s):
 	s.pixelate(percentage)
 	print(percentage)
 
-p1 = image('kenny', (10,5), 10).clicked(on_click)
+p1 = image('kenny', center=(10,5), size=10).clicked(on_click)

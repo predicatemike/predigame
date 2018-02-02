@@ -28,12 +28,12 @@ def register(p1):
 offset = 3
 actors = []
 
-a = actor('Piggy', (3, 3), 5)
+a = actor('Piggy', center=(3, 3), size=5)
 register(a)
 actors.append(a)
 
 
-a = actor('Chika', (8, 3), 5)
+a = actor('Chika', center=(8, 3), size=5)
 register(a)
 actors.append(a)
 
@@ -41,7 +41,7 @@ frame_rate = 1
 def slower():
 	global frame_rate
 	frame_rate = frame_rate + 1
-	print(frame_rate)	
+	print(frame_rate)
 	for a in actors:
 		a.rate(frame_rate)
 

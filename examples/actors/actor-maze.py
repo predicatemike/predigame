@@ -30,7 +30,7 @@ def graze(sprite) :
 	choices    = [(x,y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
 	shuffle(choices)
 	obstacles  = [at(p) for p in choices]
-	visibility = [visible(p) for p in choices]	
+	visibility = [visible(p) for p in choices]
 
 	for i in range(len(choices)):
 		if obstacles[i] is None and visibility[i]:
@@ -125,7 +125,7 @@ def schedule_zombie():
 	callback(schedule_zombie, 30)
 
 # zombies come out of the zombie house
-image('zombie_house', (WIDTH-1, 1), 2)
+image('zombie_house', center=(WIDTH-1, 1), size=2)
 
 # create three zombies
 for x in range(3):
@@ -139,13 +139,13 @@ for y in range(HEIGHT):
         if rand(1, 3) > 2.95:
             image('stone', (x, y), tag = 'wall').move_to((x,y))
 
-    
+
 # destination block
 def win(b, p):
 	if len(get('wall')) == 0:
 		text('YOU WIN', BLUE)
 	else:
-		text('I SEE WALLS! YOU FAILED!', RED)		
+		text('I SEE WALLS! YOU FAILED!', RED)
 	gameover()
 d = shape(RECT, GREEN, (29, 17), tag='destination').collides(p, win)
 

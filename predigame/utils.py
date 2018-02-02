@@ -64,9 +64,10 @@ def rand_maze(callback):
     for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
         for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
             if maze[x,y] == True:
-                s = callback(tag='wall')
-                del globs.cells[s.pos]
-                s.pos = (x,y)
+                s = callback(pos=(x,y), tag='wall')
+                #if s.pos in globs.cells:
+                #    del globs.cells[s.pos]
+                #s.pos = (x,y)
                 globs.cells[(x,y)] = s
 
 def rand_color():

@@ -6,7 +6,8 @@ TITLE = 'Image Splatter Test'
 grid()
 
 def on_click(s):
-	image('redsplat', s.event_pos, 1).fade(15)
-
-p1 = image('kenny', (15,10), 10)
+	print(s.event_pos)
+	i= image('redsplat', center=s.event_pos, size=1).fade(3)
+	print(i.pos)
+p1 = image('kenny', center=(15,5), size=10)
 p1.clicked(on_click)

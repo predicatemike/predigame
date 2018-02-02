@@ -28,7 +28,7 @@ def register(p1):
 offset = 3
 actors = []
 for i in range(3):
-	a = actor('Zombie-'+str(i+1), (offset, 3), 5, 4)
+	a = actor('Zombie-'+str(i+1), center=(offset, 3), size=5)
 	register(a)
 	actors.append(a)
 	offset = offset + 5
@@ -37,7 +37,7 @@ frame_rate = 1
 def slower():
 	global frame_rate
 	frame_rate = frame_rate + 1
-	print(frame_rate)	
+	print(frame_rate)
 	for a in actors:
 		a.rate(frame_rate)
 

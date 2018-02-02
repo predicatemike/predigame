@@ -5,7 +5,7 @@ HEIGHT = 20
 TITLE = 'Scoring Demo'
 
 # default scoring box (upper left corner)
-score()
+score(color=WHITE)
 
 # a callback used for a timer
 def timer():

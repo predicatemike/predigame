@@ -49,7 +49,7 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
 
     start_time = get_time()
 
-def _create_image(name, pos, size, tag):
+def _create_image(name, pos, center, size, tag):
     img = images[name]
     rect = img.get_rect()
     new_width = 0
@@ -61,13 +61,16 @@ def _create_image(name, pos, size, tag):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    if center is not None:
+        print('center is ' + str(center))
+        rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    else:
+        rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
 
     s = Sprite(img, rect, tag, name=name)
-    s.pos = pos
     return s
 
-def _create_actor(actions, name, pos, size, abortable, tag):
+def _create_actor(actions, name, pos, center, size, abortable, tag):
     img = actions['idle'][0]
     rect = img.get_rect()
     new_width = 0
@@ -79,10 +82,12 @@ def _create_actor(actions, name, pos, size, abortable, tag):
         new_height = size * float(globs.GRID_SIZE)
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
-    rect.topleft = (pos[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (pos[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    if center is not None:
+        rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
+    else:
+        rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
 
     s = Actor(actions, rect, tag, abortable, name=name)
-    s.pos = pos
     return s
 
 def _create_rectangle(color, pos, size, outline, tag):
@@ -112,7 +117,7 @@ def _create_ellipse(color, pos, size, outline, tag):
 
     return Sprite(surface, rect, tag)
 
-def image(name = None, pos = None, size = 1, tag = ''):
+def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
         if os.path.isdir('images/'):
             imgs = []
@@ -143,15 +148,19 @@ def image(name = None, pos = None, size = 1, tag = ''):
         else:
             name = '__error__'
 
-    if not pos:
+    if not center and not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_image(name, pos, size, tag)
+    img = _create_image(name, pos, center, size, tag)
     globs.sprites.append(img)
-    globs.cells[pos] = img
+    if center:
+        globs.cells[center] = img
+    else:
+        globs.cells[pos] = img
+
     return globs.sprites[-1]
 
-def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
+def actor(name = None, pos = None, center = None, size = 1, abortable = False, tag = ''):
     if not name:
         sys.exit('Actor name is missing!')
 
@@ -180,12 +189,15 @@ def actor(name = None, pos = None, size = 1, abortable = False, tag = ''):
     if not loaded:
         sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')
 
-    if not pos:
+    if not center and not pos:
         pos = rand_pos(size - 1, size - 1)
 
-    img = _create_actor(states, name, pos, size, abortable, tag)
+    img = _create_actor(states, name, pos, center, size, abortable, tag)
     globs.sprites.append(img)
-    globs.cells[pos] = img
+    if center:
+        globs.cells[center] = img
+    else:
+        globs.cells[pos] = img
     return globs.sprites[-1]
 
 def maze(name=None, callback=None):
@@ -201,11 +213,9 @@ def maze(name=None, callback=None):
     cells = json.load(open(path, 'r'))
 
     for cell in cells:
-        s = callback(tag='wall')
-        del globs.cells[s.pos]
-        s.pos = cell
+        s = callback(pos=(cell[0], cell[1]), tag='wall')
         globs.cells[s.pos] = s
-        
+
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
     if not shape:
@@ -383,7 +393,7 @@ def score(value = 0, **kwargs):
             print('Mean scoring rejected value %s'%str(value))
             value = 0
 
-    color = kwargs.get('color', (25,25,25))
+    color = kwargs.get('color', None)
     size = kwargs.get('size', 0.75)
     pos = kwargs.get('pos', UPPER_LEFT)
     method = kwargs.get('method', ACCUMULATE)
@@ -411,7 +421,7 @@ def score(value = 0, **kwargs):
             'step' : step,
             'sprite': None,
             'size': size,
-            'color': color,
+            'color': (25,25,25),
             'pos': grid_position,
             'method' : method,
             'callback' : cb,
@@ -445,7 +455,8 @@ def score(value = 0, **kwargs):
         string = scoreboard['prefix'] + ' ' + string
     font = pygame.font.Font(None, scoreboard['size'])
     font_width, font_height = font.size(string)
-    scoreboard['color'] = color
+    if color:
+        scoreboard['color'] = color
     surface = font.render(string, True, scoreboard['color'])
     scoreboard['pos'] = grid_position[0] * globs.GRID_SIZE, grid_position[1] * globs.GRID_SIZE
     if pos == UPPER_RIGHT or pos == LOWER_RIGHT:

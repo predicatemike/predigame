@@ -1,6 +1,6 @@
 Actor Framework
 ===================
-Predigame Actors are Sprites that perform certain **actions** - mostly in the form of animations that maze the game more realistic. Actors can perform any number of actions (walk, run, jump, attack) which are usually left up to the artist's creation of the sprite. 
+Predigame Actors are Sprites that perform certain **actions** - mostly in the form of animations that maze the game more realistic. Actors can perform any number of actions (walk, run, jump, attack) which are usually left up to the artist's creation of the sprite.
 
 Prior to reading more about Predicate Actors, be sure to check out our [Sprites](https://github.com/predicateacademy/predigame/blob/master/examples/sprites/README.md) and [Mazes](https://github.com/predicateacademy/predigame/blob/master/examples/maze/README.md) tutorials!
 
@@ -16,15 +16,15 @@ All of the artwork used here has been purchased from [envanto market](https://gr
 
 How Actors Work
 ----------
-The artwork we use for actors are *four directional sprites* in that each of the actions are repeated in each direction of movement (up, down, left, right). Actor animations may seem a big complicated under the hood, but it is nothing more than just a sequence of still images that are refreshed at a fast enough rate to give the **illusion of animation**. 
+The artwork we use for actors are *four directional sprites* in that each of the actions are repeated in each direction of movement (up, down, left, right). Actor animations may seem a big complicated under the hood, but it is nothing more than just a sequence of still images that are refreshed at a fast enough rate to give the **illusion of animation**.
 
 In Predigame we store actors in the `actors` directory has highlighted in the picture below.
 ![alt text](http://predicate.us/predigame/images/actors.png "Predigame Actors ")
 
-Each of the highlighted png files capture a single frame. 
+Each of the highlighted png files capture a single frame.
 ![alt text](http://predicate.us/predigame/images/actors2.png "Predigame Actors ")
 
-And when those frames are rotated fast enough the actor (in this case the zombie) appears to be attacking! Pretty cool, right? 
+And when those frames are rotated fast enough the actor (in this case the zombie) appears to be attacking! Pretty cool, right?
 
 Now let's try to add actors in our code.
 
@@ -35,7 +35,7 @@ WIDTH = 30
 HEIGHT = 20
 TITLE = 'Actor Demo'
 ```
-Save your changes. Let's call the file `actor-demo.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file). 
+Save your changes. Let's call the file `actor-demo.py`.  Try running the game from the terminal using the `pigm` command (you'll want to run this command from the directory where you saved the file).
 
     my_machine$ pigm actor-demo.py
 
@@ -56,12 +56,12 @@ HEIGHT = 20
 TITLE = 'Actor Demo'
 
 # create a Zombie actor
-player = actor('Zombie-1', (14, 9), size=4)
+player = actor('Zombie-1', center=(14, 9), size=4)
 ```
 Save your changes and run the game. Notice that we see an actor but our actor doesn't do much. Let's see what happens when have our actor follow the keyboard.
 ```python
 # create a Zombie actor
-player = actor('Zombie-1', (14, 9), size=4)
+player = actor('Zombie-1', center=(14, 9), size=4)
 
 # follow the arrow keys
 player.keys()
@@ -70,11 +70,11 @@ Save and try running the game now. Our zombie has come to life.
 
 Actor Actions
 -------------
-Let's take a deeper dive into some of the actions that an actor can do. We're going to modify the previous code a bit so that we don't tie the actor to the keyboard for movement. 
+Let's take a deeper dive into some of the actions that an actor can do. We're going to modify the previous code a bit so that we don't tie the actor to the keyboard for movement.
 
 ```python
 # create a Zombie actor
-player = actor('Zombie-1', (14, 9), size=4)
+player = actor('Zombie-1', center=(14, 9), size=4)
 
 player.direction = FRONT
 player.act(WALK, loop=FOREVER)
@@ -86,7 +86,7 @@ player.direction = BACK
 player.direction = LEFT
 player.direction = RIGHT
 ```
-Now you wouldn't want to have all of these directions listed like we did above. That was for illustration. 
+Now you wouldn't want to have all of these directions listed like we did above. That was for illustration.
 
 Let's take a look at actions. The `Zombie-1` actor also supports `ATTACK`, `DIE`, and `IDLE` actions. Paired with a call to the `act` function is the amount of times to loop through the animation images. The default behavior is to loop through the images forever.
 
@@ -115,7 +115,7 @@ Like before, these doesn't do much just yet. Here's a line to add a simple **bac
 # use a grass background
 BACKGROUND = 'grass'
 ```
-Next we'll define a constant for the number of piggies to create. This line of code will not have any impact just yet. 
+Next we'll define a constant for the number of piggies to create. This line of code will not have any impact just yet.
 
 ```python
 # how many piggies to create
@@ -133,7 +133,7 @@ If all looks well with the maze, let's add our player actor. We're going for `So
 
 ```python
 # a callback that keeps the player from running
-# into walls. 
+# into walls.
 def evaluate(action, sprite, pos):
     obj = at(pos)
     if obj and obj.tag == 'wall':
@@ -176,7 +176,7 @@ Try running saving these updates and running the game. We'll see the maze, our p
 
 ![alt text](http://predicate.us/predigame/images/maze_actors.png "Bacon 2")
 
-The final part of our game is the shooting part! We'll create a `shoot` callback that is assigned to the space bar. It looks a little like an air shot, but the piggy effects are pretty cool. 
+The final part of our game is the shooting part! We'll create a `shoot` callback that is assigned to the space bar. It looks a little like an air shot, but the piggy effects are pretty cool.
 
 ```python
 # shoot a weapon

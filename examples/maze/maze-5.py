@@ -17,22 +17,22 @@ def evaluate(action, sprite, pos):
 
 
 # create a sprite based on the "player" image
-# position at the top left corner. control the 
-# sprite with the arrow keys while checking a 
-# precondition to make sure we don't walk into 
-# walls. the speed of the sprite enables "graceful" 
+# position at the top left corner. control the
+# sprite with the arrow keys while checking a
+# precondition to make sure we don't walk into
+# walls. the speed of the sprite enables "graceful"
 # movement with the keyboard
 p = image('player', (0, 0)).speed(5).keys(precondition=evaluate)
 
 # load a maze from a file
 maze('2', partial(image, 'stone'))
 
-# a callback function for when the player reaches 
+# a callback function for when the player reaches
 # the green destination
 def win(b, p):
     text('YOU WIN', BLUE)
     gameover()
-   
+
 # draw a green destination cell on the bottom right
 d = shape(RECT, GREEN, (WIDTH-1, HEIGHT-1), tag='destination')
 
