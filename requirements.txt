@@ -1,1 +1,2 @@
 pydaedalus==0.1.4
+pillow

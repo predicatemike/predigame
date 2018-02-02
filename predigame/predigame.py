@@ -117,6 +117,19 @@ def _create_ellipse(color, pos, size, outline, tag):
 
     return Sprite(surface, rect, tag)
 
+def _check_image_size(ifile):
+    """ make sure we don't load humongo images """
+    from PIL import Image
+    img = Image.open(ifile)
+    basewidth = 250
+    print('checking image (' + ifile + ') size --> ' + str(img.size))
+    if img.size[0] > basewidth or img.size[1] > basewidth:
+        wpercent = (basewidth/float(img.size[0]))
+        hsize = int((float(img.size[1])*float(wpercent)))
+        img = img.resize((basewidth,hsize), Image.ANTIALIAS)
+        img.save(ifile)
+
+
 def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
         if os.path.isdir('images/'):
@@ -137,9 +150,13 @@ def image(name = None, pos = None, center = None, size = 1, tag = ''):
             for img in os.listdir('images/'):
                 if os.path.splitext(img)[0] == name:
                     try:
-                        img = pygame.image.load(os.path.join('images', img))
+                        ifile = os.path.join('images', img)
+                        print(ifile)
+                        _check_image_size(ifile)
+                        img = pygame.image.load(ifile)
                         images[name] = img
                     except:
+                        traceback.print_exc(file=sys.stdout)
                         continue
 
                     break
