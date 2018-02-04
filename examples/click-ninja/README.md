@@ -543,7 +543,7 @@ def destroy(s):
 
     # draw a splatting image at the position of the strike
     # make it fade away after 10 seconds
-    image('redsplat', s.event_pos, 2).fade(10.0)
+    image('redsplat', s.event_pos, 2).fade(1.0)
 
     s.destroy()
 ```

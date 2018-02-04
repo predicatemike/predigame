@@ -27,8 +27,6 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     GRID_SIZE = kwargs.get('grid', 50)
     BACKGROUND = background
 
-    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
-
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
     pygame.display.set_caption(title)
@@ -38,6 +36,8 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     else:
         SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
+
+    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
 
     SURF.fill((0, 0, 0))
     loading_font = pygame.font.Font(None, 72)
@@ -62,7 +62,6 @@ def _create_image(name, pos, center, size, tag):
         new_width = rect.width * (new_height / rect.height)
     rect.size = new_width, new_height
     if center is not None:
-        print('center is ' + str(center))
         rect.topleft = (center[0] * float(globs.GRID_SIZE)) - rect.width/2.0, (center[1] * float(globs.GRID_SIZE)) - rect.height/2.0
     else:
         rect.topleft = pos[0] * float(globs.GRID_SIZE), pos[1] * float(globs.GRID_SIZE)
@@ -117,6 +116,19 @@ def _create_ellipse(color, pos, size, outline, tag):
 
     return Sprite(surface, rect, tag)
 
+def _check_image_size(ifile):
+    """ make sure we don't load humongo images """
+    from PIL import Image
+    img = Image.open(ifile)
+    basewidth = 250
+    if img.size[0] > basewidth or img.size[1] > basewidth:
+        print('checking image (' + ifile + ') size --> ' + str(img.size))
+        wpercent = (basewidth/float(img.size[0]))
+        hsize = int((float(img.size[1])*float(wpercent)))
+        img = img.resize((basewidth,hsize), Image.ANTIALIAS)
+        img.save(ifile)
+
+
 def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
         if os.path.isdir('images/'):
@@ -137,9 +149,12 @@ def image(name = None, pos = None, center = None, size = 1, tag = ''):
             for img in os.listdir('images/'):
                 if os.path.splitext(img)[0] == name:
                     try:
-                        img = pygame.image.load(os.path.join('images', img))
+                        ifile = os.path.join('images', img)
+                        _check_image_size(ifile)
+                        img = pygame.image.load(ifile)
                         images[name] = img
                     except:
+                        traceback.print_exc(file=sys.stdout)
                         continue
 
                     break
@@ -570,10 +585,10 @@ def main_loop():
             sys.exit()
 
         # lost focus
-        if event.type == ACTIVEEVENT and event.gain == 0:
-            pause()
-        elif event.type == ACTIVEEVENT:
-            resume()
+        #if event.type == ACTIVEEVENT and event.gain == 0:
+        #    pause()
+        #elif event.type == ACTIVEEVENT:
+        #    resume()
 
         if event.type == KEYDOWN:
 
