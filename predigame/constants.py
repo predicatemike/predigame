@@ -76,6 +76,12 @@ WALK_AIM_FRONT = 'walk_aim_front'
 WALK_AIM_LEFT = 'walk_aim_left'
 WALK_AIM_RIGHT = 'walk_aim_right'
 
+RUN_BACK = 'run_back'
+RUN_FRONT = 'run_front'
+RUN_LEFT = 'run_left'
+RUN_RIGHT = 'run_right'
+
+
 LEFT = 'left'
 RIGHT = 'right'
 BACK = 'back'
