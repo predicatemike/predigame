@@ -585,10 +585,10 @@ def main_loop():
             sys.exit()
 
         # lost focus
-        if event.type == ACTIVEEVENT and event.gain == 0:
-            pause()
-        elif event.type == ACTIVEEVENT:
-            resume()
+        #if event.type == ACTIVEEVENT and event.gain == 0:
+        #    pause()
+        #elif event.type == ACTIVEEVENT:
+        #    resume()
 
         if event.type == KEYDOWN:
 
