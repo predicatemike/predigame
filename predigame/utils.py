@@ -128,3 +128,60 @@ def graze(sprite) :
             if choices[i] != (x, y):
                 sprite.move((choices[i][0] - x, choices[i][1] - y))
                 break
+
+def track(sprite, pbad = 0.1) :
+    """
+        a sprite.wander() operation. attempt to find the closest sprite named `player`
+
+        :param sprite: the sprite to automate movements
+
+        :param pbad: the probability to make a bad move
+
+    """
+
+    obj_list = get('player')
+    hero = obj_list[0]
+    x, y = sprite.pos
+
+    choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
+    distances  = [distance(p, hero.pos) for p in choices]
+    obstacles  = [at(p) for p in choices]
+    visibility = [visible(p) for p in choices]
+
+    best = None
+    min_dist = 999999
+    for i in range(len(choices)):
+        if obstacles[i] is None and visibility[i]:
+            #every now and then make a random "bad" move
+            rnd = random.uniform(0, 1)
+            if rnd <= pbad:
+                best = choices[i]
+                break
+            elif distances[i] < min_dist:
+                best = choices[i]
+                min_dist = distances[i]
+    if best is not None and best != (x,y):
+        sprite.move((best[0] - x, best[1] - y))
+
+
+def fill(obj, collide_obj = None, collide_callback = None) :
+    """
+        fills all white space with an object. object can be set to collide with something (collide_obj) in which case a callback would be invoked (collide_callback).
+
+        :param obj: a callback (or partial) to a sprite to create in whitespace.
+
+        :param collide_obj: an object or (list of objects) to check for collisions
+
+        :param collide_callback: a callback function to invoke when collide_obj collides with obj.
+
+    """
+    for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
+        for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
+            if at((x,y)) is None:
+                o = obj(pos=(x,y))
+                if collide_obj and collide_callback:
+                    if isinstance(collide_obj, (list, tuple)):
+                        for obj in collide_obj:
+                            o.collides(obj, collide_callback)
+                    else:
+                        o.collides(collide_obj, collide_callback)

@@ -38,33 +38,6 @@ def graze(sprite) :
 				sprite.move((choices[i][0] - x, choices[i][1] - y))
 				break
 
-# zombies like players
-def tracker(sprite) :
-	obj_list = get('player')
-	hero = obj_list[0]
-	x, y = sprite.pos
-
-	choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-	distances  = [distance(p, hero.pos) for p in choices]
-	obstacles  = [at(p) for p in choices]
-	visibility = [visible(p) for p in choices]
-
-	best = None
-	min_dist = 999999
-	for i in range(len(choices)):
-		if obstacles[i] is None and visibility[i]:
-			#every now and then make a random "bad" move
-			rnd = rand(1,10)
-			if rnd > 9:
-				best = choices[i]
-				break
-			elif distances[i] < min_dist:
-				best = choices[i]
-				min_dist = distances[i]
-	if best is not None and best != (x,y):
-		sprite.move((best[0] - x, best[1] - y))
-
-
 GUN = 'gun'
 class Gun(Thing):
 	def __init__(self):
@@ -107,9 +80,7 @@ p.take(GUN, Gun()).take(PUNCH, Punch())
 
 for i in range(10):
 	piggy = actor('Piggy', rand_pos(), tag = 'piggy')
-	piggy.wander(graze, time=0.4)
-
-
+	piggy.wander(partial(graze, piggy), time=0.4)
 
 def lose(z, p):
 	p.health = 0
@@ -117,7 +88,7 @@ def lose(z, p):
 def create_zombie():
 	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
 	z = actor(name, (WIDTH-1, 0), tag = 'zombie')
-	z.wander(tracker, time=0.5)
+	z.wander(partial(track, z, pbad=0.1), time=0.5)
 	z.collides(p, lose)
 
 def schedule_zombie():

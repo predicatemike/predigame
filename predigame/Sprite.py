@@ -639,7 +639,7 @@ class Sprite():
             :param time: the frequency (in seconds) in order to call the wander function. default is `1` second.
 
         """
-        callback(self)
+        callback()
 
         animate(self, time, partial(self.wander, callback, time))
         return self

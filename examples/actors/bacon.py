@@ -45,7 +45,7 @@ def create_piggy():
       piggy = actor('Piggy', pos, tag='piggy')
       piggy.pos = pos
       # graze is a random walk
-      piggy.wander(graze, time=0.75)
+      piggy.wander(partial(graze, piggy), time=0.75)
 
 # create some piggies
 callback(create_piggy,0.1)
