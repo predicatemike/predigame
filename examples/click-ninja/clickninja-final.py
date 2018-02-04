@@ -11,7 +11,7 @@ def destroy(s):
        score(5)
 
     # draw a splatting image at the center position of the image
-    image('redsplat', center=s.event_pos, size=2).fade(10.0)
+    image('redsplat', center=s.event_pos, size=2).fade(1.0)
 
     s.fade(0.25)
 
