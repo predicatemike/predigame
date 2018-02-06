@@ -113,7 +113,7 @@ def score_pos(pos = UPPER_LEFT):
 
 def sprites():
     """ return a list of all loaded sprites """
-    return globs.sprites
+    return Globals.instance.sprites
 
 def graze(sprite) :
     """ a sprite.wander() operation. randomly move around """
