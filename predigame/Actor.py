@@ -3,7 +3,7 @@ from time import time
 from .Sprite import Sprite
 from .Thing import Thing
 from .constants import *
-from . import globs
+from .Globals import Globals
 from .utils import at, get
 
 
@@ -162,11 +162,11 @@ class Actor(Sprite):
 		if self.direction == BACK:
 			return self.x, -1
 		elif self.direction == FRONT:
-			return self.x, int(globs.HEIGHT/globs.GRID_SIZE)+1
+			return self.x, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1
 		elif self.direction == LEFT:
 			return -1, self.y
 		elif self.direction == RIGHT:
-			return int(globs.WIDTH/globs.GRID_SIZE)+1, self.y
+			return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, self.y
 
 	def next(self):
 		return next(self.direction)
@@ -196,7 +196,7 @@ class Actor(Sprite):
 					else:
 						return s
 		elif self.direction == FRONT:
-			for y in range(self.y+1, int(globs.HEIGHT/globs.GRID_SIZE)+1, 1):
+			for y in range(self.y+1, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1, 1):
 				if at((self.x, y)):
 					s = at((self.x, y))
 					if isinstance(s, Actor):
@@ -214,7 +214,7 @@ class Actor(Sprite):
 					else:
 						return s
 		elif self.direction == RIGHT:
-			for x in range(self.x+1, int(globs.WIDTH/globs.GRID_SIZE)+1, 1):
+			for x in range(self.x+1, int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, 1):
 				if at((x, self.y)):
 					s = at((x, self.y))
 					if isinstance(s, Actor):

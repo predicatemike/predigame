@@ -3,13 +3,14 @@ from numbers import Number
 from functools import partial
 from time import time as get_time, gmtime, strftime
 from pygame.locals import *
-from . import globs
+from .Globals import Globals
 from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
 from .constants import *
 import traceback
 
+globs = None
 show_grid = False
 update_game = True
 game_over = False
@@ -43,7 +44,7 @@ def background(bg = (220, 220, 220)):
         _background = _background_color = bg
 
 def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 220), fullscreen = False, **kwargs):
-    global RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
     RUN_PATH = path
     WIDTH, HEIGHT = width, height
@@ -63,7 +64,8 @@ def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 2
     background(bg)
 
 
-    globs.init(WIDTH, HEIGHT, GRID_SIZE)
+    globs = Globals(WIDTH, HEIGHT, GRID_SIZE)
+    Globals.instance = globs
 
     SURF.fill((0, 0, 0))
     loading_font = pygame.font.Font(None, 72)
@@ -501,9 +503,9 @@ def score(value = 0, **kwargs):
     surface = font.render(string, True, scoreboard['color'])
     scoreboard['pos'] = grid_position[0] * globs.GRID_SIZE, grid_position[1] * globs.GRID_SIZE
     if pos == UPPER_RIGHT or pos == LOWER_RIGHT:
-        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height))
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height), globs)
     else:
-        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height))
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height), globs)
     globs.sprites.append(scoreboard['sprite'])
     score_dict[pos] = scoreboard
     return scoreboard['value']

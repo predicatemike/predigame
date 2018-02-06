@@ -1,6 +1,6 @@
 import random, math, os, sys
 from types import ModuleType
-from . import globs
+from .Globals import Globals
 from .Animation import Animation
 from .constants import *
 
@@ -16,40 +16,40 @@ def load_module(path, api):
     return code, mod
 
 def register_keydown(key, callback):
-    if key in globs.keys_registered['keydown']:
-        globs.keys_registered['keydown'][key].add(callback)
+    if key in Globals.instance.keys_registered['keydown']:
+        Globals.instance.keys_registered['keydown'][key].add(callback)
     else:
-        globs.keys_registered['keydown'][key] = set([callback])
+        Globals.instance.keys_registered['keydown'][key] = set([callback])
 
 def register_keyup(key, callback):
-    if key in globs.keys_registered['keyup']:
-        globs.keys_registered['keyup'][key].add(callback)
+    if key in Globals.instance.keys_registered['keyup']:
+        Globals.instance.keys_registered['keyup'][key].add(callback)
     else:
-        globs.keys_registered['keyup'][key] = set([callback])
+        Globals.instance.keys_registered['keyup'][key] = set([callback])
 
 def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
-    globs.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
+    Globals.instance.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
 
 def at(pos):
-    if pos in globs.cells:
-        return globs.cells[pos]
+    if pos in Globals.instance.cells:
+        return Globals.instance.cells[pos]
 
 def get(name):
-    if name in globs.tags:
-        return globs.tags[name]
+    if name in Globals.instance.tags:
+        return Globals.instance.tags[name]
     else:
         return []
 
 def rand_pos(x_padding = 0, y_padding = 0, empty=False):
-    grid_width = (globs.WIDTH / globs.GRID_SIZE) - math.ceil(x_padding)
-    grid_height = (globs.HEIGHT / globs.GRID_SIZE) - math.ceil(y_padding)
+    grid_width = (Globals.instance.WIDTH / Globals.instance.GRID_SIZE) - math.ceil(x_padding)
+    grid_height = (Globals.instance.HEIGHT / Globals.instance.GRID_SIZE) - math.ceil(y_padding)
     x = 0
     y = 0
     while True:
         x = random.randrange(0, grid_width)
         y = random.randrange(0, grid_height)
 
-        if len(globs.sprites) >= grid_width * grid_height:
+        if len(Globals.instance.sprites) >= grid_width * grid_height:
             break
 
         if at((x, y)) is None:
@@ -59,30 +59,30 @@ def rand_pos(x_padding = 0, y_padding = 0, empty=False):
 
 def rand_maze(callback):
     from daedalus import Maze
-    maze = Maze((globs.WIDTH/globs.GRID_SIZE), (globs.HEIGHT/globs.GRID_SIZE))
+    maze = Maze((Globals.instance.WIDTH/Globals.instance.GRID_SIZE), (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE))
     maze.create_perfect()
-    for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
-        for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
+    for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
+        for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
             if maze[x,y] == True:
                 s = callback(pos=(x,y), tag='wall')
                 #if s.pos in globs.cells:
                 #    del globs.cells[s.pos]
                 #s.pos = (x,y)
-                globs.cells[(x,y)] = s
+                Globals.instance.cells[(x,y)] = s
 
 def rand_color():
     r = random.randrange(0, 255)
     g = random.randrange(0, 255)
     b = random.randrange(0, 255)
-    if (r, g, b) == globs.BACKGROUND:
-        r, g, b = rand_color()
+    #if (r, g, b) == globs.BACKGROUND:
+    #    r, g, b = rand_color()
     return r, g, b
 
 def rand_arc():
     p1 = rand_pos(1,4)
     p2 = rand_pos(1,4)
     mid_x = (p1[0] + p2[0]) / 2
-    return (p1[0], (globs.HEIGHT/globs.GRID_SIZE)+1), (int(mid_x), 1), (p2[0], (globs.HEIGHT/globs.GRID_SIZE)+1)
+    return (p1[0], (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1), (int(mid_x), 1), (p2[0], (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1)
 
 def roundup(num, step):
     return int(math.ceil(num / float(step))) * step
@@ -97,7 +97,7 @@ def distance(p1, p2):
     return math.sqrt(sum([(a - b) ** 2 for a, b in zip(p1, p2)]))
 
 def visible(p1):
-    if p1[0] >= 0 and p1[1] >= 0 and p1[0] < (globs.WIDTH/globs.GRID_SIZE) and p1[1] < (globs.HEIGHT/globs.GRID_SIZE):
+    if p1[0] >= 0 and p1[1] >= 0 and p1[0] < (Globals.instance.WIDTH/Globals.instance.GRID_SIZE) and p1[1] < (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE):
         return True
     else:
         return False
@@ -106,9 +106,9 @@ def score_pos(pos = UPPER_LEFT):
     """ return the grid position of the score sprite """
     return {
         UPPER_LEFT : (0.5, 0.5),
-        UPPER_RIGHT: ((globs.WIDTH/globs.GRID_SIZE) - 0.5, 0.5),
-        LOWER_LEFT:  (0.5, (globs.HEIGHT/globs.GRID_SIZE) - 1),
-        LOWER_RIGHT: ((globs.WIDTH/globs.GRID_SIZE) - 0.5, (globs.HEIGHT/globs.GRID_SIZE) - 1)
+        UPPER_RIGHT: ((Globals.instance.WIDTH/Globals.instance.GRID_SIZE) - 0.5, 0.5),
+        LOWER_LEFT:  (0.5, (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE) - 1),
+        LOWER_RIGHT: ((Globals.instance.WIDTH/Globals.instance.GRID_SIZE) - 0.5, (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE) - 1)
     }.get(pos, UPPER_LEFT)
 
 def sprites():
@@ -129,22 +129,22 @@ def graze(sprite) :
                 sprite.move((choices[i][0] - x, choices[i][1] - y))
                 break
 
-def track(sprite, pbad = 0.1) :
+def track(sprite, player_sprite, pbad = 0.1) :
     """
-        a sprite.wander() operation. attempt to find the closest sprite named `player`
+        a sprite.wander() operation. attempt to a path that moves sprite closer to player_sprite.
 
-        :param sprite: the sprite to automate movements
+        :param sprite: the sprite to automate movements.
 
-        :param pbad: the probability to make a bad move
+        :param player_sprite: the player sprite to track.
+
+        :param pbad: the probability to make a bad move. some number of bad moves are needed to
 
     """
 
-    obj_list = get('player')
-    hero = obj_list[0]
     x, y = sprite.pos
 
     choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-    distances  = [distance(p, hero.pos) for p in choices]
+    distances  = [distance(p, player_sprite.pos) for p in choices]
     obstacles  = [at(p) for p in choices]
     visibility = [visible(p) for p in choices]
 
@@ -175,8 +175,8 @@ def fill(obj, collide_obj = None, collide_callback = None) :
         :param collide_callback: a callback function to invoke when collide_obj collides with obj.
 
     """
-    for x in range(int(globs.WIDTH/globs.GRID_SIZE)):
-        for y in range(int(globs.HEIGHT/globs.GRID_SIZE)):
+    for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
+        for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
             if at((x,y)) is None:
                 o = obj(pos=(x,y))
                 if collide_obj and collide_callback:

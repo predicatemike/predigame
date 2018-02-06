@@ -1,4 +1,4 @@
-from . import globs
+from .Globals import Globals
 import math
 class Animation:
     def __init__(self, obj, duration, callback, abortable=False, **kwargs):
@@ -49,7 +49,7 @@ class Animation:
         return min_progress
 
     def finish(self):
-        if not self.obj in globs.sprites:
+        if not self.obj in Globals.instance.sprites:
             return
 
         if self.callback:

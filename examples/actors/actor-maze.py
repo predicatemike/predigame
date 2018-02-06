@@ -23,21 +23,6 @@ def evaluate(action, sprite, pos):
 	else:
 		return True
 
-
-# wander method for the piggies
-def graze(sprite) :
-	x, y = sprite.pos
-	choices    = [(x,y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-	shuffle(choices)
-	obstacles  = [at(p) for p in choices]
-	visibility = [visible(p) for p in choices]
-
-	for i in range(len(choices)):
-		if obstacles[i] is None and visibility[i]:
-			if choices[i] != (x, y):
-				sprite.move((choices[i][0] - x, choices[i][1] - y))
-				break
-
 GUN = 'gun'
 class Gun(Thing):
 	def __init__(self):
@@ -88,7 +73,7 @@ def lose(z, p):
 def create_zombie():
 	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
 	z = actor(name, (WIDTH-1, 0), tag = 'zombie')
-	z.wander(partial(track, z, pbad=0.1), time=0.5)
+	z.wander(partial(track, z, p, pbad=0.1), time=0.5)
 	z.collides(p, lose)
 
 def schedule_zombie():
