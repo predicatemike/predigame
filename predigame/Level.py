@@ -1,18 +1,18 @@
 # Predigame Levels
 from copy import deepcopy
-
+from .Globals import Globals
 class Level:
 	def __init__(self):
-		self.level = 100
+		self.globals = None
 
 	def setup(self):
+		""" setup all the sprites needed for this level """
 		raise NotImplementedError('Level.setup() cannot be called directly')
 
-	def teardown(self):
-		raise NotImplementedError('Level.teardown() cannot be called directly')
-
 	def completed(self):
-		raise NotImplementedError('Level.completed() cannot be called directly')
+		""" execute an objective function to determine if this level is complete """
+		return False
 
 	def next(self):
-		raise NotImplementedError('Level.next() cannot be called directly')
+		""" return the next level """
+		return None

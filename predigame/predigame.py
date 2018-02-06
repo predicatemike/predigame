@@ -7,9 +7,11 @@ from .Globals import Globals
 from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
+from .Level import Level
 from .constants import *
 import traceback
 
+current_level = None
 globs = None
 show_grid = False
 update_game = True
@@ -156,6 +158,16 @@ def _check_image_size(ifile):
         img = img.resize((basewidth,hsize), Image.ANTIALIAS)
         img.save(ifile)
 
+
+def level(_level):
+    """ create a game with levels """
+    if not isinstance(_level, Level):
+        sys.exit('Levels must be subclases of the Level class --> ' + str(_level))
+    global current_level, globs
+    current_level = _level
+    globs = Globals(WIDTH, HEIGHT, GRID_SIZE)
+    Globals.instance = globs
+    current_level.setup()
 
 def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
@@ -524,9 +536,11 @@ def gameover():
     global game_over
     game_over = True
 
-def reset(*kwargs):
-    global game_over
+def reset(**kwargs):
+    global game_over, current_level, score_dict
     game_over = False
+    current_level = None
+    score_dict = {}
 
     destroyall()
     globs.keys_registered['keydown'] = {}
@@ -534,10 +548,10 @@ def reset(*kwargs):
     globs.tags = {}
     del globs.animations[:]
     del callbacks[:]
-
-    from . import api
-    code, mod = load_module(RUN_PATH, api)
-    exec(code, mod.__dict__)
+    if not kwargs.get('soft', False):
+        from . import api
+        code, mod = load_module(RUN_PATH, api)
+        exec(code, mod.__dict__)
 
     global start_time
     start_time = get_time()
@@ -590,6 +604,12 @@ def _update(delta):
         if callback['time'] <= get_time():
             callback['cb']()
             callbacks.remove(callback)
+
+    if current_level is not None:
+        if current_level.completed():
+            next_level = current_level.next()
+            reset(soft=True)
+            level(next_level)
 
 def _draw(SURF):
     if isinstance(_background, pygame.Surface) :
