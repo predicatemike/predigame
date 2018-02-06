@@ -161,6 +161,8 @@ def _check_image_size(ifile):
 
 def level(_level):
     """ create a game with levels """
+    if _level is None:
+        return
     if not isinstance(_level, Level):
         sys.exit('Levels must be subclases of the Level class --> ' + str(_level))
     global current_level, globs
@@ -608,8 +610,9 @@ def _update(delta):
     if current_level is not None:
         if current_level.completed():
             next_level = current_level.next()
-            reset(soft=True)
-            level(next_level)
+            if next_level is not None:
+                reset(soft=True)
+                level(next_level)
 
 def _draw(SURF):
     if isinstance(_background, pygame.Surface) :
