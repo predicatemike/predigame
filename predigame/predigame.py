@@ -26,7 +26,7 @@ _background_color = _background = DEFAULT_COLOR
 def background(bg = (220, 220, 220)):
     """ set the background color or image """
     global _background, _background_color
-
+    _background = None
     if bg is None:
         _background_color = _background = DEFAULT_COLOR
         return
