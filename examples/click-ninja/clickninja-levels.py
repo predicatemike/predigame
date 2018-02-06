@@ -86,7 +86,7 @@ class NinjaLevel(Level):
         self.total_hits += 1
         score(self.total_hits, pos=LOWER_LEFT)
 
-    def get_duration():
+    def get_duration(self):
         return score(pos=LOWER_RIGHT)
 
     def setup(self):
