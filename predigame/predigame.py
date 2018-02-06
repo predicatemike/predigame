@@ -38,7 +38,7 @@ def background(bg = (220, 220, 220)):
                 _background = pygame.image.load(fname).convert()
                 break
         if _background is None:
-            sys.exit('Background image doesn\'t exist. File must be saved in backgounds directory: ' + _bg)
+            sys.exit('Background image doesn\'t exist. File must be saved in backgounds directory: ' + bg)
         else:
             #size background to fix screen
             _background = pygame.transform.scale(_background, (WIDTH, HEIGHT))
