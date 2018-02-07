@@ -182,44 +182,39 @@ class Actor(Sprite):
 		elif direction == RIGHT:
 			return self.x + 1, self.y
 
+	def _check_next_object(self, pos):
+		lst = at(pos)
+		if lst is not None:
+			if isinstance(lst, list):
+				for x in lst:
+					if x != self and isinstance(x, Actor) and x.health > 0:
+						return x
+			elif lst != self and isinstance(lst, Actor) and lst.health > 0:
+				return lst
+
+
+
 	def next_object(self):
 		""" returns the next thing along along the path where this actor is facing.
 			if the next thing is an Actor, it must be alive.
 		"""
 		if self.direction == BACK:
-			for y in range(self.y-1, -1, -1):
-				if at((self.x, y)):
-					s = at((self.x, y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for y in range(self.y, -1, -1):
+				obj = self._check_next_object((self.x, y))
+				if obj is not None:
+					return obj
 		elif self.direction == FRONT:
-			for y in range(self.y+1, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1, 1):
-				if at((self.x, y)):
-					s = at((self.x, y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for y in range(self.y, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1, 1):
+				obj = self._check_next_object((self.x, y))
+				if obj is not None:
+					return obj
 		elif self.direction == LEFT:
-			for x in range(self.x-1, -1, -1):
-				if at((x, self.y)):
-					s = at((x, self.y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for x in range(self.x, -1, -1):
+				obj = self._check_next_object((x, self.y))
+				if obj is not None:
+					return obj
 		elif self.direction == RIGHT:
 			for x in range(self.x+1, int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, 1):
-				if at((x, self.y)):
-					s = at((x, self.y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
-		return None
+				obj = self._check_next_object((x, self.y))
+				if obj is not None:
+					return obj

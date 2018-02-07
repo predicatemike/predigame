@@ -4,7 +4,7 @@ from functools import partial
 from time import time as get_time, gmtime, strftime
 from pygame.locals import *
 from .Globals import Globals
-from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
+from .utils import load_module, register_cell, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
 from .Level import Level
@@ -78,6 +78,7 @@ def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 2
     images['__screenshot__'] = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png'))
 
     start_time = get_time()
+
 
 def _create_image(name, pos, center, size, tag):
     img = images[name]
@@ -211,9 +212,9 @@ def image(name = None, pos = None, center = None, size = 1, tag = ''):
     img = _create_image(name, pos, center, size, tag)
     globs.sprites.append(img)
     if center:
-        globs.cells[center] = img
+        register_cell(center, img)
     else:
-        globs.cells[pos] = img
+        register_cell(pos, img)
 
     return globs.sprites[-1]
 
@@ -252,9 +253,9 @@ def actor(name = None, pos = None, center = None, size = 1, abortable = False, t
     img = _create_actor(states, name, pos, center, size, abortable, tag)
     globs.sprites.append(img)
     if center:
-        globs.cells[center] = img
+        register_cell(center, img)
     else:
-        globs.cells[pos] = img
+        register_cell(pos, img)
     return globs.sprites[-1]
 
 def maze(name=None, callback=None):
@@ -271,7 +272,7 @@ def maze(name=None, callback=None):
 
     for cell in cells:
         s = callback(pos=(cell[0], cell[1]), tag='wall')
-        globs.cells[s.pos] = s
+        register_cell(s.pos, s)
 
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
@@ -300,7 +301,7 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwa
         return False
 
     globs.sprites.append(shape)
-    globs.cells[pos] = shape
+    register_cell(pos, shape)
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1, tag = ''):
@@ -622,7 +623,7 @@ def _draw(SURF):
 
     globs.cells = {}
     for sprite in globs.sprites:
-        globs.cells[sprite.pos] = sprite
+        register_cell(sprite.pos, sprite)
         sprite._draw(SURF)
 
     if show_grid:

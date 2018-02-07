@@ -15,6 +15,15 @@ def load_module(path, api):
 
     return code, mod
 
+def register_cell(pos, s):
+    """ helper function that builds the index of all sprites in a given cell """
+    lst = []
+    if pos in Globals.instance.cells:
+        lst = Globals.instance.cells[pos]
+    else:
+        Globals.instance.cells[pos] = lst
+    lst.append(s)
+
 def register_keydown(key, callback):
     if key in Globals.instance.keys_registered['keydown']:
         Globals.instance.keys_registered['keydown'][key].add(callback)
@@ -32,7 +41,13 @@ def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
 
 def at(pos):
     if pos in Globals.instance.cells:
-        return Globals.instance.cells[pos]
+        lst = Globals.instance.cells[pos]
+        if len(lst) == 0:
+            return None
+        elif len(lst) == 1:
+            return lst[0]
+        else:
+            return lst
 
 def get(name):
     if name in Globals.instance.tags:
@@ -65,10 +80,7 @@ def rand_maze(callback):
         for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
             if maze[x,y] == True:
                 s = callback(pos=(x,y), tag='wall')
-                #if s.pos in globs.cells:
-                #    del globs.cells[s.pos]
-                #s.pos = (x,y)
-                Globals.instance.cells[(x,y)] = s
+                register_cell((x,y), s)
 
 def rand_color():
     r = random.randrange(0, 255)
