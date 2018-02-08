@@ -122,7 +122,24 @@ def machine_gun():
 	if not stop:
 		callback(machine_gun, 0.25)
 ```
-## Throw Something
+## Throw a Punch
+
+```python
+player = actor('Soldier-2', pos=(1, 1), tag = 'player', abortable=True)
+player.speed(2).keys()
+
+def punch():
+    player.act(THROW, loop=1)
+    target = at(player.next(player.direction))
+    if isinstance(target, Actor):
+        target.kill()
+    elif isinstance(target, Sprite):
+        target.fade(0.5)
+
+keydown('p', punch)
+```
+
+## Throw a Bomb
 
 ## Limiting Inventory
 
