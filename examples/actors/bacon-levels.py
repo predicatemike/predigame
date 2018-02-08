@@ -2,15 +2,6 @@ WIDTH = 31
 HEIGHT = 19
 TITLE = 'Making Bacon with Levels'
 
-def evaluate(action, sprite, pos):
-    obj = at(pos)
-    if obj and obj.tag == 'wall':
-        return False
-    elif not visible(pos):
-        return False
-    else:
-        return True
-
 def shoot(level, player):
 	player.act(SHOOT, loop=1)
 	target = player.next_object()
@@ -60,7 +51,7 @@ class BaconLevel(Level):
 
         # PLAYER
         player = actor('Soldier-2', (1, HEIGHT-2), tag='player', abortable=True)
-        player.speed(5).keys(precondition=evaluate)
+        player.speed(5).keys(precondition=player_physics)
 
         # TARGETS
         create_targets(self.targets)

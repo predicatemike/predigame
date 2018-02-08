@@ -8,20 +8,6 @@ BACKGROUND = 'grass'
 # Zombies attack player
 # Zombied can attack wall
 
-# Player throw and other movements
-# proper animations for non-walking actions
-# add more sprites
-
-def evaluate(action, sprite, pos):
-	obj = at(pos)
-	if obj:
-		if obj.tag == 'destination':
-			return True
-		else:
-			print('object in the way at ' + str(pos))
-			return False
-	else:
-		return True
 
 GUN = 'gun'
 class Gun(Thing):
@@ -57,7 +43,7 @@ class Punch(Thing):
 			target.fade(0.5)
 
 
-p = actor('Soldier-2', (1, 1), tag = 'player', abortable=True).speed(2).keys(precondition=evaluate)
+p = actor('Soldier-2', (1, 1), tag = 'player', abortable=True).speed(2).keys(precondition=player_physics)
 p.move_to((0,0))
 p.rate(2)
 p.take(GUN, Gun()).take(PUNCH, Punch())

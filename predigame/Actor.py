@@ -148,6 +148,12 @@ class Actor(Sprite):
 					self.actit(action, loop)
 		return self
 
+	def kill(self):
+		""" used to kill this actor """
+		self.health = 0
+		self.destruct(5)
+
+
 	def rate(self, frame_rate):
 		""" the rate to swap animation frames, default is 1 per update call """
 		if frame_rate < 0:
@@ -167,7 +173,7 @@ class Actor(Sprite):
 			return -1, self.y
 		elif self.direction == RIGHT:
 			return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, self.y
-
+			
 	def next(self):
 		return next(self.direction)
 
@@ -187,12 +193,16 @@ class Actor(Sprite):
 		if lst is not None:
 			if isinstance(lst, list):
 				for x in lst:
-					if x != self and isinstance(x, Actor) and x.health > 0:
+					if x != self and isinstance(x, Actor):
+						if x.health > 0:
+							return x
+					elif x != self and isinstance(x, Sprite):
 						return x
-			elif lst != self and isinstance(lst, Actor) and lst.health > 0:
+			elif lst != self and isinstance(lst, Actor):
+				if lst.health > 0:
+					return lst
+			elif lst != self and isinstance(lst, Sprite):
 				return lst
-
-
 
 	def next_object(self):
 		""" returns the next thing along along the path where this actor is facing.

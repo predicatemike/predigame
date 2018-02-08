@@ -175,6 +175,18 @@ def track(sprite, player_sprite, pbad = 0.1) :
     if best is not None and best != (x,y):
         sprite.move((best[0] - x, best[1] - y))
 
+def player_physics(action, sprite, pos):
+    """ simple physical model that keep a player from walking into walls """
+    obj = at(pos)
+    if obj and isinstance(obj, list):
+        for x in obj:
+            if x.tag == 'wall':
+                return False
+    elif obj and obj.tag == 'wall':
+        return False
+    elif not visible(pos):
+        return False
+    return True
 
 def fill(obj, collide_obj = None, collide_callback = None) :
     """
