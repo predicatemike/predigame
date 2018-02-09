@@ -396,15 +396,17 @@ def time():
     """
     return float('%.3f'%(get_time() - start_time))
 
-def callback(function, wait):
+def callback(function, wait, repeat=False):
     """
         register a time based callback function
 
         :param function: pointer to a callback function
 
         :param wait: the amount of time to **wait** for the callback to execute.
+
+        :param repeat: if this callback should repeat (default False)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
 
 def reset_score(**kwargs):
     """
@@ -603,10 +605,13 @@ def _update(delta):
             del globs.animations[index]
             animation.finish()
 
-    for callback in callbacks:
-        if callback['time'] <= get_time():
-            callback['cb']()
-            callbacks.remove(callback)
+    for _callback in callbacks:
+        if _callback['time'] <= get_time():
+            _callback['cb']()
+            if _callback['repeat']:
+                callback(_callback['cb'], _callback['wait'], _callback['repeat'])
+            callbacks.remove(_callback)
+
 
     if current_level is not None:
         if current_level.completed():

@@ -62,9 +62,6 @@ def create_zombie():
 	z.wander(partial(track, z, p, pbad=0.1), time=0.5)
 	z.collides(p, lose)
 
-def schedule_zombie():
-	create_zombie()
-	callback(schedule_zombie, 30)
 
 # zombies come out of the zombie house
 image('zombie_house', center=(WIDTH-1, 1), size=2)
@@ -98,7 +95,7 @@ def put(p, direction):
 	if not at((x,y)):
 		image('stone', (x, y), tag = 'wall').move_to((x,y))
 
-callback(schedule_zombie, 30)
+callback(create_zombie, 2, repeat=False)
 keydown('space', lambda: p.use(GUN))
 keydown('p', lambda: p.use(PUNCH))
 keydown('r', reset)
