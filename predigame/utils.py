@@ -49,6 +49,19 @@ def at(pos):
         else:
             return lst
 
+def is_wall(pos):
+    """ returns true if a wall is at the desired location, false otherwise """
+    atpos = at(pos)
+    if atpos is not None:
+        if isinstance(atpos, list):
+            for x in atpos:
+                if x.tag == 'wall':
+                    return True
+        elif atpos.tag == 'wall':
+            return True
+
+    return False
+
 def get(name):
     if name in Globals.instance.tags:
         return Globals.instance.tags[name]
@@ -157,21 +170,22 @@ def track(sprite, player_sprite, pbad = 0.1) :
 
     choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
     distances  = [distance(p, player_sprite.pos) for p in choices]
-    obstacles  = [at(p) for p in choices]
     visibility = [visible(p) for p in choices]
 
     best = None
     min_dist = 999999
     for i in range(len(choices)):
-        if obstacles[i] is None and visibility[i]:
-            #every now and then make a random "bad" move
-            rnd = random.uniform(0, 1)
-            if rnd <= pbad:
-                best = choices[i]
-                break
-            elif distances[i] < min_dist:
-                best = choices[i]
-                min_dist = distances[i]
+        if is_wall(choices[i]) or not visibility[i]:
+            continue
+            
+        #every now and then make a random "bad" move
+        rnd = random.uniform(0, 1)
+        if rnd <= pbad:
+            best = choices[i]
+            break
+        elif distances[i] < min_dist:
+            best = choices[i]
+            min_dist = distances[i]
     if best is not None and best != (x,y):
         sprite.move((best[0] - x, best[1] - y))
 
