@@ -114,7 +114,7 @@ class NinjaLevel(Level):
 
     def completed(self):
         """ 10 hits are required to complete a level """
-        if self.hits == 2:
+        if self.hits == 10:
             return True
         else:
             return False
