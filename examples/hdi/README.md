@@ -4,13 +4,32 @@ It's possible to take a game in a number of different directions. This guide wal
 
 # Computer Opponents
 
-## Make Opponents Smart
+## Add a Opponent
 
-**Objective:** Add (one or more) computer controlled players that want to find a player sprite.
+**Objective:** Add a computer controlled opponent that want to find a player sprite. Have the opponent start in the upper right corner.
+
+```python
+def lose(z, p):
+	p.health = 0
+
+def create_zombie():
+	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
+	z = actor(name, (WIDTH-1, 1), tag = 'zombie')
+	z.wander(partial(track, z, p, pbad=0.1), time=0.5)
+	z.collides(p, lose)
+create_zombie()
+```
+
+## Schedule More Opponents
+**Objective:** Add another computer opponent every 30 seconds.
+
+```python
+callback(create_zombie, 30, repeat=True)
+```
 
 ## Single Target Opponent
 
-## Make Opponents Move Away from Player(s) 
+## Make Opponents Move Away from Player(s)
 
 
 # Levels
@@ -30,7 +49,7 @@ maze(callback=partial(shape, RECT, BLACK))
 
 
 ## Add Walls
-This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. 
+This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player.
 ```python
 def put(player, direction):
 	""" put a block at the player's next location  """

@@ -1,7 +1,9 @@
-WIDTH = 30
-HEIGHT = 18
+WIDTH = 29
+HEIGHT = 19
 TITLE = 'MAZE'
 BACKGROUND = 'grass'
+
+maze(callback=partial(image, 'stone'))
 
 # TODO List
 # Zombie mating
@@ -44,7 +46,6 @@ class Punch(Thing):
 
 
 p = actor('Soldier-2', (1, 1), tag = 'player', abortable=True).speed(2).keys(precondition=player_physics)
-p.move_to((0,0))
 p.rate(2)
 p.take(GUN, Gun()).take(PUNCH, Punch())
 
@@ -58,8 +59,8 @@ def lose(z, p):
 
 def create_zombie():
 	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
-	z = actor(name, (WIDTH-1, 0), tag = 'zombie')
-	z.wander(partial(track, z, p, pbad=0.1), time=0.5)
+	z = actor(name, (WIDTH-1, 10), tag = 'zombie')
+	z.wander(partial(track, z, p, pbad=0.1), time=0.35)
 	z.collides(p, lose)
 
 
