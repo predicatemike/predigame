@@ -46,7 +46,7 @@ def shoot():
 	target = player.next_object()
 
 	# if it's a piggy and that piggy is alive
-	if target and isinstance(target.tag == 'piggy' and target.health > 0:
+	if target and target.tag == 'piggy' and target.health > 0:
 		# kill the piggy
 		target.health = 0
 		# make the piggy disappear in 5 seconds
