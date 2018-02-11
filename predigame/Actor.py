@@ -3,7 +3,7 @@ from time import time
 from .Sprite import Sprite
 from .Thing import Thing
 from .constants import *
-from . import globs
+from .Globals import Globals
 from .utils import at, get
 
 
@@ -148,6 +148,12 @@ class Actor(Sprite):
 					self.actit(action, loop)
 		return self
 
+	def kill(self):
+		""" used to kill this actor """
+		self.health = 0
+		self.destruct(5)
+
+
 	def rate(self, frame_rate):
 		""" the rate to swap animation frames, default is 1 per update call """
 		if frame_rate < 0:
@@ -162,12 +168,12 @@ class Actor(Sprite):
 		if self.direction == BACK:
 			return self.x, -1
 		elif self.direction == FRONT:
-			return self.x, int(globs.HEIGHT/globs.GRID_SIZE)+1
+			return self.x, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1
 		elif self.direction == LEFT:
 			return -1, self.y
 		elif self.direction == RIGHT:
-			return int(globs.WIDTH/globs.GRID_SIZE)+1, self.y
-
+			return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, self.y
+			
 	def next(self):
 		return next(self.direction)
 
@@ -182,44 +188,43 @@ class Actor(Sprite):
 		elif direction == RIGHT:
 			return self.x + 1, self.y
 
+	def _check_next_object(self, pos):
+		lst = at(pos)
+		if lst is not None:
+			if isinstance(lst, list):
+				for x in lst:
+					if x != self and isinstance(x, Actor):
+						if x.health > 0:
+							return x
+					elif x != self and isinstance(x, Sprite):
+						return x
+			elif lst != self and isinstance(lst, Actor):
+				if lst.health > 0:
+					return lst
+			elif lst != self and isinstance(lst, Sprite):
+				return lst
+
 	def next_object(self):
 		""" returns the next thing along along the path where this actor is facing.
 			if the next thing is an Actor, it must be alive.
 		"""
 		if self.direction == BACK:
-			for y in range(self.y-1, -1, -1):
-				if at((self.x, y)):
-					s = at((self.x, y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for y in range(self.y, -1, -1):
+				obj = self._check_next_object((self.x, y))
+				if obj is not None:
+					return obj
 		elif self.direction == FRONT:
-			for y in range(self.y+1, int(globs.HEIGHT/globs.GRID_SIZE)+1, 1):
-				if at((self.x, y)):
-					s = at((self.x, y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for y in range(self.y, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1, 1):
+				obj = self._check_next_object((self.x, y))
+				if obj is not None:
+					return obj
 		elif self.direction == LEFT:
-			for x in range(self.x-1, -1, -1):
-				if at((x, self.y)):
-					s = at((x, self.y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
+			for x in range(self.x, -1, -1):
+				obj = self._check_next_object((x, self.y))
+				if obj is not None:
+					return obj
 		elif self.direction == RIGHT:
-			for x in range(self.x+1, int(globs.WIDTH/globs.GRID_SIZE)+1, 1):
-				if at((x, self.y)):
-					s = at((x, self.y))
-					if isinstance(s, Actor):
-						if s.health > 0:
-							return s
-					else:
-						return s
-		return None
+			for x in range(self.x+1, int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, 1):
+				obj = self._check_next_object((x, self.y))
+				if obj is not None:
+					return obj

@@ -1,18 +1,18 @@
 import sys, random, math, pygame
 from functools import partial
 from .utils import register_keydown, register_keyup, animate, randrange_float, sign
-from . import globs
+from .Globals import Globals
 
 class Sprite():
     """
 
-    The PrediGame Sprite - a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite
+    The Predigame Sprite - a generic two-dimensional object that is integrated with other sprites in a larger scene. A sprite
     can consist of a bitmap (still) image or a basic geometrical shape (circle, rectangle, ellipse). Sprites in PrediGame
     have some fun properties - they can be clicked, collide with other sprites, even fade, spin or pulse.
 
     """
     def __init__(self, surface, rect, tag=None, abortable=False, name=None):
-        if len(globs.sprites) >= 9000:
+        if len(Globals.instance.sprites) >= 9000:
             sys.exit('Too many sprites! You\'re trying to spawn over 9,000!')
         self.surface = surface.convert_alpha()
         self.origin_surface = self.surface
@@ -31,14 +31,17 @@ class Sprite():
         self.clicks = []
         self.lifespan = -1
         self._pixelated = 0
+        self._value = 0
         self.event_pos = None
         self.name = name
         self._tag = tag
         self.abortable = abortable
-        if tag not in globs.tags.keys():
-            globs.tags[tag] = [self]
+
+
+        if tag not in Globals.instance.tags.keys():
+            Globals.instance.tags[tag] = [self]
         else:
-            globs.tags[tag].append(self)
+            Globals.instance.tags[tag].append(self)
 
     @property
     def pixelated(self):
@@ -50,13 +53,21 @@ class Sprite():
         self.pixelate(math.ceil(value))
 
     @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+    @property
     def x(self):
         """
             get the x (left/right) position of the sprite
 
             :return: the x position of the sprite as an integer
         """
-        return int(self.virt_rect[0] / globs.GRID_SIZE)
+        return int(self.virt_rect[0] /Globals.instance.GRID_SIZE)
 
     @x.setter
     def x(self, value):
@@ -64,7 +75,7 @@ class Sprite():
             set the x (left/right) position of the sprite
         """
         self.needs_rotation = True
-        self.virt_rect[0] = int(float(value) * globs.GRID_SIZE)
+        self.virt_rect[0] = int(float(value) * Globals.instance.GRID_SIZE)
 
     @property
     def y(self):
@@ -73,7 +84,7 @@ class Sprite():
 
             :return: the y position of the sprite as an integer
         """
-        return int(self.virt_rect[1] / globs.GRID_SIZE)
+        return int(self.virt_rect[1] / Globals.instance.GRID_SIZE)
 
     @y.setter
     def y(self, value):
@@ -81,7 +92,7 @@ class Sprite():
             set the y (up/down) position of the sprite
         """
         self.needs_rotation = True
-        self.virt_rect[1] = int(float(value) * globs.GRID_SIZE)
+        self.virt_rect[1] = int(float(value) * Globals.instance.GRID_SIZE)
 
     @property
     def pos(self):
@@ -111,14 +122,14 @@ class Sprite():
         """
             get the width of a sprite in terms of the grid block size.
         """
-        return self.virt_rect[2] / globs.GRID_SIZE
+        return self.virt_rect[2] / Globals.instance.GRID_SIZE
 
     @property
     def height(self):
         """
             get the width of a sprite in terms of the grid block size.
         """
-        return self.virt_rect[3] / globs.GRID_SIZE
+        return self.virt_rect[3] / Globals.instance.GRID_SIZE
 
     @property
     def size(self):
@@ -181,7 +192,7 @@ class Sprite():
     @property
     def center(self):
         x, y, width, height = self.virt_rect[:]
-        return (x + width/2.0)/ globs.GRID_SIZE, (y + height/2.0)/ globs.GRID_SIZE
+        return (x + width/2.0)/ Globals.instance.GRID_SIZE, (y + height/2.0)/ Globals.instance.GRID_SIZE
 
     def _update(self, delta):
         if self.needs_rotation:
@@ -189,13 +200,12 @@ class Sprite():
             self.needs_rotation = False
         self._handle_collisions()
 
-
     def _draw(self, surface):
         surface.blit(self.surface, self.rect)
 
     def _handle_collisions(self):
         for collision in self.collisions:
-            if not collision['sprite'] in globs.sprites:
+            if not collision['sprite'] in Globals.instance.sprites:
                 self.collisions.remove(collision)
                 continue
 
@@ -220,21 +230,21 @@ class Sprite():
         animate(self, time, partial(self._update_float, distance, time), x = self.x + move_x, y = self.y + move_y)
 
     def _update_bounce(self):
-        if self.virt_rect[0] + self.virt_rect[2] >= globs.WIDTH and self.bounce_vec[0] > 0:
+        if self.virt_rect[0] + self.virt_rect[2] >= Globals.instance.WIDTH and self.bounce_vec[0] > 0:
             self.bounce(True, False)
         elif self.virt_rect[0] <= 0 and self.bounce_vec[0] < 0:
             self.bounce(True, False)
-        elif self.virt_rect[1] + self.virt_rect[3] >= globs.HEIGHT and self.bounce_vec[1] > 0:
+        elif self.virt_rect[1] + self.virt_rect[3] >= Globals.instance.HEIGHT and self.bounce_vec[1] > 0:
             self.bounce(False, True)
         elif self.virt_rect[1] <= 0 and self.bounce_vec[1] < 0:
             self.bounce(False, True)
 
         x_dist = self.x
         if self.bounce_vec[0] >= 1:
-            x_dist = (globs.WIDTH - (self.virt_rect[0] + self.virt_rect[2])) / (globs.GRID_SIZE * 1.0)
+            x_dist = (Globals.instance.WIDTH - (self.virt_rect[0] + self.virt_rect[2])) / (Globals.instance.GRID_SIZE * 1.0)
         y_dist = self.y
         if self.bounce_vec[1] >= 1:
-            y_dist = (globs.HEIGHT - (self.virt_rect[1] + self.virt_rect[3])) / (globs.GRID_SIZE * 1.0)
+            y_dist = (Globals.instance.HEIGHT - (self.virt_rect[1] + self.virt_rect[3])) / (Globals.instance.GRID_SIZE * 1.0)
 
         distance = min(x_dist, y_dist)
         time = self._calc_time((distance, distance))
@@ -243,15 +253,15 @@ class Sprite():
     def _handle_click(self, button, pos):
         for click in self.clicks:
             if button == click['btn']:
-                self.event_pos = (1.0*pos[0])/globs.GRID_SIZE, (1.0*pos[1])/globs.GRID_SIZE
+                self.event_pos = (1.0*pos[0])/Globals.instance.GRID_SIZE, (1.0*pos[1])/Globals.instance.GRID_SIZE
                 click['cb'](self)
 
     def _calc_time(self, vector, position = None):
         if not position:
             position = self.virt_rect[0:2]
         cur_x, cur_y = position
-        new_x = cur_x + vector[0] * globs.GRID_SIZE
-        new_y = cur_y + vector[1] * globs.GRID_SIZE
+        new_x = cur_x + vector[0] * Globals.instance.GRID_SIZE
+        new_y = cur_y + vector[1] * Globals.instance.GRID_SIZE
         distance = math.sqrt((new_x - cur_x)**2 + (new_y - cur_y)**2)
         time = (abs(distance) / self.move_speed) / 60.0
         return time
@@ -354,7 +364,7 @@ class Sprite():
 
     def _continue_key(self, key, distance, **kwargs):
         p = kwargs.get('precondition', None)
-        if key in globs.keys_pressed:
+        if key in Globals.instance.keys_pressed:
             self.move(distance, callback = partial(self._continue_key, key, distance, precondition = p), precondition = p)
 
     def keys(self, right = 'right', left = 'left', up = 'up', down = 'down', **kwargs):
@@ -401,8 +411,8 @@ class Sprite():
         """
             tell the sprite to follow the mouse cursor as it moves around the screen
         """
-        if self not in globs.mouse_motion:
-            globs.mouse_motion.append(self)
+        if self not in Globals.instance.mouse_motion:
+            Globals.instance.mouse_motion.append(self)
         return self
 
     def speed(self, speed = 5):
@@ -504,8 +514,8 @@ class Sprite():
         x, y, width, height = self.virt_rect[:]
         center = (x + width/2), (y + height/2)
 
-        scale_width = self.sprite_scale_x * globs.GRID_SIZE
-        scale_height = self.sprite_scale_y * globs.GRID_SIZE
+        scale_width = self.sprite_scale_x * Globals.instance.GRID_SIZE
+        scale_height = self.sprite_scale_y * Globals.instance.GRID_SIZE
         self.surface = pygame.transform.scale(self.origin_surface, (int(scale_width), int(scale_height)))
         self.surface = pygame.transform.rotate(self.surface, self.rotate_angle)
 
@@ -540,7 +550,7 @@ class Sprite():
             :todo: scale needs to be applied separately to x and y axis.
         """
 
-        if self.virt_rect[2] > globs.WIDTH and self.virt_rect[3] > globs.HEIGHT:
+        if self.virt_rect[2] > Globals.instance.WIDTH and self.virt_rect[3] > Globals.instance.HEIGHT:
             return self
         width = self.virt_rect[2] * size
         height = self.virt_rect[3] * size
@@ -626,8 +636,8 @@ class Sprite():
         """
             destroy this sprite and remove from the game canvas.
         """
-        globs.sprites.remove(self)
-        globs.tags[self._tag].remove(self)
+        Globals.instance.sprites.remove(self)
+        Globals.instance.tags[self._tag].remove(self)
         return self
 
     def wander(self, callback, time = 1):
@@ -639,7 +649,7 @@ class Sprite():
             :param time: the frequency (in seconds) in order to call the wander function. default is `1` second.
 
         """
-        callback(self)
+        callback()
 
         animate(self, time, partial(self.wander, callback, time))
         return self

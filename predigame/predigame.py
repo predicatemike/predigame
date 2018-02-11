@@ -3,13 +3,16 @@ from numbers import Number
 from functools import partial
 from time import time as get_time, gmtime, strftime
 from pygame.locals import *
-from . import globs
-from .utils import load_module, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
+from .Globals import Globals
+from .utils import load_module, register_cell, register_keydown, rand_maze, rand_pos, rand_color, roundup, animate, score_pos
 from .Sprite import Sprite
 from .Actor import Actor
+from .Level import Level
 from .constants import *
 import traceback
 
+current_level = None
+globs = None
 show_grid = False
 update_game = True
 game_over = False
@@ -17,15 +20,38 @@ sounds = {}
 images = {}
 actors = {}
 callbacks = []
+DEFAULT_COLOR = (220, 220, 220)
+_background_color = _background = DEFAULT_COLOR
 
-def init(path, width = 800, height = 800, title = 'PrediGame', background = (220, 220, 220), fullscreen = False, **kwargs):
-    global RUN_PATH, WIDTH, HEIGHT, BACKGROUND, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+def background(bg = (220, 220, 220)):
+    """ set the background color or image """
+    global _background, _background_color
+    _background = None
+    if bg is None:
+        _background_color = _background = DEFAULT_COLOR
+        return
+
+    if isinstance(bg, str):
+        for ext in ['png', 'jpg', 'gif']:
+            fname = 'backgrounds/' + bg + '.' + ext
+            if os.path.isfile(fname):
+                _background = pygame.image.load(fname).convert()
+                break
+        if _background is None:
+            sys.exit('Background image doesn\'t exist. File must be saved in backgounds directory: ' + bg)
+        else:
+            #size background to fix screen
+            _background = pygame.transform.scale(_background, (WIDTH, HEIGHT))
+    else :
+        _background = _background_color = bg
+
+def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 220), fullscreen = False, **kwargs):
+    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
 
     RUN_PATH = path
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
     GRID_SIZE = kwargs.get('grid', 50)
-    BACKGROUND = background
 
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
@@ -37,7 +63,11 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
         SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
 
-    globs.init(WIDTH, HEIGHT, GRID_SIZE, BACKGROUND)
+    background(bg)
+
+
+    globs = Globals(WIDTH, HEIGHT, GRID_SIZE)
+    Globals.instance = globs
 
     SURF.fill((0, 0, 0))
     loading_font = pygame.font.Font(None, 72)
@@ -48,6 +78,7 @@ def init(path, width = 800, height = 800, title = 'PrediGame', background = (220
     images['__screenshot__'] = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png'))
 
     start_time = get_time()
+
 
 def _create_image(name, pos, center, size, tag):
     img = images[name]
@@ -92,8 +123,8 @@ def _create_actor(actions, name, pos, center, size, abortable, tag):
 def _create_rectangle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.BACKGROUND_COLOR)
-    surface.set_colorkey(globs.BACKGROUND_COLOR)
+    surface.fill(_background_color)
+    surface.set_colorkey(_background_color)
     pygame.draw.rect(surface, color, (0, 0, rect.width, rect.height), outline)
 
     return Sprite(surface, rect, tag)
@@ -101,8 +132,8 @@ def _create_rectangle(color, pos, size, outline, tag):
 def _create_circle(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size * globs.GRID_SIZE, size * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.BACKGROUND_COLOR)
-    surface.set_colorkey(globs.BACKGROUND_COLOR)
+    surface.fill(_background_color)
+    surface.set_colorkey(_background_color)
     pygame.draw.circle(surface, color, (rect.width // 2, rect.height // 2), rect.width // 2, outline)
 
     return Sprite(surface, rect, tag)
@@ -110,8 +141,8 @@ def _create_circle(color, pos, size, outline, tag):
 def _create_ellipse(color, pos, size, outline, tag):
     rect = pygame.Rect(pos[0] * globs.GRID_SIZE, pos[1] * globs.GRID_SIZE, size[0] * globs.GRID_SIZE, size[1] * globs.GRID_SIZE)
     surface = pygame.Surface(rect.size)
-    surface.fill(globs.BACKGROUND_COLOR)
-    surface.set_colorkey(globs.BACKGROUND_COLOR)
+    surface.fill(_background_color)
+    surface.set_colorkey(_background_color)
     pygame.draw.ellipse(surface, color, (0, 0, rect.width, rect.height), outline)
 
     return Sprite(surface, rect, tag)
@@ -128,6 +159,18 @@ def _check_image_size(ifile):
         img = img.resize((basewidth,hsize), Image.ANTIALIAS)
         img.save(ifile)
 
+
+def level(_level):
+    """ create a game with levels """
+    if _level is None:
+        return
+    if not isinstance(_level, Level):
+        sys.exit('Levels must be subclases of the Level class --> ' + str(_level))
+    global current_level, globs
+    current_level = _level
+    globs = Globals(WIDTH, HEIGHT, GRID_SIZE)
+    Globals.instance = globs
+    current_level.setup()
 
 def image(name = None, pos = None, center = None, size = 1, tag = ''):
     if not name:
@@ -169,9 +212,9 @@ def image(name = None, pos = None, center = None, size = 1, tag = ''):
     img = _create_image(name, pos, center, size, tag)
     globs.sprites.append(img)
     if center:
-        globs.cells[center] = img
+        register_cell(center, img)
     else:
-        globs.cells[pos] = img
+        register_cell(pos, img)
 
     return globs.sprites[-1]
 
@@ -210,9 +253,9 @@ def actor(name = None, pos = None, center = None, size = 1, abortable = False, t
     img = _create_actor(states, name, pos, center, size, abortable, tag)
     globs.sprites.append(img)
     if center:
-        globs.cells[center] = img
+        register_cell(center, img)
     else:
-        globs.cells[pos] = img
+        register_cell(pos, img)
     return globs.sprites[-1]
 
 def maze(name=None, callback=None):
@@ -229,7 +272,7 @@ def maze(name=None, callback=None):
 
     for cell in cells:
         s = callback(pos=(cell[0], cell[1]), tag='wall')
-        globs.cells[s.pos] = s
+        register_cell(s.pos, s)
 
 
 def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwargs):
@@ -258,7 +301,7 @@ def shape(shape = None, color = None, pos = None, size = (1, 1), tag = '', **kwa
         return False
 
     globs.sprites.append(shape)
-    globs.cells[pos] = shape
+    register_cell(pos, shape)
     return globs.sprites[-1]
 
 def text(string, color = None, pos = None, size = 1, tag = ''):
@@ -353,15 +396,17 @@ def time():
     """
     return float('%.3f'%(get_time() - start_time))
 
-def callback(function, wait):
+def callback(function, wait, repeat=False):
     """
         register a time based callback function
 
         :param function: pointer to a callback function
 
         :param wait: the amount of time to **wait** for the callback to execute.
+
+        :param repeat: if this callback should repeat (default False)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
 
 def reset_score(**kwargs):
     """
@@ -475,9 +520,9 @@ def score(value = 0, **kwargs):
     surface = font.render(string, True, scoreboard['color'])
     scoreboard['pos'] = grid_position[0] * globs.GRID_SIZE, grid_position[1] * globs.GRID_SIZE
     if pos == UPPER_RIGHT or pos == LOWER_RIGHT:
-        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height))
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0]-font_width, scoreboard['pos'][1], font_width, font_height), globs)
     else:
-        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height))
+        scoreboard['sprite'] = Sprite(surface, pygame.Rect(scoreboard['pos'][0], scoreboard['pos'][1], font_width, font_height), globs)
     globs.sprites.append(scoreboard['sprite'])
     score_dict[pos] = scoreboard
     return scoreboard['value']
@@ -496,9 +541,11 @@ def gameover():
     global game_over
     game_over = True
 
-def reset(*kwargs):
-    global game_over
+def reset(**kwargs):
+    global game_over, current_level, score_dict
     game_over = False
+    current_level = None
+    score_dict = {}
 
     destroyall()
     globs.keys_registered['keydown'] = {}
@@ -506,10 +553,10 @@ def reset(*kwargs):
     globs.tags = {}
     del globs.animations[:]
     del callbacks[:]
-
-    from . import api
-    code, mod = load_module(RUN_PATH, api)
-    exec(code, mod.__dict__)
+    if not kwargs.get('soft', False):
+        from . import api
+        code, mod = load_module(RUN_PATH, api)
+        exec(code, mod.__dict__)
 
     global start_time
     start_time = get_time()
@@ -558,20 +605,30 @@ def _update(delta):
             del globs.animations[index]
             animation.finish()
 
-    for callback in callbacks:
-        if callback['time'] <= get_time():
-            callback['cb']()
-            callbacks.remove(callback)
+    for _callback in callbacks:
+        if _callback['time'] <= get_time():
+            _callback['cb']()
+            if _callback['repeat']:
+                callback(_callback['cb'], _callback['wait'], _callback['repeat'])
+            callbacks.remove(_callback)
+
+
+    if current_level is not None:
+        if current_level.completed():
+            next_level = current_level.next()
+            if next_level is not None:
+                reset(soft=True)
+                level(next_level)
 
 def _draw(SURF):
-    if isinstance(globs.BACKGROUND, pygame.Surface) :
-        SURF.blit(globs.BACKGROUND, (0,0))
+    if isinstance(_background, pygame.Surface) :
+        SURF.blit(_background, (0,0))
     else:
-        SURF.fill(globs.BACKGROUND)
+        SURF.fill(_background_color)
 
     globs.cells = {}
     for sprite in globs.sprites:
-        globs.cells[sprite.pos] = sprite
+        register_cell(sprite.pos, sprite)
         sprite._draw(SURF)
 
     if show_grid:

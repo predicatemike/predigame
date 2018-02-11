@@ -11,41 +11,29 @@ PIGGIES = 10
 # create a daedalus maze with stone images
 maze(callback=partial(image, 'stone'))
 
-# a callback that keeps the player from running
-# into walls.
-def evaluate(action, sprite, pos):
-    obj = at(pos)
-    if obj and obj.tag == 'wall':
-    	return False
-    elif not visible(pos):
-        return False
-    else:
-        return True
-
 # create a soldier on the bottom left grid cell
 player = actor('Soldier-2', (1, HEIGHT-2), tag='player', abortable=True)
 
 # have the solider attach to the keyboard arrows
 # each move is "evaluated" to make sure the player
 # doesn't walk through the wall
-player.keys(precondition=evaluate)
-
+player.keys(precondition=player_physics)
 # player moves at a speed of 5 with an animation rate of 2
 # which flips the sprite image every other frame
-player.speed(5).rate(2).move_to((1, HEIGHT-2))
+player.speed(5).rate(2)
 
 # create a piggy function
-def create_piggy():
-   for x in range(PIGGIES):
+def create_piggy(num=PIGGIES):
+   for x in range(num):
       pos = rand_pos()
 
-      if at(pos) is not None:
-         print('something is already here')
+      while at(pos) is not None:
+         pos = rand_pose()
 
       piggy = actor('Piggy', pos, tag='piggy')
-      piggy.pos = pos
+
       # graze is a random walk
-      piggy.wander(graze, time=0.75)
+      piggy.wander(partial(graze, piggy), time=0.75)
 
 # create some piggies
 callback(create_piggy,0.1)
@@ -58,7 +46,7 @@ def shoot():
 	target = player.next_object()
 
 	# if it's a piggy and that piggy is alive
-	if target and target.tag == 'piggy' and target.health > 0:
+	if target and isinstance(target.tag == 'piggy' and target.health > 0:
 		# kill the piggy
 		target.health = 0
 		# make the piggy disappear in 5 seconds

@@ -22,7 +22,7 @@ def evaluate(action, sprite, pos):
 # precondition to make sure we don't walk into
 # walls. the speed of the sprite enables "graceful"
 # movement with the keyboard
-p = image('player', (1, 1)).speed(5).keys(precondition=evaluate)
+p = image('player', (1, 1)).speed(10).keys(precondition=evaluate)
 
 # create a daedalus maze
 maze(callback=partial(image, 'stone'))
@@ -33,10 +33,7 @@ def claim(coin, player):
     score(1)
 
 # fill the empty cells with coins
-for x in range(WIDTH):
-    for y in range(HEIGHT):
-        if at((x, y)) is None:
-            image('coin', (x,y)).collides(p, claim)
+fill(partial(image,'coin'), p, claim)
 
 # keep score
 score(color=WHITE)
