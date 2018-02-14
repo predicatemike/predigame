@@ -86,14 +86,19 @@ def rand_pos(x_padding = 0, y_padding = 0, empty=False):
     return x, y
 
 def rand_maze(callback):
-    from daedalus import Maze
-    maze = Maze((Globals.instance.WIDTH/Globals.instance.GRID_SIZE), (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE))
-    maze.create_perfect()
-    for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
-        for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
-            if maze[x,y] == True:
-                s = callback(pos=(x,y), tag='wall')
-                register_cell((x,y), s)
+    from .Maze import Maze
+    w = int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)
+    h = int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)
+    nw = int((w-1)/2)
+    nh = int((h-1)/2)
+    maze = Maze.generate(nw, nh)
+    rows = maze._to_str_matrix()
+    for rnum in range(len(rows)):
+        row = rows[rnum]
+        for cnum in range(len(row)):
+            if row[cnum] == 'O':
+                s = callback(pos=(cnum,rnum), tag='wall')
+                register_cell((cnum, rnum), s)
 
 def rand_color():
     r = random.randrange(0, 255)
@@ -177,7 +182,7 @@ def track(sprite, player_sprite, pbad = 0.1) :
     for i in range(len(choices)):
         if is_wall(choices[i]) or not visibility[i]:
             continue
-            
+
         #every now and then make a random "bad" move
         rnd = random.uniform(0, 1)
         if rnd <= pbad:

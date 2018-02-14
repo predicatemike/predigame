@@ -537,9 +537,17 @@ def resume():
     global update_game
     update_game = True
 
-def gameover():
-    global game_over
-    game_over = True
+def gameover(delay=0.5):
+    """
+        end the current game
+
+        :param delay: the amount of time to wait before ending
+    """
+    def _gameover():
+        global game_over
+        game_over = True
+    callback(_gameover, delay)
+
 
 def reset(**kwargs):
     global game_over, current_level, score_dict
