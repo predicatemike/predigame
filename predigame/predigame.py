@@ -527,6 +527,24 @@ def score(value = 0, **kwargs):
     score_dict[pos] = scoreboard
     return scoreboard['value']
 
+def timer(value=30, pos=LOWER_LEFT, color=BLACK, prefix='Time Remaining: ', callback=None):
+    if callback is None:
+        def __gameover__():
+           text('GAME OVER')
+           gameover(0.5)
+        callback = __gameover__
+    score(pos=pos, method=TIMER, value=value, color=color, prefix=prefix, step=-1, goal=0,callback=callback)
+
+def stopwatch(value=0, goal=999, pos=LOWER_RIGHT, color=BLACK, prefix='Time Remaining: ', callback=None):
+    if callback is None:
+        def __gameover__():
+           text('GAME OVER')
+           gameover(0.5)
+        callback = __gameover__
+    score(pos=pos, color=color, value=value, method=TIMER,
+          step=1, goal=goal, prefix=prefix)
+
+
 def destroyall():
     del globs.sprites[:]
 
