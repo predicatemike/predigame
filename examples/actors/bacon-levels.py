@@ -24,7 +24,8 @@ def create_targets(num):
 
 def timer(level):
     text("You survived " + str(level.get_duration()) + " seconds.")
-    callback(gameover, 2)
+    gameover()
+	
 
 class BaconLevel(Level):
     def __init__(self, targets=1, level=1, total_hits=0, duration=0, time_remaining=30):

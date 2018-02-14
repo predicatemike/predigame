@@ -28,7 +28,7 @@ def create_piggy(num=PIGGIES):
       pos = rand_pos()
 
       while at(pos) is not None:
-         pos = rand_pose()
+         pos = rand_pos()
 
       piggy = actor('Piggy', pos, tag='piggy')
 
