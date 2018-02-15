@@ -396,7 +396,7 @@ def time():
     """
     return float('%.3f'%(get_time() - start_time))
 
-def callback(function, wait, repeat=False):
+def callback(function, wait, repeat=0):
     """
         register a time based callback function
 
@@ -404,9 +404,9 @@ def callback(function, wait, repeat=False):
 
         :param wait: the amount of time to **wait** for the callback to execute.
 
-        :param repeat: if this callback should repeat (default False)
+        :param repeat: the number of times this callback should repeat (default 0)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat-1})
 
 def reset_score(**kwargs):
     """
@@ -634,8 +634,8 @@ def _update(delta):
     for _callback in callbacks:
         if _callback['time'] <= get_time():
             _callback['cb']()
-            if _callback['repeat']:
-                callback(_callback['cb'], _callback['wait'], _callback['repeat'])
+            if _callback['repeat'] > 0:
+                callback(_callback['cb'], _callback['wait'], _callback['repeat']-1)
             callbacks.remove(_callback)
 
 

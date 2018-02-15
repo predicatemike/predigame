@@ -215,9 +215,11 @@ def player_physics(action, sprite, pos):
         return False
     return True
 
-def fill(obj, collide_obj = None, collide_callback = None) :
+def fill(obj, prob = 1, collide_obj = None, collide_callback = None) :
     """
-        fills all white space with an object. object can be set to collide with something (collide_obj) in which case a callback would be invoked (collide_callback).
+        fills some amount white space with an object. object can be set to collide with something (collide_obj) in which case a callback would be invoked (collide_callback).
+
+        :param prob: the probability of filling a given square with an object.
 
         :param obj: a callback (or partial) to a sprite to create in whitespace.
 
@@ -228,7 +230,9 @@ def fill(obj, collide_obj = None, collide_callback = None) :
     """
     for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
         for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
-            if at((x,y)) is None:
+             if random.uniform(0, 1) > prob:
+                continue
+             if at((x,y)) is None:
                 o = obj(pos=(x,y))
                 if collide_obj and collide_callback:
                     if isinstance(collide_obj, (list, tuple)):
