@@ -1,3 +1,5 @@
+# A Customizable Style Maze Game
+# Don't Edit This File
 WIDTH = 31
 HEIGHT = 19
 TITLE = 'Making Bacon with Levels'
@@ -29,6 +31,7 @@ class BaconLevel(Level):
       self.total_hits = total_hits
       self.time_remaining = time_remaining
       self.duration = duration
+      self.plugins = import_plugin('zombie_plugins.py')
 
    def hit(self):
       self.hits += 1
@@ -40,8 +43,9 @@ class BaconLevel(Level):
 
    def setup(self):
       """ setup the level """
+      #plugins.setup()
       # MAZE and BACKGROUND
-      background('grass')
+      self.plugins.setup(self.level)
       maze(callback=partial(image, 'stone'))
 
       # PLAYER
@@ -54,7 +58,6 @@ class BaconLevel(Level):
       # SCORE BOARD
       score(self.total_hits, color=WHITE, method=VALUE, prefix='Kills: ')
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
-      timer(color=WHITE, value=self.time_remaining)
       stopwatch(color=WHITE, value=self.duration)
 
       # KEYBOARD EVENTS
