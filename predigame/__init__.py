@@ -15,7 +15,6 @@ def main():
         err()
 
     path = os.path.join(os.getcwd(), run_mod)
-
     from . import api
     code, mod = load_module(path, api)
 
@@ -26,7 +25,6 @@ def main():
     except:
         pass
     finally:
-
         WIDTH = getattr(dummy_mod, 'WIDTH', 16)
         HEIGHT = getattr(dummy_mod, 'HEIGHT', 16)
         TITLE = getattr(dummy_mod, 'TITLE', 'PrediGame')

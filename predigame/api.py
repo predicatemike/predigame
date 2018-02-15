@@ -6,6 +6,7 @@ from .predigame import actor, image, level, maze, shape, background, sound, text
 from .constants import *
 from .utils import register_keydown as keydown, at, get
 from .utils import animate, player_physics
+from .utils import import_plugin
 from .utils import rand_pos, rand_arc, distance, visible, sprites, graze, track, fill
 from .Thing import Thing
 from .Level import Level

@@ -10,10 +10,18 @@ def load_module(path, api):
 
     name, _ = os.path.splitext(os.path.basename(path))
     mod = ModuleType(name)
-    mod.__dict__.update(api.__dict__)
+    if api is not None:
+       mod.__dict__.update(api.__dict__)
     sys.modules[name] = mod
 
     return code, mod
+
+def import_plugin(plugin_file):
+    """ allows other 'plugin' code to be imported into a game. this works a little like load module """
+    from . import api
+    code, mod = load_module(plugin_file, api)
+    exec(code, mod.__dict__)
+    return mod
 
 def register_cell(pos, s):
     """ helper function that builds the index of all sprites in a given cell """
