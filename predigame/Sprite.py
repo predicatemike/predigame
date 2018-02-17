@@ -211,7 +211,7 @@ class Sprite():
 
             if self.rect.colliderect(collision['sprite'].rect):
                 collision['cb'](self, collision['sprite'])
-                break # only handle one collision per frame (for now)
+                #break # only handle one collision per frame (for now)
 
     def _update_float(self, distance, time):
         float_x, float_y = self.float_vec

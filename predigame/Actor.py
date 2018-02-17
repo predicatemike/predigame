@@ -166,14 +166,14 @@ class Actor(Sprite):
 	def facing(self):
 		""" returns a position (off the screen) where this actor is facing """
 		if self.direction == BACK:
-			return self.x, -1
+			return self.x, -100
 		elif self.direction == FRONT:
-			return self.x, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1
+			return self.x, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+100
 		elif self.direction == LEFT:
-			return -1, self.y
+			return -100, self.y
 		elif self.direction == RIGHT:
-			return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, self.y
-			
+			return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+100, self.y
+
 	def next(self):
 		return next(self.direction)
 

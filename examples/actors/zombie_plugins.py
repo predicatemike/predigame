@@ -11,20 +11,22 @@ def setup(player, level_number):
    # create a stone Maze
    maze(callback=partial(image, 'stone'))
 
+   # pick a random background (this may take a while)
+   # background()
    # pick a single background
-   #background('grass')
+   background(GRAY)
 
    # randomly pick a background
    #choices = ['grass', 'ville']
    #background(choice(choices))
 
    # pick a background for a level
-   if level_number == 1:
-      background('grass')
-   elif level_number == 2:
-      background('ville')
-   else:
-      background('stormy')
+   #if level_number == 1:
+   #   background('grass')
+   #elif level_number == 2:
+   #   background('ville')
+   #else:
+   #   background('stormy')
 
    # add a count down timer for 30 seconds
    global time_left
@@ -51,8 +53,31 @@ def setup(player, level_number):
 def punch(level, player):
    print('future home of a punch')
 
-def throw(level, player):
-   print('future home of a throw')
+def throw(level, player, repeat=False):
+   #print('future home of a throw')
+   """ a nuke or something """
+   player.act(THROW, loop=1)
+   pos = player.facing()
+   bpos = player.pos
+   beam = shape(ELLIPSE, RED, pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
+
+   def __hit__(beam, target):
+      if target != player:
+         if isinstance(target, Actor) and target.health > 0:
+            target.kill()
+            if target.tag == 'target' : level.hit()
+         else:
+            target.fade(0.5)
+   beam.collides(sprites(), __hit__)
+
+   def __grow__(beam):
+      beam.move_to(player.facing())
+      beam.scale(1.1).speed(10)
+      if beam.size > 20:
+        beam.fade(1)
+
+   if not repeat:
+      callback(partial(__grow__, beam), wait=0.1, repeat=50)
 
 def create_targets(num):
    for x in range(num):
@@ -73,7 +98,7 @@ def shoot_(level, player):
       level.hit()
 
 def shoot__(level, player):
-   """ air shoot that will kill any actor or sprite """
+   """ air shot that will kill any actor or sprite """
    player.act(SHOOT, loop=1)
    target = player.next_object()
    if target and isinstance(target, Actor) and target.health > 0:
@@ -82,13 +107,12 @@ def shoot__(level, player):
    elif target:
       target.fade(0.5)
 
-
 def shoot(level, player, repeat=False):
    """ shoot real bullets """
    player.act(SHOOT, loop=1)
    pos = player.facing()
    bpos = player.pos
-   bullet = image('bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
+   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
    bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
 
    def __hit__(bullet, target):
@@ -101,7 +125,10 @@ def shoot(level, player, repeat=False):
             target.fade(0.5)
    bullet.collides(sprites(), __hit__)
    if not repeat:
-      callback(partial(shoot, level, player, True), 0.2, repeat=5)
+      callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
+
+
+
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)
