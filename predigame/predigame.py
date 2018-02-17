@@ -23,12 +23,16 @@ callbacks = []
 DEFAULT_COLOR = (220, 220, 220)
 _background_color = _background = DEFAULT_COLOR
 
-def background(bg = (220, 220, 220)):
+def background(bg = None):
     """ set the background color or image """
     global _background, _background_color
     _background = None
     if bg is None:
-        _background_color = _background = DEFAULT_COLOR
+        from urllib.request import urlopen
+        import io
+        image_str = urlopen('http://picsum.photos/'+str(WIDTH)+'/'+str(HEIGHT)+'/?random').read()
+        image_file = io.BytesIO(image_str)
+        _background = pygame.image.load(image_file).convert()
         return
 
     if isinstance(bg, str):
