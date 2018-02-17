@@ -9,7 +9,12 @@ def setup(player, level_number):
    #maze(callback=partial(shape, RECT, BLACK))
 
    # create a stone Maze
-   maze(callback=partial(image, 'stone'))
+   #maze(callback=partial(image, 'stone'))
+   for y in range(31):
+      for x in range(19):
+         if rand(1, 3) > 2.75:
+            shape(RECT, RED, (x, y), tag='wall')
+
 
    # pick a random background (this may take a while)
    # background()
@@ -49,13 +54,12 @@ def setup(player, level_number):
    keydown('s', callback=partial(__put__, player, FRONT))
    keydown('d', callback=partial(__put__, player, RIGHT))
 
-
 def punch(level, player):
    print('future home of a punch')
 
 def throw(level, player, repeat=False):
    #print('future home of a throw')
-   """ a nuke or something """
+   """ flame thrower """
    player.act(THROW, loop=1)
    pos = player.facing()
    bpos = player.pos
@@ -117,7 +121,7 @@ def shoot(level, player, repeat=False):
 
    def __hit__(bullet, target):
       if target != player:
-         bullet.destroy()
+         #bullet.destroy()
          if isinstance(target, Actor) and target.health > 0:
             target.kill()
             if target.tag == 'target' : level.hit()

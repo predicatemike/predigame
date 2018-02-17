@@ -41,6 +41,133 @@ Notice that the file line is the "catch all" statement. This basically means the
 
 # Mazes
 
+## Generated Maze
+It's possible, also within the `setup` function, to define the type of maze should be drawn on the game service. Assuming that there is an image with the name `'stone'`, it's possible to use that to draw the maze.
+```python
+   maze(callback=partial(image, 'stone'))
+```
+Likewise, it's also possibly to simply draw a maze with colors. For example,
+```python
+   maze(callback=partial(shape, RECT, BLACK))
+```
+## Random Maze
+Sometimes it may be desirable to have some randomly placed blocks to create as obstacles. It's possible to tweak the `2.75` number to draw more or less blocks. The numbers `19` and `31` signify the HEIGHT and WIDTH of the window, in terms of grid cells.
+```python
+   for y in range(19):
+      for x in range(31):
+         if rand(1, 3) > 2.75:
+            shape(RECT, RED, (x, y), tag='wall')
+```
+## Add Walls
+This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of `setup` since the code needs a reference to the player actor.
+```python
+   def __put__(player, direction):
+      """ put a block at the player's next location  """
+      pos = player.next(direction)
+      image('stone', pos, tag = 'wall')
+
+   keydown('w', callback=partial(__put__, player, BACK))
+   keydown('a', callback=partial(__put__, player, LEFT))
+   keydown('s', callback=partial(__put__, player, FRONT))
+   keydown('d', callback=partial(__put__, player, RIGHT))
+```
+
+# Basic Weapons
+The signature (function name) of each weapon will need to remain the same. These should be copied into the plugin code without indentation. All weapons have 100% lethality.
+
+## Simple Air Shot
+```python
+def shoot(level, player):
+   """ simple air shot """
+   player.act(SHOOT, loop=1)
+   target = player.next_object()
+
+   # if it's a target and that target is alive
+   if target and target.tag == 'target' and target.health > 0:
+      target.kill()
+      level.hit()
+```
+## Simple Air Shot (that kills any sprite)
+```python
+def shoot(level, player):
+   """ air shot that will kill any actor or sprite """
+   player.act(SHOOT, loop=1)
+   target = player.next_object()
+   if target and isinstance(target, Actor) and target.health > 0:
+      target.kill()
+      level.hit()
+   elif target:
+      target.fade(0.5)
+```
+## Bullets (that kills any sprite) [HARD]
+Challenges:
+* try having bullets only destroy actors
+* try changing the bullet image
+```python
+def shoot(level, player, repeat=False):
+   """ shoot real bullets """
+   player.act(SHOOT, loop=1)
+   pos = player.facing()
+   bpos = player.pos
+   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
+   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
+
+   def __hit__(bullet, target):
+      if target != player:
+         bullet.destroy()
+         if isinstance(target, Actor) and target.health > 0:
+            target.kill()
+            if target.tag == 'target' : level.hit()
+         else:
+            target.fade(0.5)
+   bullet.collides(sprites(), __hit__)
+```
+At the very end of this function, it's possible to add a machine gun fire with the following lines:
+```python
+   if not repeat:
+      callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
+```
+Try changing the `wait` attributes. If it's too small you'll notice that the bullets collide with each other. Try also changing the `repeat` option for more bullets.
+
+If the following line is removed, bullet will push through multiple objects, making it VERY LETHAL!!
+```python
+         bullet.destroy()
+```
+## Multidirectional Bullets [HARD]
+A combo of above with different directions
+
+## Flame Thrower [EASY]
+This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `1` on your keyboard.
+```python
+def throw(level, player, repeat=False):
+   #print('future home of a throw')
+   """ flame thrower """
+   player.act(THROW, loop=1)
+   pos = player.facing()
+   bpos = player.pos
+   beam = shape(ELLIPSE, RED, pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
+
+   def __hit__(beam, target):
+      if target != player:
+         if isinstance(target, Actor) and target.health > 0:
+            target.kill()
+            if target.tag == 'target' : level.hit()
+         else:
+            target.fade(0.5)
+   beam.collides(sprites(), __hit__)
+
+   def __grow__(beam):
+      beam.move_to(player.facing())
+      beam.scale(1.1).speed(10)
+      if beam.size > 20:
+        beam.fade(1)
+
+   if not repeat:
+      callback(partial(__grow__, beam), wait=0.1, repeat=50)
+```
+# Targets
+
+
 # Computer Opponents
 
 ## Add a Opponent
@@ -71,115 +198,11 @@ callback(create_zombie, 30, repeat=True)
 ## Make Opponents Move Away from Player(s)
 
 
-# Levels
-
-# Mazes
-
-## Creating Mazes
-Create a maze based on stone images (this assumes you have a `stone.png` file saved in your images directory.
-```python
-maze(callback=partial(image, 'stone'))
-```
-Create a maze based on black rectangles:
-```python
-maze(callback=partial(shape, RECT, BLACK))
-```
 
 
 
-## Add Walls
-This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player.
-```python
-def put(player, direction):
-	""" put a block at the player's next location  """
-	pos = player.next(direction)
-	image('stone', pos, tag = 'wall')
 
-keydown('w', callback=partial(put, player, BACK))
-keydown('a', callback=partial(put, player, LEFT))
-keydown('s', callback=partial(put, player, FRONT))
-keydown('d', callback=partial(put, player, RIGHT))
-```
 
-## Destroy Walls
-Allow a player to shoot and destroy any object, including a wall.
-
-```python
-def shoot():
-	player.act(SHOOT, loop=1)
-
-	target = player.next_object()
-	if target and isinstance(target, Actor):
-		target.kill()
-	elif target:
-		target.fade(0.5)
-
-keydown('space', shoot)
-```
-# Weapons
-
-## Shoot (real) Bullets
-```python
-def hit(bullet, obj):
-	if obj != player:
-		bullet.destroy()
-		if isinstance(obj, Actor):
-			obj.kill()
-def shoot():
-	player.act(SHOOT, loop=1)
-	pos = player.facing()
-	bpos = player.pos
-	bullet = image('bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-	bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
-	bullet.collides(sprites(), hit)
-keydown('space', shoot)
-```
-## Shoot Through Walls
-```python
-def hit(bullet, obj):
-	if obj != player:
-		if isinstance(obj, Actor):
-			obj.kill()
-		elif isinstance(obj, Sprite):
-			obj.fade(0.25)
-
-def shoot():
-	player.act(SHOOT, loop=1)
-	pos = player.facing()
-	bpos = player.pos
-	bullet = image('bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-	bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
-	bullet.collides(sprites(), hit)
-keydown('space', shoot)
-```
-## Machine Gun Fire
-Keep on firing until you stop. Load and then fire some more.
-```python
-def load():
-	global stop
-	stop = False
-
-def stopit():
-	global stop
-	stop = True
-
-def hit(bullet, obj):
-	if obj != player:
-		if isinstance(obj, Actor):
-			obj.kill()
-		elif isinstance(obj, Sprite):
-			obj.fade(0.25)
-
-def machine_gun():
-	player.act(SHOOT, loop=1)
-	pos = player.facing()
-	bpos = player.pos
-	bullet = image('bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-	bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
-	bullet.collides(sprites(), hit)
-	if not stop:
-		callback(machine_gun, 0.25)
-```
 ## Throw a Punch
 
 ```python
