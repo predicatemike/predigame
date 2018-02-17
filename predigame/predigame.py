@@ -539,7 +539,7 @@ def timer(value=30, pos=LOWER_LEFT, color=BLACK, prefix='Time Remaining: ', call
         callback = __gameover__
     score(pos=pos, method=TIMER, value=value, color=color, prefix=prefix, step=-1, goal=0,callback=callback)
 
-def stopwatch(value=0, goal=999, pos=LOWER_RIGHT, color=BLACK, prefix='Time Remaining: ', callback=None):
+def stopwatch(value=0, goal=999, pos=LOWER_RIGHT, color=BLACK, prefix='Duration: ', callback=None):
     if callback is None:
         def __gameover__():
            text('GAME OVER')

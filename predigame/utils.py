@@ -3,6 +3,8 @@ from types import ModuleType
 from .Globals import Globals
 from .Animation import Animation
 from .constants import *
+from astar import AStar
+from functools import partial
 
 def load_module(path, api):
     src = open(path).read()
@@ -167,22 +169,72 @@ def graze(sprite) :
                 sprite.move((choices[i][0] - x, choices[i][1] - y))
                 break
 
-def track(sprite, player_sprite, pbad = 0.1) :
+class __GridSolver__(AStar):
+    def __init__(self):
+        self.xx = 1
+
+    def heuristic_cost_estimate(self, n1, n2):
+        (x1, y1) = n1
+        (x2, y2) = n2
+        return math.hypot(x2 - x1, y2 - y1)
+
+    def distance_between(self, n1, n2):
+        return 1
+
+    def neighbors(self, node):
+        x, y = node
+        choices = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
+        valid = [visible(p) is True and is_wall(p) is False for p in choices]
+        ret = []
+        for i in range(len(valid)):
+            if valid[i] is True :
+               ret.append(choices[i])
+        return ret
+
+def track_astar(sprite, find_tags):
+    enemies = []
+    for t in find_tags:
+       enemies.extend(get(t))
+
+    distances = [distance(e.pos, sprite.pos) for e in enemies]
+
+    #enemy = enemies[distances.index(min(distances))]
+    enemy = random.choice(enemies)
+    x, y = sprite.pos
+    path = __GridSolver__().astar(sprite.pos,enemy.pos)
+    if path is not None:
+        lst = list(path)
+        if len(lst) > 0:
+            sprite.move_to(*lst, callback=partial(track_astar, sprite, find_tags))
+        else:
+            track_astar(sprite, find_tags)
+
+    else:
+        track_astar(sprite, find_tags)
+
+def track(sprite, find_tags, pbad = 0.1) :
     """
         a sprite.wander() operation. attempt to a path that moves sprite closer to player_sprite.
 
         :param sprite: the sprite to automate movements.
 
-        :param player_sprite: the player sprite to track.
+        :param find_tags: the tags to track
 
         :param pbad: the probability to make a bad move. some number of bad moves are needed to
 
     """
 
+    enemies = []
+    for t in find_tags:
+       enemies.extend(get(t))
+
+    distances = [distance(e.pos, sprite.pos) for e in enemies]
+
+    enemy = enemies[distances.index(min(distances))]
     x, y = sprite.pos
 
     choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-    distances  = [distance(p, player_sprite.pos) for p in choices]
+    distances  = [distance(p, enemy.pos) for p in choices]
     visibility = [visible(p) for p in choices]
 
     best = None

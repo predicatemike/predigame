@@ -1,1 +1,2 @@
 pillow
+astar==0.9

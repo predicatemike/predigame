@@ -636,8 +636,9 @@ class Sprite():
         """
             destroy this sprite and remove from the game canvas.
         """
-        Globals.instance.sprites.remove(self)
-        Globals.instance.tags[self._tag].remove(self)
+        if self in Globals.instance.sprites:
+           Globals.instance.sprites.remove(self)
+           Globals.instance.tags[self._tag].remove(self)
         return self
 
     def wander(self, callback, time = 1):

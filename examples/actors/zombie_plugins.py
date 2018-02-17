@@ -9,21 +9,21 @@ def setup(player, level_number):
    #maze(callback=partial(shape, RECT, BLACK))
 
    # create a stone Maze
-   #maze(callback=partial(image, 'stone'))
-   for y in range(31):
-      for x in range(19):
-         if rand(1, 3) > 2.75:
-            shape(RECT, RED, (x, y), tag='wall')
+   maze(callback=partial(image, 'stone'))
+   #for y in range(31):
+   #   for x in range(19):
+   #      if rand(1, 3) > 2.75:
+   #         shape(RECT, RED, (x, y), tag='wall')
 
 
    # pick a random background (this may take a while)
    # background()
    # pick a single background
-   background(GRAY)
+   #background(GRAY)
 
    # randomly pick a background
-   #choices = ['grass', 'ville']
-   #background(choice(choices))
+   choices = ['grass', 'ville']
+   background(choice(choices))
 
    # pick a background for a level
    #if level_number == 1:
@@ -34,9 +34,9 @@ def setup(player, level_number):
    #   background('stormy')
 
    # add a count down timer for 30 seconds
-   global time_left
-   time_left += 5
-   timer(color=WHITE, value=time_left)
+   #global time_left
+   #time_left += 5
+   #timer(color=WHITE, value=time_left)
 
    # fill available space with coins
    # pig needs to claim coins
@@ -67,10 +67,9 @@ def throw(level, player, repeat=False):
 
    def __hit__(beam, target):
       if target != player:
-         if isinstance(target, Actor) and target.health > 0:
+         if isinstance(target, Actor):
             target.kill()
-            if target.tag == 'target' : level.hit()
-         else:
+         elif isinstance(target, Sprite):
             target.fade(0.5)
    beam.collides(sprites(), __hit__)
 
@@ -83,32 +82,21 @@ def throw(level, player, repeat=False):
    if not repeat:
       callback(partial(__grow__, beam), wait=0.1, repeat=50)
 
-def create_targets(num):
-   for x in range(num):
-      pos = rand_pos()
-      while at(pos) is not None:
-         pos = rand_pos()
-
-      piggy = actor('Piggy', pos, tag='target')
-      piggy.wander(partial(graze, piggy), time=0.75)
-
 def shoot_(level, player):
    player.act(SHOOT, loop=1)
    target = player.next_object()
 
-   # if it's a target and that target is alive
-   if target and target.tag == 'target' and target.health > 0:
+   if target and isinstance(target, Actor):
       target.kill()
-      level.hit()
 
 def shoot__(level, player):
    """ air shot that will kill any actor or sprite """
    player.act(SHOOT, loop=1)
    target = player.next_object()
-   if target and isinstance(target, Actor) and target.health > 0:
+   if target and isinstance(target, Actor):
       target.kill()
       level.hit()
-   elif target:
+   elif target and isinstance(target, Sprite):
       target.fade(0.5)
 
 def shoot(level, player, repeat=False):
@@ -121,18 +109,22 @@ def shoot(level, player, repeat=False):
 
    def __hit__(bullet, target):
       if target != player:
-         #bullet.destroy()
-         if isinstance(target, Actor) and target.health > 0:
+         bullet.destroy()
+         if isinstance(target, Actor):
             target.kill()
-            if target.tag == 'target' : level.hit()
-         else:
+         elif isinstance(target, Sprite):
             target.fade(0.5)
    bullet.collides(sprites(), __hit__)
    if not repeat:
       callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
 
+def get_blue():
+   """ create a blue (friendly) actor """
+   return 'Piggy'
 
-
+def get_red():
+   """ create a red (hostile) actor """
+   return "Zombie-1"
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)
