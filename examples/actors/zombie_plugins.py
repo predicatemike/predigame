@@ -36,7 +36,7 @@ def setup(player, level_number):
    # add a count down timer for 30 seconds
    #global time_left
    #time_left += 5
-   #timer(color=WHITE, value=time_left)
+   timer(color=WHITE, value=30*level_number)
 
    # fill available space with coins
    # pig needs to claim coins
@@ -55,7 +55,13 @@ def setup(player, level_number):
    keydown('d', callback=partial(__put__, player, RIGHT))
 
 def punch(level, player):
-   print('future home of a punch')
+   #print('future home of a punch')
+   player.act(THROW, loop=1)
+   target = at(player.next(player.direction))
+   if isinstance(target, Actor):
+       target.kill()
+   elif isinstance(target, Sprite):
+       target.fade(0.5)
 
 def throw(level, player, repeat=False):
    #print('future home of a throw')
@@ -120,11 +126,13 @@ def shoot(level, player, repeat=False):
 
 def get_blue():
    """ create a blue (friendly) actor """
-   return 'Piggy'
+   # return name of actor and grazing speed
+   return 'Piggy', 0.75
 
 def get_red():
    """ create a red (hostile) actor """
-   return "Zombie-1"
+   # return name of actor, movement speed
+   return 'Zombie-1', 1
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)

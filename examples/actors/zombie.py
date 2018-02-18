@@ -10,14 +10,18 @@ def create_blue(plugins):
    while at(pos) is not None:
       pos = rand_pos()
 
-   piggy = actor(plugins.get_blue(), pos, tag='blue')
-   piggy.wander(partial(graze, piggy), time=0.75)
+   actor_name, graze_time = plugins.get_blue()
+   piggy = actor(actor_name, pos, tag='blue')
+   piggy.wander(partial(graze, piggy), time=graze_time)
+
+def cb_find_blue(r):
+   callback(partial(track_astar, r, ['blue', 'player'], callback=partial(cb_find_blue,r)), 1)
 
 def create_red(plugins):
    """ create a red (hostile) actor """
-   r = actor(plugins.get_red(), (WIDTH-1,1), tag='red').speed(4)
-   #r.wander(partial(track_astar, r, ['blue', 'player']), time=1)
-   callback(partial(track_astar, r, ['blue', 'player']), 1)
+   actor_name, speed = plugins.get_red()
+   r = actor(actor_name, (WIDTH-1,1), tag='red').speed(speed)
+   cb_find_blue(r)
 
 def red_attack(red, target):
    if target.tag == 'red':

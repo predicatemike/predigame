@@ -191,7 +191,7 @@ class __GridSolver__(AStar):
                ret.append(choices[i])
         return ret
 
-def track_astar(sprite, find_tags):
+def track_astar(sprite, find_tags, callback=None):
     enemies = []
     for t in find_tags:
        enemies.extend(get(t))
@@ -205,12 +205,13 @@ def track_astar(sprite, find_tags):
     if path is not None:
         lst = list(path)
         if len(lst) > 0:
-            sprite.move_to(*lst, callback=partial(track_astar, sprite, find_tags))
+            sprite.move_to(*lst, callback=partial(track_astar, sprite, find_tags, callback))
         else:
-            track_astar(sprite, find_tags)
-
+            if callback:
+              callback()
     else:
-        track_astar(sprite, find_tags)
+        if callback:
+           callback()
 
 def track(sprite, find_tags, pbad = 0.1) :
     """
