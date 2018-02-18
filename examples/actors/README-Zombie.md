@@ -46,7 +46,7 @@ It's possible, also within the `setup` function, to define the type of maze shou
 ```python
    maze(callback=partial(image, 'stone'))
 ```
-Likewise, it's also possibly to simply draw a maze with colors. For example,
+Likewise, it's also possibly to simply draw a maze with colors. For example, 
 ```python
    maze(callback=partial(shape, RECT, BLACK))
 ```
@@ -82,10 +82,8 @@ def shoot(level, player):
    player.act(SHOOT, loop=1)
    target = player.next_object()
 
-   # if it's a target and that target is alive
-   if target and target.tag == 'target' and target.health > 0:
+   if target and isinstance(target, Actor):
       target.kill()
-      level.hit()
 ```
 ## Simple Air Shot (that kills any sprite)
 ```python
@@ -93,10 +91,10 @@ def shoot(level, player):
    """ air shot that will kill any actor or sprite """
    player.act(SHOOT, loop=1)
    target = player.next_object()
-   if target and isinstance(target, Actor) and target.health > 0:
+   if target and isinstance(target, Actor):
       target.kill()
       level.hit()
-   elif target:
+   elif target and isinstance(target, Sprite):
       target.fade(0.5)
 ```
 ## Bullets (that kills any sprite) [HARD]
@@ -115,10 +113,9 @@ def shoot(level, player, repeat=False):
    def __hit__(bullet, target):
       if target != player:
          bullet.destroy()
-         if isinstance(target, Actor) and target.health > 0:
+         if isinstance(target, Actor):
             target.kill()
-            if target.tag == 'target' : level.hit()
-         else:
+         elif isinstance(target, Sprite):
             target.fade(0.5)
    bullet.collides(sprites(), __hit__)
 ```
@@ -132,15 +129,13 @@ Try changing the `wait` attributes. If it's too small you'll notice that the bul
 If the following line is removed, bullet will push through multiple objects, making it VERY LETHAL!!
 ```python
          bullet.destroy()
-```
-## Multidirectional Bullets [HARD]
-A combo of above with different directions
+``` 
+
 
 ## Flame Thrower [EASY]
 This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `1` on your keyboard.
 ```python
 def throw(level, player, repeat=False):
-   #print('future home of a throw')
    """ flame thrower """
    player.act(THROW, loop=1)
    pos = player.facing()
@@ -149,10 +144,9 @@ def throw(level, player, repeat=False):
 
    def __hit__(beam, target):
       if target != player:
-         if isinstance(target, Actor) and target.health > 0:
+         if isinstance(target, Actor):
             target.kill()
-            if target.tag == 'target' : level.hit()
-         else:
+         elif isinstance(target, Sprite):
             target.fade(0.5)
    beam.collides(sprites(), __hit__)
 
@@ -165,94 +159,62 @@ def throw(level, player, repeat=False):
    if not repeat:
       callback(partial(__grow__, beam), wait=0.1, repeat=50)
 ```
-# Targets
-
-
-# Computer Opponents
-
-## Add a Opponent
-
-**Objective:** Add a computer controlled opponent that want to find a player sprite. Have the opponent start in the upper right corner.
-
+## Throw a Punch [EASY]
 ```python
-def lose(z, p):
-	p.health = 0
-
-def create_zombie():
-	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
-	z = actor(name, (WIDTH-1, 10), tag = 'zombie')
-	z.wander(partial(track, z, p, pbad=0.05), time=0.35)
-	z.collides(p, lose)
-create_zombie()
+def punch(level, player):
+   player.act(THROW, loop=1)
+   target = at(player.next(player.direction))
+   if isinstance(target, Actor):
+       target.kill()
+   elif isinstance(target, Sprite):
+       target.fade(0.5)
 ```
-
-## Schedule More Opponents
-**Objective:** Add another computer opponent every 30 seconds.
-
-```python
-callback(create_zombie, 30, repeat=True)
-```
-
-## Single Target Opponent
-
-## Make Opponents Move Away from Player(s)
-
-
-
-
-
-
-
-## Throw a Punch
-
-```python
-player = actor('Soldier-2', pos=(1, 1), tag = 'player', abortable=True)
-player.speed(2).keys()
-
-def punch():
-    player.act(THROW, loop=1)
-    target = at(player.next(player.direction))
-    if isinstance(target, Actor):
-        target.kill()
-    elif isinstance(target, Sprite):
-        target.fade(0.5)
-
-keydown('p', punch)
-```
-
-## Shoot in all Directions
-
 ## Limit the range of the bullet
+*Under Development*
 
+## Multidirectional Bullets 
+*Under Development*
+
+## Plant a Landmine
+*Under Development*
 
 ## Throw a Bomb
+*Under Development*
 
 ## Limiting Inventory
+*Under Development*
+
+# Friendlies
+Your objective is to save the life of friendly forces.
+```python
+def get_blue():
+   """ create a blue (friendly) actor """
+   # return name of actor and grazing speed
+   return 'Piggy', 0.75
+```
+## Make Friendlies Away from Hostiles(s) 
+*Under Development*
+
+# Hostiles
+Your object is to eliminate all hostile actors.
+```python
+def get_red():
+   """ create a red (hostile) actor """
+   # return name of actor, movement speed
+   return 'Zombie-1', 1
+```
+## Schedule More Hostiles
+*Under Development*
 
 # Scoring
 
-##  Add a countdown timer
-
-**Objective:** Add a countdown timer that will stop a game when the timer reaches zero.
-
-This is an example of a timer that will start at 30 seconds, count down every second (`step=-1`), stop at zero (`goal=0`), and call the `timer()` callback function when complete. Any scoring element may have a text prefix if desired, but that is optional.
-
+## Add  Countdown Timer
+This code should be added to the end of the `setup` function. 
 ```python
-# simple countdown timer example
-
-WIDTH = 30
-HEIGHT = 20
-TITLE = 'Countdown Timer Example'
-
-def timer():
-        text('GAME OVER')
-        gameover()
-
-score(30, pos=UPPER_LEFT, method=TIMER, step=-1, goal=0, callback=timer, prefix='Time Left:')
-```
-
-## Adjust a countdown timer
-
-**Objective:** Reward the player with additional time for a particular accomplishment.
-
+   timer(color=WHITE, value=30)
+ ```
+If desired, it's also possible to add a countdown time that adds additional time for each level. The following code will add 30 seconds for each level.
+```python
+   timer(color=WHITE, value=30*level_number)
+ ```
  
