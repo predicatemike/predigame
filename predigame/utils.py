@@ -3,6 +3,8 @@ from types import ModuleType
 from .Globals import Globals
 from .Animation import Animation
 from .constants import *
+from astar import AStar
+from functools import partial
 
 def load_module(path, api):
     src = open(path).read()
@@ -10,10 +12,18 @@ def load_module(path, api):
 
     name, _ = os.path.splitext(os.path.basename(path))
     mod = ModuleType(name)
-    mod.__dict__.update(api.__dict__)
+    if api is not None:
+       mod.__dict__.update(api.__dict__)
     sys.modules[name] = mod
 
     return code, mod
+
+def import_plugin(plugin_file):
+    """ allows other 'plugin' code to be imported into a game. this works a little like load module """
+    from . import api
+    code, mod = load_module(plugin_file, api)
+    exec(code, mod.__dict__)
+    return mod
 
 def register_cell(pos, s):
     """ helper function that builds the index of all sprites in a given cell """
@@ -86,14 +96,19 @@ def rand_pos(x_padding = 0, y_padding = 0, empty=False):
     return x, y
 
 def rand_maze(callback):
-    from daedalus import Maze
-    maze = Maze((Globals.instance.WIDTH/Globals.instance.GRID_SIZE), (Globals.instance.HEIGHT/Globals.instance.GRID_SIZE))
-    maze.create_perfect()
-    for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
-        for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
-            if maze[x,y] == True:
-                s = callback(pos=(x,y), tag='wall')
-                register_cell((x,y), s)
+    from .Maze import Maze
+    w = int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)
+    h = int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)
+    nw = int((w-1)/2)
+    nh = int((h-1)/2)
+    maze = Maze.generate(nw, nh)
+    rows = maze._to_str_matrix()
+    for rnum in range(len(rows)):
+        row = rows[rnum]
+        for cnum in range(len(row)):
+            if row[cnum] == 'O':
+                s = callback(pos=(cnum,rnum), tag='wall')
+                register_cell((cnum, rnum), s)
 
 def rand_color():
     r = random.randrange(0, 255)
@@ -154,22 +169,73 @@ def graze(sprite) :
                 sprite.move((choices[i][0] - x, choices[i][1] - y))
                 break
 
-def track(sprite, player_sprite, pbad = 0.1) :
+class __GridSolver__(AStar):
+    def __init__(self):
+        self.xx = 1
+
+    def heuristic_cost_estimate(self, n1, n2):
+        (x1, y1) = n1
+        (x2, y2) = n2
+        return math.hypot(x2 - x1, y2 - y1)
+
+    def distance_between(self, n1, n2):
+        return 1
+
+    def neighbors(self, node):
+        x, y = node
+        choices = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
+        valid = [visible(p) is True and is_wall(p) is False for p in choices]
+        ret = []
+        for i in range(len(valid)):
+            if valid[i] is True :
+               ret.append(choices[i])
+        return ret
+
+def track_astar(sprite, find_tags, callback=None):
+    enemies = []
+    for t in find_tags:
+       enemies.extend(get(t))
+
+    distances = [distance(e.pos, sprite.pos) for e in enemies]
+
+    #enemy = enemies[distances.index(min(distances))]
+    enemy = random.choice(enemies)
+    x, y = sprite.pos
+    path = __GridSolver__().astar(sprite.pos,enemy.pos)
+    if path is not None:
+        lst = list(path)
+        if len(lst) > 0:
+            sprite.move_to(*lst, callback=partial(track_astar, sprite, find_tags, callback))
+        else:
+            if callback:
+              callback()
+    else:
+        if callback:
+           callback()
+
+def track(sprite, find_tags, pbad = 0.1) :
     """
         a sprite.wander() operation. attempt to a path that moves sprite closer to player_sprite.
 
         :param sprite: the sprite to automate movements.
 
-        :param player_sprite: the player sprite to track.
+        :param find_tags: the tags to track
 
         :param pbad: the probability to make a bad move. some number of bad moves are needed to
 
     """
 
+    enemies = []
+    for t in find_tags:
+       enemies.extend(get(t))
+
+    distances = [distance(e.pos, sprite.pos) for e in enemies]
+
+    enemy = enemies[distances.index(min(distances))]
     x, y = sprite.pos
 
     choices    = [(x, y), (x, y-1), (x, y+1), (x+1, y), (x-1, y)]
-    distances  = [distance(p, player_sprite.pos) for p in choices]
+    distances  = [distance(p, enemy.pos) for p in choices]
     visibility = [visible(p) for p in choices]
 
     best = None
@@ -177,7 +243,7 @@ def track(sprite, player_sprite, pbad = 0.1) :
     for i in range(len(choices)):
         if is_wall(choices[i]) or not visibility[i]:
             continue
-            
+
         #every now and then make a random "bad" move
         rnd = random.uniform(0, 1)
         if rnd <= pbad:
@@ -202,9 +268,11 @@ def player_physics(action, sprite, pos):
         return False
     return True
 
-def fill(obj, collide_obj = None, collide_callback = None) :
+def fill(obj, prob = 1, collide_obj = None, collide_callback = None) :
     """
-        fills all white space with an object. object can be set to collide with something (collide_obj) in which case a callback would be invoked (collide_callback).
+        fills some amount white space with an object. object can be set to collide with something (collide_obj) in which case a callback would be invoked (collide_callback).
+
+        :param prob: the probability of filling a given square with an object.
 
         :param obj: a callback (or partial) to a sprite to create in whitespace.
 
@@ -215,7 +283,9 @@ def fill(obj, collide_obj = None, collide_callback = None) :
     """
     for x in range(int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)):
         for y in range(int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)):
-            if at((x,y)) is None:
+             if random.uniform(0, 1) > prob:
+                continue
+             if at((x,y)) is None:
                 o = obj(pos=(x,y))
                 if collide_obj and collide_callback:
                     if isinstance(collide_obj, (list, tuple)):

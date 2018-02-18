@@ -211,7 +211,7 @@ class Sprite():
 
             if self.rect.colliderect(collision['sprite'].rect):
                 collision['cb'](self, collision['sprite'])
-                break # only handle one collision per frame (for now)
+                #break # only handle one collision per frame (for now)
 
     def _update_float(self, distance, time):
         float_x, float_y = self.float_vec
@@ -636,8 +636,9 @@ class Sprite():
         """
             destroy this sprite and remove from the game canvas.
         """
-        Globals.instance.sprites.remove(self)
-        Globals.instance.tags[self._tag].remove(self)
+        if self in Globals.instance.sprites:
+           Globals.instance.sprites.remove(self)
+           Globals.instance.tags[self._tag].remove(self)
         return self
 
     def wander(self, callback, time = 1):

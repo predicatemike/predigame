@@ -60,7 +60,7 @@ def lose(z, p):
 def create_zombie():
 	name = choice(['Zombie-1', 'Zombie-2', 'Zombie-3'])
 	z = actor(name, (WIDTH-1, 10), tag = 'zombie')
-	z.wander(partial(track, z, p, pbad=0.1), time=0.35)
+	z.wander(partial(track, z, ['player', 'piggy'], pbad=0.1), time=0.35)
 	z.collides(p, lose)
 
 

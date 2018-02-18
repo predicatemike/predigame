@@ -94,8 +94,8 @@ class NinjaLevel(Level):
         global current_level
         current_level = self
 
-        # BACKGROUND
-        background(choice(['board', 'board-2', 'board-3', 'board-4', 'board-5']))
+        # BACKGROUND (randomly selected)
+        background()
 
         # SCORE BOARD
         score(0, prefix='Score: ')

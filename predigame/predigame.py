@@ -23,12 +23,16 @@ callbacks = []
 DEFAULT_COLOR = (220, 220, 220)
 _background_color = _background = DEFAULT_COLOR
 
-def background(bg = (220, 220, 220)):
+def background(bg = None):
     """ set the background color or image """
     global _background, _background_color
     _background = None
     if bg is None:
-        _background_color = _background = DEFAULT_COLOR
+        from urllib.request import urlopen
+        import io
+        image_str = urlopen('http://picsum.photos/'+str(WIDTH)+'/'+str(HEIGHT)+'/?random').read()
+        image_file = io.BytesIO(image_str)
+        _background = pygame.image.load(image_file).convert()
         return
 
     if isinstance(bg, str):
@@ -396,7 +400,7 @@ def time():
     """
     return float('%.3f'%(get_time() - start_time))
 
-def callback(function, wait, repeat=False):
+def callback(function, wait, repeat=0):
     """
         register a time based callback function
 
@@ -404,9 +408,9 @@ def callback(function, wait, repeat=False):
 
         :param wait: the amount of time to **wait** for the callback to execute.
 
-        :param repeat: if this callback should repeat (default False)
+        :param repeat: the number of times this callback should repeat (default 0)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat-1})
 
 def reset_score(**kwargs):
     """
@@ -527,6 +531,24 @@ def score(value = 0, **kwargs):
     score_dict[pos] = scoreboard
     return scoreboard['value']
 
+def timer(value=30, pos=LOWER_LEFT, color=BLACK, prefix='Time Remaining: ', callback=None):
+    if callback is None:
+        def __gameover__():
+           text('GAME OVER')
+           gameover(0.5)
+        callback = __gameover__
+    score(pos=pos, method=TIMER, value=value, color=color, prefix=prefix, step=-1, goal=0,callback=callback)
+
+def stopwatch(value=0, goal=999, pos=LOWER_RIGHT, color=BLACK, prefix='Duration: ', callback=None):
+    if callback is None:
+        def __gameover__():
+           text('GAME OVER')
+           gameover(0.5)
+        callback = __gameover__
+    score(pos=pos, color=color, value=value, method=TIMER,
+          step=1, goal=goal, prefix=prefix)
+
+
 def destroyall():
     del globs.sprites[:]
 
@@ -537,9 +559,17 @@ def resume():
     global update_game
     update_game = True
 
-def gameover():
-    global game_over
-    game_over = True
+def gameover(delay=0.5):
+    """
+        end the current game
+
+        :param delay: the amount of time to wait before ending
+    """
+    def _gameover():
+        global game_over
+        game_over = True
+    callback(_gameover, delay)
+
 
 def reset(**kwargs):
     global game_over, current_level, score_dict
@@ -608,8 +638,8 @@ def _update(delta):
     for _callback in callbacks:
         if _callback['time'] <= get_time():
             _callback['cb']()
-            if _callback['repeat']:
-                callback(_callback['cb'], _callback['wait'], _callback['repeat'])
+            if _callback['repeat'] > 0:
+                callback(_callback['cb'], _callback['wait'], _callback['repeat']-1)
             callbacks.remove(_callback)
 
 
