@@ -15,7 +15,7 @@ You can also just have single color. Here is an example of a gray background.
 ```
 If you have a particular color in mind, it's possible to also define the background with a `(red, green, blue)` tuple.
 ```python
-   background((25, 25, 25)
+   background((25, 25, 25))
 ```
 ## Random Backgrounds
 If you interested in changing backgrounds for each level, we'll want to create a list with all of our choices and then use the `choice()` function to randomly select an image file from the list.
@@ -46,7 +46,7 @@ It's possible, also within the `setup` function, to define the type of maze shou
 ```python
    maze(callback=partial(image, 'stone'))
 ```
-Likewise, it's also possibly to simply draw a maze with colors. For example, 
+Likewise, it's also possibly to simply draw a maze with colors. For example,
 ```python
    maze(callback=partial(shape, RECT, BLACK))
 ```
@@ -93,7 +93,6 @@ def shoot(level, player):
    target = player.next_object()
    if target and isinstance(target, Actor):
       target.kill()
-      level.hit()
    elif target and isinstance(target, Sprite):
       target.fade(0.5)
 ```
@@ -129,7 +128,7 @@ Try changing the `wait` attributes. If it's too small you'll notice that the bul
 If the following line is removed, bullet will push through multiple objects, making it VERY LETHAL!!
 ```python
          bullet.destroy()
-``` 
+```
 
 
 ## Flame Thrower [EASY]
@@ -172,7 +171,7 @@ def punch(level, player):
 ## Limit the range of the bullet
 *Under Development*
 
-## Multidirectional Bullets 
+## Multidirectional Bullets
 *Under Development*
 
 ## Plant a Landmine
@@ -192,7 +191,7 @@ def get_blue():
    # return name of actor and grazing speed
    return 'Piggy', 0.75
 ```
-## Make Friendlies Away from Hostiles(s) 
+## Make Friendlies Away from Hostiles(s)
 *Under Development*
 
 # Hostiles
@@ -209,7 +208,7 @@ def get_red():
 # Scoring
 
 ## Add  Countdown Timer
-This code should be added to the end of the `setup` function. 
+This code should be added to the end of the `setup` function.
 ```python
    timer(color=WHITE, value=30)
  ```
@@ -217,4 +216,3 @@ If desired, it's also possible to add a countdown time that adds additional time
 ```python
    timer(color=WHITE, value=30*level_number)
  ```
- 

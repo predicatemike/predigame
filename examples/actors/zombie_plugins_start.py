@@ -29,7 +29,7 @@ def get_blue():
 def get_red():
    """ create a red (hostile) actor """
    # return name of actor, movement speed
-   return 'Zombie-1', 4
+   return 'Zombie-1', 1
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)
