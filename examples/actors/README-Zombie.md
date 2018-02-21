@@ -169,7 +169,29 @@ def punch(level, player):
        target.fade(0.5)
 ```
 ## Limit the range of the bullet
-*Under Development*
+By default there is no limit the the distance a bullet can fly. At times that can be a little unrealistic. Here's the modification to the code that will allow bullets to fly just a few grid cells.
+```Python
+def shoot(level, player, repeat=False):
+   """ shoot real bullets """
+   distance = 4
+   player.act(SHOOT, loop=1)
+   pos = player.facing(distance)
+   bpos = player.pos
+   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.85, bpos[1]+0.35), size=0.3)
+   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.35),callback=bullet.destroy)
+
+   def __hit__(bullet, target):
+      if target != player:
+         bullet.destroy()
+         if isinstance(target, Actor):
+            target.kill()
+         elif isinstance(target, Sprite):
+            target.fade(0.5)
+   bullet.collides(sprites(), __hit__)
+   if not repeat:
+      callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
+```
+The way this code works is quite simple. Bullets will travel for `distance` number of grid cells before disappearing. In the example above, the distance is `4`, but this can be changed to any number. Keep in mind that there are some sensitive targets in the game so it may be wise to limit the distance that a bullet can fly!
 
 ## Multidirectional Bullets
 *Under Development*
@@ -189,7 +211,7 @@ Your objective is to save the life of friendly forces.
 def get_blue():
    """ create a blue (friendly) actor """
    # return name of actor and grazing speed
-   return 'Piggy', 0.75
+   return 'Piggy', 3
 ```
 ## Make Friendlies Away from Hostiles(s)
 *Under Development*
