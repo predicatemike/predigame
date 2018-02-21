@@ -196,6 +196,9 @@ def track_astar(sprite, find_tags, callback=None):
     for t in find_tags:
        enemies.extend(get(t))
 
+    if len(enemies) == 0:
+       return
+
     distances = [distance(e.pos, sprite.pos) for e in enemies]
 
     #enemy = enemies[distances.index(min(distances))]

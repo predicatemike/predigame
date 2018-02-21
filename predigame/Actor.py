@@ -24,6 +24,7 @@ class Actor(Sprite):
         self.action = IDLE
         self.action_loop = FOREVER
 
+        self._stop = False
         self.frame_count = 0
         self.frame_rate = 1
         self.prev_vector = None
@@ -50,6 +51,9 @@ class Actor(Sprite):
         if self._health == 0:
             self.act(DIE, loop=1)
 
+    def stop(self):
+        self._stop = True
+
     def move(self, vector, **kwargs):
 
         if self.health == 0:
@@ -75,6 +79,9 @@ class Actor(Sprite):
 
     def move_to(self, *points, **kwargs):
         callback = kwargs.get('callback', None)
+        if self._stop:
+           self._stop = False
+           return
         if len(points) == 0:
             if callback:
                 callback()
@@ -179,16 +186,16 @@ class Actor(Sprite):
         self.frame_rate = frame_rate
         return self
 
-    def facing(self):
+    def facing(self, distance=100):
         """ returns a position (off the screen) where this actor is facing """
         if self.direction == BACK:
-            return self.x, -100
+            return self.x, -1*(distance + self.y)
         elif self.direction == FRONT:
-            return self.x, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+100
+            return self.x, (distance + self.y)
         elif self.direction == LEFT:
-            return -100, self.y
+            return -1*(distance + self.x), self.y
         elif self.direction == RIGHT:
-            return int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+100, self.y
+            return (distance + self.x), self.y
 
     def next(self):
         return next(self.direction)

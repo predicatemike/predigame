@@ -36,7 +36,7 @@ def setup(player, level_number):
    # add a count down timer for 30 seconds
    #global time_left
    #time_left += 5
-   timer(color=WHITE, value=30*level_number)
+   #timer(color=WHITE, value=30*level_number)
 
    # fill available space with coins
    # pig needs to claim coins
@@ -108,10 +108,10 @@ def shoot__(level, player):
 def shoot(level, player, repeat=False):
    """ shoot real bullets """
    player.act(SHOOT, loop=1)
-   pos = player.facing()
+   pos = player.facing(4)
    bpos = player.pos
-   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
+   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.85, bpos[1]+0.35), size=0.3)
+   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.35),callback=bullet.destroy)
 
    def __hit__(bullet, target):
       if target != player:
@@ -127,12 +127,12 @@ def shoot(level, player, repeat=False):
 def get_blue():
    """ create a blue (friendly) actor """
    # return name of actor and grazing speed
-   return 'Piggy', 0.75
+   return 'Piggy', 3
 
 def get_red():
    """ create a red (hostile) actor """
    # return name of actor, movement speed
-   return 'Zombie-1', 1
+   return 'Zombie-1', 4
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)

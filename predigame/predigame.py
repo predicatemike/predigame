@@ -89,6 +89,8 @@ def _create_image(name, pos, center, size, tag):
     rect = img.get_rect()
     new_width = 0
     new_height = 0
+    if size > Globals.MAX_SIZE:
+        size = Globals.MAX_SIZE
     if rect.width >= rect.height:
         new_width = size * float(globs.GRID_SIZE)
         new_height = rect.height * (new_width / rect.width)
