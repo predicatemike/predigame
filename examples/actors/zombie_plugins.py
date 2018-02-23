@@ -44,6 +44,8 @@ def setup(player, level_number):
    #  coin.destroy()
    #fill(partial(image, 'coin'), 1, player, claim)
 
+
+
    def __put__(player, direction):
       """ put a block at the player's next location  """
       pos = player.next(direction)
@@ -127,12 +129,12 @@ def shoot(level, player, repeat=False):
 def get_blue():
    """ create a blue (friendly) actor """
    # return name of actor and grazing speed
-   return 'Piggy', 3
+   return 'Piggy', 2
 
 def get_red():
    """ create a red (hostile) actor """
    # return name of actor, movement speed
-   return 'Zombie-1', 4
+   return 'Zombie-1', 2
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)

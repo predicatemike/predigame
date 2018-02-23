@@ -243,7 +243,7 @@ def actor(name = None, pos = None, center = None, size = 1, abortable = False, t
                         if not state in states:
                             states[state] = []
                         try:
-                            print(path + '/' + state + '/' + img_file)
+                            #print(path + '/' + state + '/' + img_file)
                             states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
                             loaded = True
                         except:
@@ -412,7 +412,7 @@ def callback(function, wait, repeat=0):
 
         :param repeat: the number of times this callback should repeat (default 0)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat-1})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
 
 def reset_score(**kwargs):
     """
@@ -642,6 +642,8 @@ def _update(delta):
             _callback['cb']()
             if _callback['repeat'] > 0:
                 callback(_callback['cb'], _callback['wait'], _callback['repeat']-1)
+            elif _callback['repeat'] == FOREVER:
+                callback(_callback['cb'], _callback['wait'], FOREVER)
             callbacks.remove(_callback)
 
 

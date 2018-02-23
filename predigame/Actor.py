@@ -83,26 +83,19 @@ class Actor(Sprite):
 
         if self._stop:
            self._stop = False
-           return
-        if len(points) == 0:
-            if callback:
-                callback()
-            return
-
-        # force the game to recalculate a route
-        if callback is not None and random.uniform(0, 1) <= pabort:
+        elif callback is not None and len(points) == 0:
            callback()
-           return
-
-        head, *tail = points
-        if self.pos == head:
-           self.move_to(*tail, **kwargs)
+        elif callback is not None and random.uniform(0, 1) <= pabort:
+           callback()
         else:
-           if is_wall(head):
-              if callback:
+           head, *tail = points
+           if self.pos == head:
+              self.move_to(*tail, **kwargs)
+           else:
+              if callback is not None and is_wall(head):
                  callback()
-              return
-           self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.move_to, *tail, **kwargs))
+              else:
+                 self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.move_to, *tail, **kwargs))
 
     def _complete_move(self, callback = None):
         if self.health == 0:
@@ -197,13 +190,13 @@ class Actor(Sprite):
     def facing(self, distance=100):
         """ returns a position (off the screen) where this actor is facing """
         if self.direction == BACK:
-            return self.x, -1*(distance + self.y)
+            return self.x, self.y - distance
         elif self.direction == FRONT:
-            return self.x, (distance + self.y)
+            return self.x, self.y + distance
         elif self.direction == LEFT:
-            return -1*(distance + self.x), self.y
+            return self.x - distance, self.y
         elif self.direction == RIGHT:
-            return (distance + self.x), self.y
+            return distance + self.x, self.y
 
     def next(self):
         return next(self.direction)

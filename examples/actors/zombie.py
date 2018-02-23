@@ -5,6 +5,19 @@ HEIGHT = 19
 TITLE = 'Zombie Madness'
 current_level = None
 
+def invoke(function, default, **kwargs):
+   if function in globals():
+      return globals()[function](**kwargs)
+   else:
+      return globals()[default](**kwargs)
+
+def is_moving(a):
+   return a.action != IDLE
+
+def monitor(a, callback):
+   if not is_moving(a):
+      callback()
+
 def arrive_destination(dest_sprite, target):
    if target.tag == 'blue':
       target.destroy()
@@ -13,23 +26,23 @@ def arrive_destination(dest_sprite, target):
 def create_blue_destination():
    return 'pigpen'
 
-def cb_find_destination(p):
-   callback(partial(track_astar, p, ['destination'], callback=partial(cb_find_destination,p), pabort=0.15), 1)
 
 def create_blue(plugins):
    """ create a blue (friendly) actor """
    actor_name, speed = plugins.get_blue()
    blue = actor(actor_name, (1,1), tag='blue').speed(speed)
-   cb_find_destination(blue)
-
-def cb_find_blue(r):
-   callback(partial(track_astar, r, ['blue', 'player'], callback=partial(cb_find_blue,r), pabort=0.15), 1)
+   cb = partial(track_astar, blue, ['destination'], pabort=0.25)
+   callback(cb, 0.25)
+   callback(partial(monitor, blue, cb), 0.5, repeat=FOREVER)
 
 def create_red(plugins):
    """ create a red (hostile) actor """
    actor_name, speed = plugins.get_red()
-   r = actor(actor_name, (WIDTH-1,1), tag='red').speed(speed)
-   cb_find_blue(r)
+   red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
+   cb = partial(track_astar, red, ['blue', 'player'], pabort=0.25)
+   callback(cb, 0.25)
+   callback(partial(monitor, red, cb), 0.5, repeat=FOREVER)
+
 
 def red_attack(red, target):
    if target.tag == 'red':
@@ -38,7 +51,6 @@ def red_attack(red, target):
       red.stop()
       red.act(ATTACK, 1)
       target.kill()
-      cb_find_blue(red)
 
 class ZombieLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
@@ -79,7 +91,6 @@ class ZombieLevel(Level):
       for i in range(self.targets):
          create_red(self.plugins)
 
-      # make red attack blue and player
       for r in get('red'):
          r.collides(sprites(), red_attack)
 
@@ -94,14 +105,16 @@ class ZombieLevel(Level):
    def completed(self):
       """ level is complete when all reds have been destroyed and at least one blue is surviving """
 
-      if self.blue_arrived == self.level and len(get('red')) == 0:
+      if len(get('destination')) == 0:
+         text("DESTINATION DESTROYED! GAME OVER")
+         gameover()
+
+      if self.blue_arrived == self.level or len(get('red')) == 0:
         return True
 
       if len(get('blue')) == 0 or len(get('player')) == 0:
          text('GAME OVER')
          gameover()
-
-
 
    def next(self):
        """ load the next level """
