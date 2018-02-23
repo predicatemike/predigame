@@ -83,19 +83,25 @@ class Actor(Sprite):
 
         if self._stop:
            self._stop = False
-        elif callback is not None and len(points) == 0:
-           callback()
-        elif callback is not None and random.uniform(0, 1) <= pabort:
-           callback()
+        elif len(points) == 0:
+           self.act(IDLE, FOREVER)
+        elif random.uniform(0, 1) <= pabort:
+           self.act(IDLE, FOREVER)
         else:
-           head, *tail = points
-           if self.pos == head:
-              self.move_to(*tail, **kwargs)
-           else:
-              if callback is not None and is_wall(head):
-                 callback()
+           if len(points) > 1:
+              head, *tail = points
+              if is_wall(head):
+                 self.act(IDLE, FOREVER)
               else:
                  self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.move_to, *tail, **kwargs))
+           else:
+              head = points[0]
+              if is_wall(head):
+                 self.act(IDLE, FOREVER)
+              else:
+                 self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.act, IDLE, FOREVER))
+
+
 
     def _complete_move(self, callback = None):
         if self.health == 0:

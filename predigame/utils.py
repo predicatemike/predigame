@@ -211,7 +211,7 @@ def track_astar(sprite, find_tags, pabort=-1, recursion_depth=0):
     if path is not None:
         lst = list(path)
         if len(lst) > 0:
-            sprite.move_to(*lst)#, callback=partial(track_astar, sprite, find_tags, callback, pabort=pabort, recursion_depth=recursion_depth+1), pabort=pabort)
+            sprite.move_to(*lst, pabort=pabort)#, callback=partial(track_astar, sprite, find_tags, callback, pabort=pabort, recursion_depth=recursion_depth+1), pabort=pabort)
 
 def track(sprite, find_tags, pbad = 0.1) :
     """

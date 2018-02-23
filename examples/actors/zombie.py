@@ -31,18 +31,17 @@ def create_blue(plugins):
    """ create a blue (friendly) actor """
    actor_name, speed = plugins.get_blue()
    blue = actor(actor_name, (1,1), tag='blue').speed(speed)
-   cb = partial(track_astar, blue, ['destination'], pabort=0.25)
-   callback(cb, 0.25)
-   callback(partial(monitor, blue, cb), 0.5, repeat=FOREVER)
+   cb = partial(track_astar, blue, ['destination'], pabort=0.1)
+   callback(cb, 0.1)
+   callback(partial(monitor, blue, cb), 0.25, repeat=FOREVER)
 
 def create_red(plugins):
    """ create a red (hostile) actor """
    actor_name, speed = plugins.get_red()
    red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
-   cb = partial(track_astar, red, ['blue', 'player'], pabort=0.25)
-   callback(cb, 0.25)
-   callback(partial(monitor, red, cb), 0.5, repeat=FOREVER)
-
+   cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
+   callback(cb, 0.1)
+   callback(partial(monitor, red, cb), 0.25, repeat=FOREVER)
 
 def red_attack(red, target):
    if target.tag == 'red':
