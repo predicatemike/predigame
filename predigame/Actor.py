@@ -79,6 +79,8 @@ class Actor(Sprite):
 
     def move_to(self, *points, **kwargs):
         callback = kwargs.get('callback', None)
+        pabort = kwargs.get('pabort', -1)
+
         if self._stop:
            self._stop = False
            return
@@ -86,6 +88,12 @@ class Actor(Sprite):
             if callback:
                 callback()
             return
+
+        # force the game to recalculate a route
+        if callback is not None and random.uniform(0, 1) <= pabort:
+           callback()
+           return
+
         head, *tail = points
         if self.pos == head:
            self.move_to(*tail, **kwargs)

@@ -13,14 +13,17 @@ def arrive_destination(dest_sprite, target):
 def create_blue_destination():
    return 'pigpen'
 
+def cb_find_destination(p):
+   callback(partial(track_astar, p, ['destination'], callback=partial(cb_find_destination,p), pabort=0.15), 1)
+
 def create_blue(plugins):
    """ create a blue (friendly) actor """
    actor_name, speed = plugins.get_blue()
    blue = actor(actor_name, (1,1), tag='blue').speed(speed)
-   callback(partial(track_astar, blue, ['destination']),1)
+   cb_find_destination(blue)
 
 def cb_find_blue(r):
-   callback(partial(track_astar, r, ['blue', 'player'], callback=partial(cb_find_blue,r)), 1)
+   callback(partial(track_astar, r, ['blue', 'player'], callback=partial(cb_find_blue,r), pabort=0.15), 1)
 
 def create_red(plugins):
    """ create a red (hostile) actor """
