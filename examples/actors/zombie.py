@@ -5,9 +5,9 @@ HEIGHT = 19
 TITLE = 'Zombie Madness'
 current_level = None
 
-def invoke(function, default, **kwargs):
-   if function in globals():
-      return globals()[function](**kwargs)
+def invoke(plugins, function, default, **kwargs):
+   if function in plugins.__dict__:
+      return plugins.__dict__[function](**kwargs)
    else:
       return globals()[default](**kwargs)
 
@@ -21,27 +21,10 @@ def monitor(a, callback):
 def arrive_destination(dest_sprite, target):
    if target.tag == 'blue':
       target.destroy()
-      current_level.blue_arrived += 1
+      current_level.blue_safe += 1
 
-def create_blue_destination():
+def default_blue_destination():
    return 'pigpen'
-
-
-def create_blue(plugins):
-   """ create a blue (friendly) actor """
-   actor_name, speed = plugins.get_blue()
-   blue = actor(actor_name, (1,1), tag='blue').speed(speed)
-   cb = partial(track_astar, blue, ['destination'], pabort=0.1)
-   callback(cb, 0.1)
-   callback(partial(monitor, blue, cb), 0.25, repeat=FOREVER)
-
-def create_red(plugins):
-   """ create a red (hostile) actor """
-   actor_name, speed = plugins.get_red()
-   red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
-   cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
-   callback(cb, 0.1)
-   callback(partial(monitor, red, cb), 0.25, repeat=FOREVER)
 
 def red_attack(red, target):
    if target.tag == 'red':
@@ -53,18 +36,51 @@ def red_attack(red, target):
 
 class ZombieLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
-
    def __init__(self, targets=1, level=1, duration=0, time_remaining=30):
       self.targets = targets
       self.level = level
       self.time_remaining = time_remaining
       self.duration = duration
-      self.blue_arrived = 0
+      self.blue_safe = 0
+      self.blue_spawned = 0
+      self.destination = None
       global current_level
       current_level = self
 
    def get_duration(self):
       return score(pos=LOWER_RIGHT)
+
+   def create_blue(self):
+      """ create a blue (friendly) actor """
+      self.blue_spawned += 1
+      actor_name, speed = self.plugins.get_blue()
+      blue = actor(actor_name, (1,1), tag='blue').speed(speed)
+      self.destination.collides(blue, arrive_destination)
+
+      # callbacks
+      for o in get('red'):
+         o.collides(blue, red_attack)
+
+      # movements
+      cb = partial(track_astar, blue, ['destination'], pabort=0.1)
+      callback(cb, 0.1)
+      callback(partial(monitor, blue, cb), 0.25, repeat=FOREVER)
+
+   def create_red(self):
+      """ create a red (hostile) actor """
+      actor_name, speed = self.plugins.get_red()
+      red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
+
+      # callbacks
+      for o in get('blue'):
+         red.collides(o, red_attack)
+      for o in get('player'):
+         red.collides(o, red_attack)
+
+      # movements
+      cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
+      callback(cb, 0.1)
+      callback(partial(monitor, red, cb), 0.25, repeat=FOREVER)
 
    def setup(self):
       """ setup the level """
@@ -73,6 +89,9 @@ class ZombieLevel(Level):
       player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
       player.speed(5).keys(precondition=player_physics)
 
+      # DESTINATION
+      self.destination = image(invoke(self.plugins, "blue_destination", "default_blue_destination"), pos=(WIDTH-2, HEIGHT-2), size=1, tag='destination')
+
       # KEYBOARD EVENTS
       keydown('space', partial(self.plugins.shoot, self, player))
       keydown('1', partial(self.plugins.punch, self, player))
@@ -80,40 +99,32 @@ class ZombieLevel(Level):
       keydown('r', reset)
 
       # USER DEFINED STUFF
-      self.plugins.setup(player, self.level)
+      self.plugins.setup(player, self)
 
       # FRIENDLIES
       for i in range(self.targets):
-         create_blue(self.plugins)
+         self.create_blue()
 
       # HOSTILES
       for i in range(self.targets):
-         create_red(self.plugins)
-
-      for r in get('red'):
-         r.collides(sprites(), red_attack)
-
-      # create a destination
-      img = image(create_blue_destination(), pos=(WIDTH-2, HEIGHT-2), size=1, tag='destination')
-      img.collides(sprites(), arrive_destination)
+         self.create_red()
 
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
-      #stopwatch(color=WHITE, value=self.duration)
 
    def completed(self):
-      """ level is complete when all reds have been destroyed and at least one blue is surviving """
 
       if len(get('destination')) == 0:
          text("DESTINATION DESTROYED! GAME OVER")
          gameover()
 
-      if self.blue_arrived == self.level or len(get('red')) == 0:
-        return True
-
-      if len(get('blue')) == 0 or len(get('player')) == 0:
+      if (self.blue_safe == 0 and len(get('blue')) == 0) or len(get('player')) == 0:
          text('GAME OVER')
          gameover()
+
+      if len(get('blue')) == 0 or len(get('red')) == 0:
+        return True
+
 
    def next(self):
        """ load the next level """

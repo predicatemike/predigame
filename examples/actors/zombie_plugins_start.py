@@ -1,6 +1,6 @@
 # A Place for Gamer Customizations
 
-def setup(player, level_number):
+def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
 
    # create a stone Maze

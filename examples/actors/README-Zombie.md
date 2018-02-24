@@ -158,6 +158,32 @@ def throw(level, player, repeat=False):
    if not repeat:
       callback(partial(__grow__, beam), wait=0.1, repeat=50)
 ```
+## Throw a Grenade
+Another cool throwing option..
+```python
+def throw(level, player, repeat=False):
+   """ grenade thrower """
+   player.act(THROW, loop=1)
+   # set the range of the grenade
+   pos = player.facing(5)
+   bpos = player.pos
+   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
+
+   def __hit__(grenade, target):
+      if target != grenade:
+         if isinstance(target, Actor):
+            target.kill()
+         elif isinstance(target, Sprite):
+            target.fade(0.5)
+   def __explode__(grenade):
+      grenade.destroy()
+      exp = shape(CIRCLE, RED, grenade.pos, size=0.3)
+      exp.collides(sprites(), __hit__)
+      exp.scale(10)
+      callback(partial(exp.fade, 1), 0.5)
+   grenade.move_to(pos, callback=callback(partial(__explode__, grenade), wait=1))
+```
+
 ## Throw a Punch [EASY]
 ```python
 def punch(level, player):
@@ -193,14 +219,46 @@ def shoot(level, player, repeat=False):
 ```
 The way this code works is quite simple. Bullets will travel for `distance` number of grid cells before disappearing. In the example above, the distance is `4`, but this can be changed to any number. Keep in mind that there are some sensitive targets in the game so it may be wise to limit the distance that a bullet can fly!
 
+## Walk Through Walls (and destroy them too!!)
+Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
+```python
+   player.keys()
+```
+Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
+```python
+   def __wall_buster__(player, wall):
+      wall.fade(0.25)
+   player.collides(get('wall'), __wall_buster__)
+```
+
 ## Multidirectional Bullets
 *Under Development*
 
 ## Plant a Landmine
-*Under Development*
+Mines are cool! This will use the `m` key drop the mine. It'll be active within three seconds, so be sure to get out of the way! There are quite a few numbers here that can be tweaked, so you'll want to try a few things until you end up with the perfect mine.
+```python
+   def __drop__(player):
+      """ put a landmine right where the player is standing """
+      mine = image('mine', player.pos, tag = 'mine')
 
-## Throw a Bomb
-*Under Development*
+      def __hit__(mine, target):
+         """ mine hits something and that something dies """
+         if isinstance(target, Actor):
+            target.kill()
+         elif isinstance(target, Sprite):
+            target.fade(0.5)
+
+      def __explode__(mine, sprite):
+         """ explode the mine """
+         if mine != sprite:
+            mine.collides(sprites(), __hit__)
+            callback(partial(mine.fade, 2), 1)
+      # wait three seconds to activate the mine
+      callback(partial(mine.collides, sprites(), __explode__), wait=3)
+   keydown('m', callback=partial(__drop__, player))
+```
+
+
 
 ## Limiting Inventory
 *Under Development*
@@ -213,8 +271,33 @@ def get_blue():
    # return name of actor and grazing speed
    return 'Piggy', 3
 ```
+## Custom Destination Image
+Don't like the default pig pen image? It's possible to create your own with this function and then change `pigpen` with whatever image you want!
+```python
+def default_blue_destination():
+   return 'pigpen'
+```
+
 ## Make Friendlies Away from Hostiles(s)
 *Under Development*
+
+## Schedule More Friendlies
+It's easy to schedule more friendlies with a callback function. Here's a couple of variations. All will need to be added to your `setup` function.
+
+**schedule a single friendly (1 second delay)**
+```python
+   callback(level.create_blue, wait=1)
+```
+**schedule a friendly every 10 seconds and repeat 5 times**
+```python
+   callback(level.create_blue, wait=10, repeat=5)
+```
+
+**schedule a friendly every 10 seconds and repeat forever**
+```python
+   callback(level.create_blue, wait=10, repeat=FOREVER)
+```
+
 
 # Hostiles
 Your object is to eliminate all hostile actors.
@@ -225,7 +308,22 @@ def get_red():
    return 'Zombie-1', 1
 ```
 ## Schedule More Hostiles
-*Under Development*
+It's easy to schedule more hostiles with a callback function. Here's a couple of variations. All will need to be added to your `setup` function.
+
+**schedule a single hostile (1 second delay)**
+```python
+   callback(level.create_red, wait=1)
+```
+**schedule a hostile every 10 seconds and repeat 5 times**
+```python
+   callback(level.create_red, wait=10, repeat=5)
+```
+
+**schedule a hostile every 10 seconds and repeat forever**
+```python
+   callback(level.create_red, wait=10, repeat=FOREVER)
+```
+
 
 # Scoring
 

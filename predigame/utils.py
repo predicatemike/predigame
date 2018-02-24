@@ -35,16 +35,21 @@ def register_cell(pos, s):
     lst.append(s)
 
 def register_keydown(key, callback):
-    if key in Globals.instance.keys_registered['keydown']:
-        Globals.instance.keys_registered['keydown'][key].add(callback)
-    else:
-        Globals.instance.keys_registered['keydown'][key] = set([callback])
+    # single key callbacks
+    Globals.instance.keys_registered['keydown'][key] = set([callback])
+    #if key in Globals.instance.keys_registered['keydown']:
+    #    Globals.instance.keys_registered['keydown'][key].add(callback)
+    #else:
+    #    Globals.instance.keys_registered['keydown'][key] = set([callback])
 
 def register_keyup(key, callback):
-    if key in Globals.instance.keys_registered['keyup']:
-        Globals.instance.keys_registered['keyup'][key].add(callback)
-    else:
-        Globals.instance.keys_registered['keyup'][key] = set([callback])
+    # single key callbacks
+    Globals.instance.keys_registered['keyup'][key] = set([callback])
+
+    #if key in Globals.instance.keys_registered['keyup']:
+    #    Globals.instance.keys_registered['keyup'][key].add(callback)
+    #else:
+    #    Globals.instance.keys_registered['keyup'][key] = set([callback])
 
 def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
     Globals.instance.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
@@ -211,7 +216,7 @@ def track_astar(sprite, find_tags, pabort=-1, recursion_depth=0):
     if path is not None:
         lst = list(path)
         if len(lst) > 0:
-            sprite.move_to(*lst, pabort=pabort)#, callback=partial(track_astar, sprite, find_tags, callback, pabort=pabort, recursion_depth=recursion_depth+1), pabort=pabort)
+            sprite.move_to(*lst, pabort=pabort)
 
 def track(sprite, find_tags, pbad = 0.1) :
     """

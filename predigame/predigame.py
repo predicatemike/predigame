@@ -640,12 +640,11 @@ def _update(delta):
     for _callback in callbacks:
         if _callback['time'] <= get_time():
             _callback['cb']()
-            if _callback['repeat'] > 0:
+            if _callback['repeat'] > 1:
                 callback(_callback['cb'], _callback['wait'], _callback['repeat']-1)
             elif _callback['repeat'] == FOREVER:
                 callback(_callback['cb'], _callback['wait'], FOREVER)
             callbacks.remove(_callback)
-
 
     if current_level is not None:
         if current_level.completed():
