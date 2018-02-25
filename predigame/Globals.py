@@ -1,5 +1,6 @@
 class Globals:
     instance = None
+    MAX_SIZE=35
     def __init__(self, width, height, grid_size):
         self.WIDTH = width
         self.HEIGHT = height

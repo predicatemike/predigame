@@ -35,16 +35,21 @@ def register_cell(pos, s):
     lst.append(s)
 
 def register_keydown(key, callback):
-    if key in Globals.instance.keys_registered['keydown']:
-        Globals.instance.keys_registered['keydown'][key].add(callback)
-    else:
-        Globals.instance.keys_registered['keydown'][key] = set([callback])
+    # single key callbacks
+    Globals.instance.keys_registered['keydown'][key] = set([callback])
+    #if key in Globals.instance.keys_registered['keydown']:
+    #    Globals.instance.keys_registered['keydown'][key].add(callback)
+    #else:
+    #    Globals.instance.keys_registered['keydown'][key] = set([callback])
 
 def register_keyup(key, callback):
-    if key in Globals.instance.keys_registered['keyup']:
-        Globals.instance.keys_registered['keyup'][key].add(callback)
-    else:
-        Globals.instance.keys_registered['keyup'][key] = set([callback])
+    # single key callbacks
+    Globals.instance.keys_registered['keyup'][key] = set([callback])
+
+    #if key in Globals.instance.keys_registered['keyup']:
+    #    Globals.instance.keys_registered['keyup'][key].add(callback)
+    #else:
+    #    Globals.instance.keys_registered['keyup'][key] = set([callback])
 
 def animate(obj, duration = 1, callback = None, abortable=False, **kwargs):
     Globals.instance.animations.append(Animation(obj, duration, callback, abortable, **kwargs))
@@ -191,27 +196,26 @@ class __GridSolver__(AStar):
                ret.append(choices[i])
         return ret
 
-def track_astar(sprite, find_tags, callback=None):
+def track_astar(sprite, find_tags, pabort=-1):
     enemies = []
     for t in find_tags:
        enemies.extend(get(t))
 
-    distances = [distance(e.pos, sprite.pos) for e in enemies]
+    if len(enemies) == 0:
+       sprite.act(IDLE, FOREVER)
+       return
 
-    #enemy = enemies[distances.index(min(distances))]
     enemy = random.choice(enemies)
     x, y = sprite.pos
     path = __GridSolver__().astar(sprite.pos,enemy.pos)
     if path is not None:
         lst = list(path)
         if len(lst) > 0:
-            sprite.move_to(*lst, callback=partial(track_astar, sprite, find_tags, callback))
+           sprite.move_to(*lst, pabort=pabort)
         else:
-            if callback:
-              callback()
+           sprite.act(IDLE, FOREVER)
     else:
-        if callback:
-           callback()
+        sprite.act(IDLE, FOREVER)
 
 def track(sprite, find_tags, pbad = 0.1) :
     """

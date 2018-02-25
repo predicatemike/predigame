@@ -89,6 +89,8 @@ def _create_image(name, pos, center, size, tag):
     rect = img.get_rect()
     new_width = 0
     new_height = 0
+    if size > Globals.MAX_SIZE:
+        size = Globals.MAX_SIZE
     if rect.width >= rect.height:
         new_width = size * float(globs.GRID_SIZE)
         new_height = rect.height * (new_width / rect.width)
@@ -241,7 +243,7 @@ def actor(name = None, pos = None, center = None, size = 1, abortable = False, t
                         if not state in states:
                             states[state] = []
                         try:
-                            print(path + '/' + state + '/' + img_file)
+                            #print(path + '/' + state + '/' + img_file)
                             states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
                             loaded = True
                         except:
@@ -410,7 +412,7 @@ def callback(function, wait, repeat=0):
 
         :param repeat: the number of times this callback should repeat (default 0)
     """
-    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat-1})
+    callbacks.append({'cb': function, 'time': get_time() + wait, 'wait': wait, 'repeat' : repeat})
 
 def reset_score(**kwargs):
     """
@@ -638,10 +640,11 @@ def _update(delta):
     for _callback in callbacks:
         if _callback['time'] <= get_time():
             _callback['cb']()
-            if _callback['repeat'] > 0:
+            if _callback['repeat'] > 1:
                 callback(_callback['cb'], _callback['wait'], _callback['repeat']-1)
+            elif _callback['repeat'] == FOREVER:
+                callback(_callback['cb'], _callback['wait'], FOREVER)
             callbacks.remove(_callback)
-
 
     if current_level is not None:
         if current_level.completed():
