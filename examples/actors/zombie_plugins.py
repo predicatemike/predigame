@@ -78,15 +78,17 @@ def setup(player, level):
       callback(partial(mine.collides, sprites(), __explode__), wait=3)
    keydown('m', callback=partial(__drop__, player))
 
-   def __put__(player, direction):
-      """ put a block at the player's next location  """
-      pos = player.next(direction)
-      image('stone', pos, tag = 'wall')
+   def __direction__(player, direction):
+      """ change the players direction  """
+      player.direction = direction
+      player.act(IDLE, FOREVER)
 
-   keydown('w', callback=partial(__put__, player, BACK))
-   keydown('a', callback=partial(__put__, player, LEFT))
-   keydown('s', callback=partial(__put__, player, FRONT))
-   keydown('d', callback=partial(__put__, player, RIGHT))
+   keydown('left', callback=partial(__direction__,player, LEFT))
+   keydown('right', callback=partial(__direction__,player, RIGHT))
+   keydown('up', callback=partial(__direction__,player, BACK))
+   keydown('down', callback=partial(__direction__,player, FRONT))
+
+   player.keys(right = 'd', left = 'a', up = 'w', down = 's', precondition=player_physics)
 
 def punch(level, player):
    #print('future home of a punch')
