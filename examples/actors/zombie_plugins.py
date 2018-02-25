@@ -30,8 +30,8 @@ def setup(player, level):
    choices = ['grass', 'ville']
    background(choice(choices))
 
-   callback(level.create_red, wait=1, repeat=5)
-   callback(level.create_blue, wait=1, repeat=5)
+   #callback(level.create_red, wait=1, repeat=5)
+   #callback(level.create_blue, wait=1, repeat=5)
    #callback(level.create_red, wait=1, repeat=FOREVER)
    #callback(level.create_red, wait=randint(10,20), repeat=FOREVER)
 
@@ -83,9 +83,6 @@ def setup(player, level):
    keydown('a', callback=partial(__put__, player, LEFT))
    keydown('s', callback=partial(__put__, player, FRONT))
    keydown('d', callback=partial(__put__, player, RIGHT))
-
-def blue_destination():
-   return 'stone'
 
 def punch(level, player):
    #print('future home of a punch')

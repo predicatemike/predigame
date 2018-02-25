@@ -93,15 +93,19 @@ class Actor(Sprite):
               if is_wall(head):
                  self.act(IDLE, FOREVER)
               else:
-                 self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.move_to, *tail, **kwargs))
+                 if callback is not None:
+                    self.move((head[0]-self.x, head[1]-self.y), callback=callback)
+                 else:
+                    self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.move_to, *tail, **kwargs))
            else:
               head = points[0]
               if is_wall(head):
                  self.act(IDLE, FOREVER)
               else:
-                 self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.act, IDLE, FOREVER))
-
-
+                 if callback is not None:
+                    self.move((head[0]-self.x, head[1]-self.y), callback=callback)
+                 else:
+                    self.move((head[0]-self.x, head[1]-self.y), callback=partial(self.act, IDLE, FOREVER))
 
     def _complete_move(self, callback = None):
         if self.health == 0:

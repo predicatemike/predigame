@@ -117,18 +117,59 @@ class ZombieLevel(Level):
       if len(get('destination')) == 0:
          text("DESTINATION DESTROYED! GAME OVER")
          gameover()
-
-      if (self.blue_safe == 0 and len(get('blue')) == 0) or len(get('player')) == 0:
+      elif (self.blue_safe == 0 and len(get('blue')) == 0) or len(get('player')) == 0:
          text('GAME OVER')
          gameover()
-
-      if len(get('blue')) == 0 or len(get('red')) == 0:
-        return True
-
+      elif len(get('blue')) == 0 or len(get('red')) == 0:
+         return True
+      else:
+         return False
 
    def next(self):
        """ load the next level """
        return ZombieLevel(self.targets+1, level=self.level+1,
+                          duration=score(pos=LOWER_RIGHT))
+
+class WalkAcrossLevel(Level):
+   plugins = import_plugin('zombie_plugins.py')
+
+   def __init__(self, targets=1, level=1, duration=0, time_remaining=30):
+      self.level = level
+      self.duration = duration
+      global current_level
+      current_level = self
+
+
+   def setup(self):
+      """ setup the level """
+
+      # PLAYER
+      player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
+      player.speed(5).keys(precondition=player_physics)
+
+      # SCORE BOARD
+      score(self.level, pos=UPPER_RIGHT, color=BLACK, method=VALUE, prefix='Level: ')
+
+      # HOSTILE
+      actor_name, speed = self.plugins.get_red()
+      red = actor(actor_name, (WIDTH+15,5), tag='red', size=15).speed(10)
+      red.collides(sprites(), red_attack)
+      red.move_to((-15, 5), callback=red.destroy)
+
+      keydown('r', reset)
+
+   def completed(self):
+
+      if len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()
+
+      if len(get('red')) == 0:
+        return True
+
+   def next(self):
+       """ load the next level """
+       return ZombieLevel(1, level=self.level+1,
                           duration=score(pos=LOWER_RIGHT))
 
 level(ZombieLevel(1))

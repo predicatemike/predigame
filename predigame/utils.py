@@ -196,19 +196,14 @@ class __GridSolver__(AStar):
                ret.append(choices[i])
         return ret
 
-def track_astar(sprite, find_tags, pabort=-1, recursion_depth=0):
+def track_astar(sprite, find_tags, pabort=-1):
     enemies = []
     for t in find_tags:
        enemies.extend(get(t))
 
     if len(enemies) == 0:
-       return
-
-    if recursion_depth > 5:
        sprite.act(IDLE, FOREVER)
        return
-
-    distances = [distance(e.pos, sprite.pos) for e in enemies]
 
     enemy = random.choice(enemies)
     x, y = sprite.pos
@@ -216,7 +211,11 @@ def track_astar(sprite, find_tags, pabort=-1, recursion_depth=0):
     if path is not None:
         lst = list(path)
         if len(lst) > 0:
-            sprite.move_to(*lst, pabort=pabort)
+           sprite.move_to(*lst, pabort=pabort)
+        else:
+           sprite.act(IDLE, FOREVER)
+    else:
+        sprite.act(IDLE, FOREVER)
 
 def track(sprite, find_tags, pbad = 0.1) :
     """
