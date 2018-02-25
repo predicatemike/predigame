@@ -128,12 +128,8 @@ class ZombieLevel(Level):
 
    def next(self):
        """ load the next level """
-       if randint(1, 10) == 4:
-          return WalkAcrossLevel(self.targets+1, level=self.level+1,
-                                 duration=score(pos=LOWER_RIGHT))
-       else:
-          return ZombieLevel(self.targets+1, level=self.level+1,
-                             duration=score(pos=LOWER_RIGHT))
+       return ZombieLevel(self.targets+1, level=self.level+1,
+                          duration=score(pos=LOWER_RIGHT))
 
 class WalkAcrossLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
@@ -182,4 +178,4 @@ class WalkAcrossLevel(Level):
        return ZombieLevel(targets=self.targets+1, level=self.level+1,
                           duration=score(pos=LOWER_RIGHT))
 
-level(WalkAcrossLevel(1))
+level(ZombieLevel(1))
