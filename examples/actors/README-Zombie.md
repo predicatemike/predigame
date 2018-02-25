@@ -30,9 +30,9 @@ We also have a pretty cool image service that will randomly pick and use a backg
 ## Progressive Backgrounds
 Sometimes you'll want to have the same background be used for the same level. This can provide a hint to the user of where they are in the game. In order to accomplish progressive backgrounds, we'll need to evaluate the level and decide which background image to load. Using python, we can accomplish this with an if/else statement.
 ```python
-   if level_number == 1:
+   if level.level == 1:
       background('grass')
-   elif level_number == 2:
+   elif level.level == 2:
       background('ville')
    else:
       background('stormy')
@@ -257,8 +257,6 @@ Mines are cool! This will use the `m` key drop the mine. It'll be active within 
       callback(partial(mine.collides, sprites(), __explode__), wait=3)
    keydown('m', callback=partial(__drop__, player))
 ```
-
-
 
 ## Limiting Inventory
 *Under Development*

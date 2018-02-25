@@ -27,8 +27,12 @@ def setup(player, level):
    #background(GRAY)
 
    # randomly pick a background
-   choices = ['grass', 'ville']
-   background(choice(choices))
+   if level.level == 1:
+      background('grass')
+   elif level.level == 2:
+      background('ville')
+   else:
+      background('stormy')
 
    #callback(level.create_red, wait=1, repeat=5)
    #callback(level.create_blue, wait=1, repeat=5)

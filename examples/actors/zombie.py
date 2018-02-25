@@ -32,6 +32,7 @@ def red_attack(red, target):
    if target.tag == 'blue' or target.tag == 'player':
       red.stop()
       red.act(ATTACK, 1)
+      callback(partial(red.act, IDLE_FRONT, FOREVER), 1)
       target.kill()
 
 class ZombieLevel(Level):
@@ -127,14 +128,19 @@ class ZombieLevel(Level):
 
    def next(self):
        """ load the next level """
-       return ZombieLevel(self.targets+1, level=self.level+1,
-                          duration=score(pos=LOWER_RIGHT))
+       if randint(1, 10) == 4:
+          return WalkAcrossLevel(self.targets+1, level=self.level+1,
+                                 duration=score(pos=LOWER_RIGHT))
+       else:
+          return ZombieLevel(self.targets+1, level=self.level+1,
+                             duration=score(pos=LOWER_RIGHT))
 
 class WalkAcrossLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
 
    def __init__(self, targets=1, level=1, duration=0, time_remaining=30):
       self.level = level
+      self.targets = targets
       self.duration = duration
       global current_level
       current_level = self
@@ -150,11 +156,15 @@ class WalkAcrossLevel(Level):
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=BLACK, method=VALUE, prefix='Level: ')
 
+      txt = text("TIME TO DIE!!")
+      callback(txt.destroy, 2)
+
       # HOSTILE
       actor_name, speed = self.plugins.get_red()
-      red = actor(actor_name, (WIDTH+15,5), tag='red', size=15).speed(10)
+      red = actor(actor_name, (WIDTH+15,5), tag='red', size=15).speed(8)
       red.collides(sprites(), red_attack)
-      red.move_to((-15, 5), callback=red.destroy)
+      points = [(p, 5) for p in range(WIDTH+15, -15, -2)]
+      red.move_to(*points, callback=red.destroy)
 
       keydown('r', reset)
 
@@ -163,13 +173,13 @@ class WalkAcrossLevel(Level):
       if len(get('player')) == 0:
          text('GAME OVER')
          gameover()
-
-      if len(get('red')) == 0:
-        return True
+      elif len(get('red')) == 0:
+         print('no red')
+         return True
 
    def next(self):
        """ load the next level """
-       return ZombieLevel(1, level=self.level+1,
+       return ZombieLevel(targets=self.targets+1, level=self.level+1,
                           duration=score(pos=LOWER_RIGHT))
 
-level(ZombieLevel(1))
+level(WalkAcrossLevel(1))
