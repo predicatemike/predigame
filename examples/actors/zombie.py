@@ -13,7 +13,10 @@ def invoke(plugins, function, default, **kwargs):
       return globals()[default](**kwargs)
 
 def is_moving(a):
-   return a.action != IDLE
+   if a.action == IDLE or a.action == IDLE_BACK or a.action == IDLE_LEFT or a.action == IDLE_RIGHT or a.action == IDLE_FRONT:
+      return False
+   else:
+      return True
 
 def monitor(a, callback):
    print("{} is moving {}".format(a.name, a.action))
@@ -77,7 +80,7 @@ class ZombieLevel(Level):
       # movements
       cb = partial(track_astar, blue, ['destination'], pabort=0.1)
       callback(cb, 0.1)
-      callback(partial(monitor, blue, cb), 0.25, repeat=FOREVER)
+      callback(partial(monitor, blue, cb), 0.75, repeat=FOREVER)
 
    def create_red(self):
       """ create a red (hostile) actor """
@@ -95,7 +98,7 @@ class ZombieLevel(Level):
       # movements
       cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
       callback(cb, 0.1)
-      callback(partial(monitor, red, cb), 0.25, repeat=FOREVER)
+      callback(partial(monitor, red, cb), 0.75, repeat=FOREVER)
 
    def setup(self):
       """ setup the level """
