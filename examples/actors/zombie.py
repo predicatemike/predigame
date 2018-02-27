@@ -4,6 +4,7 @@ WIDTH = 31
 HEIGHT = 19
 TITLE = 'Zombie Madness'
 current_level = None
+from types import MethodType
 
 def invoke(plugins, function, default, **kwargs):
    if function in plugins.__dict__:
@@ -15,6 +16,7 @@ def is_moving(a):
    return a.action != IDLE
 
 def monitor(a, callback):
+   print("{} is moving {}".format(a.name, a.action))
    if not is_moving(a):
       callback()
 
@@ -30,10 +32,17 @@ def red_attack(red, target):
    if target.tag == 'red':
       return
    if target.tag == 'blue' or target.tag == 'player':
+      if target.tag == 'blue' and target.health > 0:
+         current_level.blue_killed += 1
       red.stop()
       red.act(ATTACK, 1)
       callback(partial(red.act, IDLE_FRONT, FOREVER), 1)
       target.kill()
+
+def red_murder(self):
+    if self.health > 0:
+       current_level.red_killed += 1
+    Actor.kill(self)
 
 class ZombieLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
@@ -44,6 +53,9 @@ class ZombieLevel(Level):
       self.duration = duration
       self.blue_safe = 0
       self.blue_spawned = 0
+      self.blue_killed = 0
+      self.red_spawned = 0
+      self.red_killed = 0
       self.destination = None
       global current_level
       current_level = self
@@ -69,9 +81,11 @@ class ZombieLevel(Level):
 
    def create_red(self):
       """ create a red (hostile) actor """
+      self.red_spawned += 1
       actor_name, speed = self.plugins.get_red()
       red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
-
+      red.old_kill = MethodType(red.kill, red)
+      red.kill = MethodType(red_murder, red)
       # callbacks
       for o in get('blue'):
          red.collides(o, red_attack)
@@ -114,7 +128,7 @@ class ZombieLevel(Level):
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
 
    def completed(self):
-
+      print("RS:{},RK:{},BS:{},BK:{},BF:{}".format(self.red_spawned, self.red_killed, self.blue_spawned, self.blue_killed, self.blue_safe))
       if len(get('destination')) == 0:
          text("DESTINATION DESTROYED! GAME OVER")
          gameover()

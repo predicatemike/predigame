@@ -6,6 +6,7 @@ It's possible to take a game in a number of different directions. This guide wal
 
 ## Static backgrounds
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 This code will provide a single image that is used in ever level. You'll want to add to your setup function.
 ```python
    background('grass')
@@ -20,6 +21,7 @@ If you have a particular color in mind, it's possible to also define the backgro
 ```
 ## Random backgrounds
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 If you interested in changing backgrounds for each level, we'll want to create a list with all of our choices and then use the `choice()` function to randomly select an image file from the list.
 ```python
    choices = ['grass', 'ville']
@@ -31,6 +33,7 @@ We also have a pretty cool image service that will randomly pick and use a backg
 ```
 ## Progressive backgrounds
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 Sometimes you'll want to have the same background be used for the same level. This can provide a hint to the user of where they are in the game. In order to accomplish progressive backgrounds, we'll need to evaluate the level and decide which background image to load. Using python, we can accomplish this with an if/else statement.
 ```python
    if level.level == 1:
@@ -46,6 +49,7 @@ Notice that the file line is the "catch all" statement. This basically means the
 
 ## Generated maze
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 It's possible, also within the `setup` function, to define the type of maze should be drawn on the game service. Assuming that there is an image with the name `'stone'`, it's possible to use that to draw the maze.
 ```python
    maze(callback=partial(image, 'stone'))
@@ -56,6 +60,7 @@ Likewise, it's also possibly to simply draw a maze with colors. For example,
 ```
 ## Random maze
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 Sometimes it may be desirable to have some randomly placed blocks to create as obstacles. It's possible to tweak the `2.75` number to draw more or less blocks. The numbers `19` and `31` signify the HEIGHT and WIDTH of the window, in terms of grid cells.
 ```python
    for y in range(19):
@@ -71,6 +76,7 @@ Sometimes it may be desirable to have some randomly placed blocks to create as o
 
 ### Change the walking keys
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 The game uses arrow keys for walking by default. It's possible to change them to something else. The below example changes them to `w`, `a`, `s`,  and `d`. This code will need to be added to your `setup` function
 ```python
    player.keys(right = 'd', left = 'a', up = 'w', down = 's', precondition=player_physics)
@@ -81,6 +87,7 @@ This code will obey the maze walls. If you want to walk through them, remove the
 ```
 ### Change facing direction (without moving)
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 Sometimes you may want to quickly change direction and shoot without having to move. This code will rebind the arrow keys to changing the facing direction. Keep in mind that you'll need to **change the walking keys** or **register different keys for the facing direction**. This code will need to be added to your `setup` function.
 ```python
    def __direction__(player, direction):
@@ -96,6 +103,7 @@ Sometimes you may want to quickly change direction and shoot without having to m
 
 ### Walk through walls (and destroy them too!!)
  **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
 ```python
    player.keys()
@@ -108,6 +116,7 @@ Want to clear a path through the walls? Be sure the add these lines right under 
 ```
 ### Add walls
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
 ```python
    def __put__(player, direction):
@@ -126,6 +135,7 @@ The signature (function name) of each weapon will need to remain the same. These
 
 ### Simple air shot
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
+
 ```python
 def shoot(level, player):
    """ simple air shot """
@@ -137,6 +147,7 @@ def shoot(level, player):
 ```
 ### Simple air shot (that kills any sprite)
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
+
 ```python
 def shoot(level, player):
    """ air shot that will kill any actor or sprite """
@@ -149,6 +160,7 @@ def shoot(level, player):
 ```
 ### Shooting bullets (that kills any sprite)
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
+
 **Customizations:**
 * try having bullets only destroy actors
 * try changing the bullet image
@@ -183,6 +195,7 @@ If the following line is removed, bullet will push through multiple objects, mak
 ```
 ### Shooting range limiting bullets
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
+
 By default there is no limit the the distance a bullet can fly. At times that can be a little unrealistic. Here's the modification to the code that will allow bullets to fly just a few grid cells.
 ```python
 def shoot(level, player, repeat=False):
@@ -209,6 +222,7 @@ The way this code works is quite simple. Bullets will travel for `distance` numb
 
 ### Flame thrower
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw function prior to insertion**
+
 This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `1` on your keyboard.
 ```python
 def throw(level, player, repeat=False):
@@ -237,6 +251,7 @@ def throw(level, player, repeat=False):
 ```
 ### Throw a grenade
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw function prior to insertion**
+
 Another cool throwing option..
 ```python
 def throw(level, player, repeat=False):
@@ -264,6 +279,7 @@ def throw(level, player, repeat=False):
 
 ### Throw a punch
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing punch function prior to insertion**
+
 ```python
 def punch(level, player):
    player.act(THROW, loop=1)
@@ -275,6 +291,7 @@ def punch(level, player):
 ```
 ### Plant a landmine
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 Mines are cool! This will use the `m` key drop the mine. It'll be active within three seconds, so be sure to get out of the way! There are quite a few numbers here that can be tweaked, so you'll want to try a few things until you end up with the perfect mine.
 ```python
    def __drop__(player):
@@ -306,6 +323,7 @@ Mines are cool! This will use the `m` key drop the mine. It'll be active within 
 
 # Friendlies
 **LOCATION GUIDE**: *insert as a top-level function*
+
 Your objective is to save the life of friendly forces.
 ```python
 def get_blue():
@@ -315,6 +333,7 @@ def get_blue():
 ```
 ## Custom destination image
 **LOCATION GUIDE**: *insert as a top-level function*
+
 Don't like the default pig pen image? It's possible to create your own with this function and then change `pigpen` with whatever image you want!
 ```python
 def default_blue_destination():
@@ -326,6 +345,7 @@ def default_blue_destination():
 
 ## Schedule more friendlies
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 It's easy to schedule more friendlies with a callback function. Here's a couple of variations. All will need to be added to your `setup` function.
 
 **schedule a single friendly (1 second delay)**
@@ -345,6 +365,7 @@ It's easy to schedule more friendlies with a callback function. Here's a couple 
 
 # Hostiles
 **LOCATION GUIDE**: *insert as a top-level function*
+
 Your object is to eliminate all hostile actors.
 ```python
 def get_red():
@@ -354,6 +375,7 @@ def get_red():
 ```
 ## Schedule more hostiles
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 It's easy to schedule more hostiles with a callback function. Here's a couple of variations. All will need to be added to your `setup` function.
 
 **schedule a single hostile (1 second delay)**
@@ -374,6 +396,7 @@ It's easy to schedule more hostiles with a callback function. Here's a couple of
 
 ## Add  countdown timer
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
 This code should be added to the end of the `setup` function.
 ```python
    timer(color=WHITE, value=30)

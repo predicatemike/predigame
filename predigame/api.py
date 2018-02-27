@@ -2,6 +2,7 @@ from functools import partial
 from random import uniform as rand
 from random import randint
 from random import choice, shuffle
+from types import MethodType
 from .predigame import actor, image, level, maze, shape, background, sound, text, grid, time, callback, score, timer, stopwatch, reset_score, destroyall, pause, resume, gameover, reset, quit, screenshot
 from .constants import *
 from .utils import register_keydown as keydown, at, get

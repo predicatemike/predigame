@@ -1,7 +1,5 @@
 # A Place for Gamer Customizations
 
-time_left = 30
-
 def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
 
@@ -88,7 +86,16 @@ def setup(player, level):
    keydown('up', callback=partial(__direction__,player, BACK))
    keydown('down', callback=partial(__direction__,player, FRONT))
 
-   player.keys(right = 'd', left = 'a', up = 'w', down = 's', precondition=player_physics)
+   player.keys(right = 'd', left = 'a', up = 'w', down = 's')
+   def __wall_buster__(player, wall):
+      wall.fade(0.25)
+   player.collides(get('wall'), __wall_buster__)
+
+   def __completed__(self):
+      if len(get('red')) == 0:
+         return True
+   level.completed = MethodType(__completed__, level)
+
 
 def punch(level, player):
    #print('future home of a punch')
