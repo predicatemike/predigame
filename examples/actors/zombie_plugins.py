@@ -2,7 +2,7 @@
 
 def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
-
+   callback(level.create_blue, wait=1)
    # create a black rectangle maze
    #maze(callback=partial(shape, RECT, BLACK))
 
@@ -92,8 +92,14 @@ def setup(player, level):
    player.collides(get('wall'), __wall_buster__)
 
    def __completed__(self):
-      if len(get('red')) == 0:
+      if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
          return True
+      elif len(get('destination')) == 0:
+        text('DESTINATION DESTROYED! GAME OVER!')
+        gameover()
+      elif self.blue_killed > 0 or len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()  
    level.completed = MethodType(__completed__, level)
 
 
@@ -122,7 +128,8 @@ def throw(level, player, repeat=False):
             target.fade(0.5)
    def __explode__(grenade):
       grenade.destroy()
-      exp = shape(CIRCLE, RED, grenade.pos, size=0.3)
+      gpos = grenade.pos
+      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
       exp.collides(sprites(), __hit__)
       exp.scale(10)
       callback(partial(exp.fade, 1), 0.5)

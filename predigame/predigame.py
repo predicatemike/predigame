@@ -590,6 +590,11 @@ def reset(**kwargs):
         code, mod = load_module(RUN_PATH, api)
         exec(code, mod.__dict__)
 
+    import gc
+    gc.collect(0)
+    gc.collect(1)
+    gc.collect(2)
+
     global start_time
     start_time = get_time()
     resume()

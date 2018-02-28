@@ -223,7 +223,7 @@ The way this code works is quite simple. Bullets will travel for `distance` numb
 ### Flame thrower
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw function prior to insertion**
 
-This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `1` on your keyboard.
+This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `2` on your keyboard.
 ```python
 def throw(level, player, repeat=False):
    """ flame thrower """
@@ -270,7 +270,8 @@ def throw(level, player, repeat=False):
             target.fade(0.5)
    def __explode__(grenade):
       grenade.destroy()
-      exp = shape(CIRCLE, RED, grenade.pos, size=0.3)
+      gpos = grenade.pos
+      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
       exp.collides(sprites(), __hit__)
       exp.scale(10)
       callback(partial(exp.fade, 1), 0.5)
@@ -336,7 +337,7 @@ def get_blue():
 
 Don't like the default pig pen image? It's possible to create your own with this function and then change `pigpen` with whatever image you want!
 ```python
-def default_blue_destination():
+def blue_destination():
    return 'pigpen'
 ```
 
@@ -390,6 +391,87 @@ It's easy to schedule more hostiles with a callback function. Here's a couple of
 **schedule a hostile every 10 seconds and repeat forever**
 ```python
    callback(level.create_red, wait=10, repeat=FOREVER)
+```
+
+# Levels
+**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+
+## Overriding the default behavior (MUST ADD)
+It's possible to change how the story ends! Here's a few possible tricks you can try. Be sure to **register** your completion function first!
+
+```python
+   def __completed__(self):
+      # promote level by killing all the hostiles
+      if len(get('red')) == 0:
+         return True
+
+   # register the __completed__ function to control how the level decisions are made
+   level.completed = MethodType(__completed__, level)
+```
+
+You'll notice that plugging in this code will drastically change how the levels end. What happens if all the piggies die? What happens if your player dies?
+
+The rest of the the updates will be specific to the `__completed__` function. There is no need to register that function more than once.
+
+## Configuration options
+There are a number of ways to complete a level or decide to end the game. This section will consider a few of those options.
+
+### Option 1: All Piggies Go Home
+This code will promote the level if all blue forces (piggies) go home. It will also end the game if one dies. Again, you'll want to replace your existing `__completed__` function with this code.
+```python
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe:
+         return True
+      elif self.blue_killed > 0:
+         text('GAME OVER')
+         gameover()
+
+```
+
+### Option 2: Option 1 + Player Survives
+```python
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe:
+         return True
+      elif self.blue_killed > 0 or len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()
+```
+
+### Option 3: Option 2 + Kill all the hostiles
+```python
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe:
+         return True
+      elif len(get('red')) == 0:
+         return True
+      elif self.blue_killed > 0 or len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()  
+```
+### Option 4: Piggies go home and their house survives
+```python
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe:
+         return True
+      elif len(get('destination')) == 0:
+        text('DESTINATION DESTROYED! GAME OVER!')
+        gameover()  
+      elif self.blue_killed > 0 or len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()  
+```
+### Option 5: Option 4 + all reds die
+```python
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
+         return True
+      elif len(get('destination')) == 0:
+        text('DESTINATION DESTROYED! GAME OVER!')
+        gameover()  
+      elif self.blue_killed > 0 or len(get('player')) == 0:
+         text('GAME OVER')
+         gameover()  
 ```
 
 # Scoring

@@ -12,16 +12,11 @@ def invoke(plugins, function, default, **kwargs):
    else:
       return globals()[default](**kwargs)
 
-def is_moving(a):
-   if a.action == IDLE or a.action == IDLE_BACK or a.action == IDLE_LEFT or a.action == IDLE_RIGHT or a.action == IDLE_FRONT:
-      return False
-   else:
-      return True
-
-def monitor(a, callback):
-   print("{} is moving {}".format(a.name, a.action))
-   if not is_moving(a):
-      callback()
+def monitor(a, cb):
+   if a.action.startswith(IDLE):
+      cb()
+   if not a.action.startswith(DIE):
+      callback(partial(monitor, a, cb), 0.75)
 
 def arrive_destination(dest_sprite, target):
    if target.tag == 'blue':
@@ -80,7 +75,7 @@ class ZombieLevel(Level):
       # movements
       cb = partial(track_astar, blue, ['destination'], pabort=0.1)
       callback(cb, 0.1)
-      callback(partial(monitor, blue, cb), 0.75, repeat=FOREVER)
+      callback(partial(monitor, blue, cb), 0.75)
 
    def create_red(self):
       """ create a red (hostile) actor """
@@ -98,7 +93,7 @@ class ZombieLevel(Level):
       # movements
       cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
       callback(cb, 0.1)
-      callback(partial(monitor, red, cb), 0.75, repeat=FOREVER)
+      callback(partial(monitor, red, cb), 0.75)
 
    def setup(self):
       """ setup the level """
