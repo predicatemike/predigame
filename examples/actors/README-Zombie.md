@@ -277,7 +277,31 @@ def throw(level, player, repeat=False):
       callback(partial(exp.fade, 1), 0.5)
    grenade.move_to(pos, callback=callback(partial(__explode__, grenade), wait=1))
 ```
+### Throw a grenade (that explodes on impact and doesn't destroy walls)
+```python
+def throw(level, player, repeat=False):
+   """ throw an explode on impact grenade (just kills actors)"""
+   player.act(THROW, loop=1)
+   # set the range of the grenade
+   pos = player.facing(5)
+   bpos = player.pos
+   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
 
+   def __explode__(grenade):
+      grenade.destroy()
+      gpos = grenade.pos
+      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
+      exp.scale(10)
+      callback(partial(exp.fade, 1), 0.5)
+
+   def __hit__(grenade, target):
+      if target != grenade and target != player:
+         if isinstance(target, Actor):
+            __explode__(grenade)
+            target.kill()
+   grenade.move_to(pos, callback=grenade.destroy)
+   grenade.collides(sprites(), __hit__)
+```
 ### Throw a punch
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing punch function prior to insertion**
 
@@ -315,6 +339,39 @@ Mines are cool! This will use the `m` key drop the mine. It'll be active within 
       callback(partial(mine.collides, sprites(), __explode__), wait=3)
    keydown('m', callback=partial(__drop__, player))
 ```
+### Throw some c-4 explosives
+**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw**
+
+This is a two-part weapon. By default `2` will throw the c-4 (you can throw many), and then `3` will detonate.
+
+```python
+def throw(level, player, repeat=False):
+   """ throw some c-4 (explodes on '3' button press)"""
+   player.act(THROW, loop=1)
+   # set the range of the c4
+   pos = player.facing(8)
+   bpos = player.pos
+   c4 = image('mine', tag='c4', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.5).spin(0.25)
+
+   def __hit__(c4, target):
+      if target != c4 and target != player:
+         if isinstance(target, Actor):
+            target.kill()
+   def __explode__(c4):
+      c4.destroy()
+      cpos = c4.pos
+      exp = shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
+      exp.collides(sprites(), __hit__)
+      exp.scale(10)
+      callback(partial(exp.fade, 1), 0.5)
+   def __detonate__():
+      bombs = get('c4')
+      for bomb in bombs:
+         callback(partial(__explode__, bomb), 0.25)
+   keydown('3', __detonate__)
+   c4.move_to(pos)
+```
+
 
 ## Multidirectional Bullets
 *Under Development*

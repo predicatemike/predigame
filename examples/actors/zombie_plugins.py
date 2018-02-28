@@ -94,12 +94,6 @@ def setup(player, level):
    def __completed__(self):
       if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
          return True
-      elif len(get('destination')) == 0:
-        text('DESTINATION DESTROYED! GAME OVER!')
-        gameover()
-      elif self.blue_killed > 0 or len(get('player')) == 0:
-         text('GAME OVER')
-         gameover()  
    level.completed = MethodType(__completed__, level)
 
 
@@ -113,27 +107,30 @@ def punch(level, player):
        target.fade(0.5)
 
 def throw(level, player, repeat=False):
-   """ grenade thrower """
+   """ throw some c-4 (explodes on '3' button press)"""
    player.act(THROW, loop=1)
-   # set the range of the grenade
-   pos = player.facing(5)
+   # set the range of the c4
+   pos = player.facing(8)
    bpos = player.pos
-   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
+   c4 = image('mine', tag='c4', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.5).spin(0.25)
 
-   def __hit__(grenade, target):
-      if target != grenade:
+   def __hit__(c4, target):
+      if target != c4 and target != player:
          if isinstance(target, Actor):
             target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   def __explode__(grenade):
-      grenade.destroy()
-      gpos = grenade.pos
-      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
+   def __explode__(c4):
+      c4.destroy()
+      cpos = c4.pos
+      exp = shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
       exp.collides(sprites(), __hit__)
       exp.scale(10)
       callback(partial(exp.fade, 1), 0.5)
-   grenade.move_to(pos, callback=callback(partial(__explode__, grenade), wait=1))
+   def __detonate__():
+      bombs = get('c4')
+      for bomb in bombs:
+         callback(partial(__explode__, bomb), 0.25)
+   keydown('3', __detonate__)
+   c4.move_to(pos)
 
 
 def shoot_(level, player):
