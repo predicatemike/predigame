@@ -397,7 +397,7 @@ It's easy to schedule more hostiles with a callback function. Here's a couple of
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
 ## Overriding the default behavior (MUST ADD)
-It's possible to change how the story ends! Here's a few possible tricks you can try. Be sure to **register** your completion function first!
+It's possible to change how the story ends! Here's a few possible tricks you can try. Be sure to **register** your `__completed__` function first!
 
 ```python
    def __completed__(self):
@@ -413,8 +413,6 @@ You'll notice that plugging in this code will drastically change how the levels 
 
 The rest of the the updates will be specific to the `__completed__` function. There is no need to register that function more than once.
 
-## Configuration options
-There are a number of ways to complete a level or decide to end the game. This section will consider a few of those options.
 
 ### Option 1: All Piggies Go Home
 This code will promote the level if all blue forces (piggies) go home. It will also end the game if one dies. Again, you'll want to replace your existing `__completed__` function with this code.
