@@ -64,10 +64,10 @@ class ZombieLevel(Level):
    def create_blue(self):
       """ create a blue (friendly) actor """
       self.blue_spawned += 1
-      actor_name, speed = self.plugins.get_blue()
-      blue = actor(actor_name, (1,1), tag='blue').speed(speed)
+      atts = self.plugins.get_blue()
+      blue = actor(atts[0], (1,1), tag='blue').speed(atts[1])
       self.destination.collides(blue, arrive_destination)
-
+      if len(atts) == 3: blue.defend = atts[2]
       # callbacks
       for o in get('red'):
          o.collides(blue, red_attack)

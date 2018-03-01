@@ -397,6 +397,36 @@ Don't like the default pig pen image? It's possible to create your own with this
 def blue_destination():
    return 'pigpen'
 ```
+## Self defense [HARD]
+**LOCATION GUIDE**: *insert as a top-level function and modify `get_blue`*
+
+It's possible to have your blue forces automate a self defense. This code is a bit weird and it still may allow hostiles to kill blue forces.
+
+**Step 1:** Define a self-defense function
+This code checks all directions to see if any red forces are within `5` blocks. If your blue force is not a Piggy, you'll want to change `HAPPY` to `ATTACK`.  When a red force is nearby, Piggy performs an air shot -- instantly killing the enemy.
+```python
+def blue_defend(actor):
+   """ activate self defense """
+   for direction in [BACK, FRONT, LEFT, RIGHT]:
+      things = actor.next_object(direction=direction, distance=5)
+      if things and has_tag(things, 'red'):
+            actor.direction = direction
+            actor.stop = True
+            actor.act(HAPPY, 5)
+            target = actor.next_object()
+            if target and isinstance(target, Actor):
+               target.kill()
+            callback(partial(actor.act, IDLE, FOREVER), 5)
+```
+**Step 2:** Change the `get_blue` function to include the newly added `blue_defend` self defense function.
+
+```python
+def get_blue():
+   """ create a blue (friendly) actor """
+   # return name of actor, grazing speed, self defense
+   return 'Piggy', 2, blue_defend
+```
+
 
 ## Make Friendlies Away from Hostiles(s)
 *Under Development*

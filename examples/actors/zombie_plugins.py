@@ -34,7 +34,7 @@ def setup(player, level):
 
    #callback(level.create_red, wait=1, repeat=5)
    #callback(level.create_blue, wait=1, repeat=5)
-   #callback(level.create_red, wait=1, repeat=FOREVER)
+   callback(level.create_red, wait=10, repeat=FOREVER)
    #callback(level.create_red, wait=randint(10,20), repeat=FOREVER)
 
    # pick a background for a level
@@ -133,7 +133,7 @@ def throw(level, player, repeat=False):
    c4.move_to(pos)
 
 
-def shoot_(level, player):
+def shoot(level, player):
    player.act(SHOOT, loop=1)
    target = player.next_object()
 
@@ -150,7 +150,7 @@ def shoot__(level, player):
    elif target and isinstance(target, Sprite):
       target.fade(0.5)
 
-def shoot(level, player, repeat=False):
+def shoot___(level, player, repeat=False):
    """ shoot real bullets """
    player.act(SHOOT, loop=1)
    pos = player.facing(7)
@@ -169,10 +169,23 @@ def shoot(level, player, repeat=False):
    if not repeat:
       callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
 
+def blue_defend(actor):
+   """ activate self defense """
+   for direction in [BACK, FRONT, LEFT, RIGHT]:
+      things = actor.next_object(direction=direction, distance=10)
+      if things and has_tag(things, 'red'):
+            actor.direction = direction
+            actor.stop = True
+            actor.act(HAPPY, 5)
+            target = actor.next_object()
+            if target and isinstance(target, Actor):
+               target.kill()
+            callback(partial(actor.act, IDLE, FOREVER), 5)
+
 def get_blue():
    """ create a blue (friendly) actor """
-   # return name of actor and grazing speed
-   return 'Piggy', 2
+   # return name of actor, grazing speed, self defense
+   return 'Piggy', 2, blue_defend
 
 def get_red():
    """ create a red (hostile) actor """
