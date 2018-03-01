@@ -132,7 +132,6 @@ def throw(level, player, repeat=False):
    keydown('3', __detonate__)
    c4.move_to(pos)
 
-
 def shoot(level, player):
    player.act(SHOOT, loop=1)
    target = player.next_object()
