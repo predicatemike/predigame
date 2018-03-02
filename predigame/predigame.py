@@ -613,7 +613,7 @@ def screenshot(directory = 'screenshots', filename = None):
     size = 100 / globs.GRID_SIZE
     pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - (size / 1.36) / 2
 
-    img = _create_image('__screenshot__', pos, size)
+    img = _create_image('__screenshot__', pos, None, size, '')
     globs.sprites.append(img)
     camera = globs.sprites[-1]
     animate(camera, 0.45, camera.destroy, size = size / 1.5)
