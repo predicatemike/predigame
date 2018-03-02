@@ -126,7 +126,7 @@ class ZombieLevel(Level):
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
 
    def completed(self):
-      print("RS:{},RK:{},BS:{},BK:{},BF:{}".format(self.red_spawned, self.red_killed, self.blue_spawned, self.blue_killed, self.blue_safe))
+      #print("RS:{},RK:{},BS:{},BK:{},BF:{}".format(self.red_spawned, self.red_killed, self.blue_spawned, self.blue_killed, self.blue_safe))
       if len(get('destination')) == 0:
          text("DESTINATION DESTROYED! GAME OVER")
          gameover()
