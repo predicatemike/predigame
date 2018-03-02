@@ -83,6 +83,16 @@ def get(name):
     else:
         return []
 
+def has_tag(lst, tag):
+    """ checks if a list contains a sprite with a given tag """
+    if not isinstance(lst, list):
+        lst = [lst]
+    for l in lst:
+        if l.tag == tag:
+            return True
+    else:
+        return False
+
 def rand_pos(x_padding = 0, y_padding = 0, empty=False):
     grid_width = (Globals.instance.WIDTH / Globals.instance.GRID_SIZE) - math.ceil(x_padding)
     grid_height = (Globals.instance.HEIGHT / Globals.instance.GRID_SIZE) - math.ceil(y_padding)

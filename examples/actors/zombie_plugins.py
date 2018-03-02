@@ -1,10 +1,8 @@
 # A Place for Gamer Customizations
 
-time_left = 30
-
 def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
-
+   callback(level.create_blue, wait=1)
    # create a black rectangle maze
    #maze(callback=partial(shape, RECT, BLACK))
 
@@ -36,7 +34,7 @@ def setup(player, level):
 
    #callback(level.create_red, wait=1, repeat=5)
    #callback(level.create_blue, wait=1, repeat=5)
-   #callback(level.create_red, wait=1, repeat=FOREVER)
+   callback(level.create_red, wait=10, repeat=FOREVER)
    #callback(level.create_red, wait=randint(10,20), repeat=FOREVER)
 
    # pick a background for a level
@@ -88,7 +86,16 @@ def setup(player, level):
    keydown('up', callback=partial(__direction__,player, BACK))
    keydown('down', callback=partial(__direction__,player, FRONT))
 
-   player.keys(right = 'd', left = 'a', up = 'w', down = 's', precondition=player_physics)
+   player.keys(right = 'd', left = 'a', up = 'w', down = 's')
+   def __wall_buster__(player, wall):
+      wall.fade(0.25)
+   player.collides(get('wall'), __wall_buster__)
+
+   def __completed__(self):
+      if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
+         return True
+   level.completed = MethodType(__completed__, level)
+
 
 def punch(level, player):
    #print('future home of a punch')
@@ -100,29 +107,32 @@ def punch(level, player):
        target.fade(0.5)
 
 def throw(level, player, repeat=False):
-   """ grenade thrower """
+   """ throw some c-4 (explodes on '3' button press)"""
    player.act(THROW, loop=1)
-   # set the range of the grenade
-   pos = player.facing(5)
+   # set the range of the c4
+   pos = player.facing(8)
    bpos = player.pos
-   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
+   c4 = image('mine', tag='c4', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.5).spin(0.25)
 
-   def __hit__(grenade, target):
-      if target != grenade:
+   def __hit__(c4, target):
+      if target != c4 and target != player:
          if isinstance(target, Actor):
             target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   def __explode__(grenade):
-      grenade.destroy()
-      exp = shape(CIRCLE, RED, grenade.pos, size=0.3)
+   def __explode__(c4):
+      c4.destroy()
+      cpos = c4.pos
+      exp = shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
       exp.collides(sprites(), __hit__)
       exp.scale(10)
       callback(partial(exp.fade, 1), 0.5)
-   grenade.move_to(pos, callback=callback(partial(__explode__, grenade), wait=1))
+   def __detonate__():
+      bombs = get('c4')
+      for bomb in bombs:
+         callback(partial(__explode__, bomb), 0.25)
+   keydown('3', __detonate__)
+   c4.move_to(pos)
 
-
-def shoot_(level, player):
+def shoot(level, player):
    player.act(SHOOT, loop=1)
    target = player.next_object()
 
@@ -139,7 +149,7 @@ def shoot__(level, player):
    elif target and isinstance(target, Sprite):
       target.fade(0.5)
 
-def shoot(level, player, repeat=False):
+def shoot___(level, player, repeat=False):
    """ shoot real bullets """
    player.act(SHOOT, loop=1)
    pos = player.facing(7)
@@ -158,10 +168,23 @@ def shoot(level, player, repeat=False):
    if not repeat:
       callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
 
+def blue_defend(actor):
+   """ activate self defense """
+   for direction in [BACK, FRONT, LEFT, RIGHT]:
+      things = actor.next_object(direction=direction, distance=10)
+      if things and has_tag(things, 'red'):
+            actor.direction = direction
+            actor.stop = True
+            actor.act(HAPPY, 5)
+            target = actor.next_object()
+            if target and isinstance(target, Actor):
+               target.kill()
+            callback(partial(actor.act, IDLE, FOREVER), 5)
+
 def get_blue():
    """ create a blue (friendly) actor """
-   # return name of actor and grazing speed
-   return 'Piggy', 2
+   # return name of actor, grazing speed, self defense
+   return 'Piggy', 2, blue_defend
 
 def get_red():
    """ create a red (hostile) actor """

@@ -34,6 +34,7 @@ HURT = 'hurt'
 DIE = 'die'
 ATTACK = 'attack'
 SHOOT = 'shoot'
+HAPPY = 'happy'
 
 # Actor actions (directional)
 ATTACK_BACK = 'attack_back'

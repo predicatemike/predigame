@@ -32,6 +32,7 @@ class Actor(Sprite):
 
 
         # TODO: this will matter later
+        self._defend = None
         self._health = 100.0
         self._wealth = 0.0
         self._energy = 100.0
@@ -48,8 +49,16 @@ class Actor(Sprite):
     def health(self, value):
         if value >= 0 and value < 100:
             self._health = value
-        if self._health == 0:
+        if self.health == 0:
             self.act(DIE, loop=1)
+
+    @property
+    def defend(self):
+        return self._defend
+
+    @defend.setter
+    def defend(self, callback):
+        self._defend = callback
 
     def stop(self):
         self._stop = True
@@ -112,6 +121,11 @@ class Actor(Sprite):
         Sprite._complete_move(self, callback)
 
     def _update(self, delta):
+
+        # check to see if we need to activate self defense
+        if self._defend is not None:
+            self._defend(self)
+
         img = self.actions[self.action][self.index]
         self.surface = img
         self.origin_surface = img
@@ -235,27 +249,28 @@ class Actor(Sprite):
             elif lst != self and isinstance(lst, Sprite):
                 return lst
 
-    def next_object(self):
-        """ returns the next thing along along the path where this actor is facing.
-            if the next thing is an Actor, it must be alive.
+    def next_object(self, direction=None, distance=50):
+        """ returns the next thing along the path where this actor is facing,
+            up to a certain distance. if the next thing is an Actor, it must be alive.
         """
-        if self.direction == BACK:
-            for y in range(self.y, -1, -1):
+        if direction is None: direction = self.direction
+        if direction == BACK:
+            for y in range(self.y, self.y - distance, -1):
                 obj = self._check_next_object((self.x, y))
                 if obj is not None:
                     return obj
-        elif self.direction == FRONT:
-            for y in range(self.y, int(Globals.instance.HEIGHT/Globals.instance.GRID_SIZE)+1, 1):
+        elif direction == FRONT:
+            for y in range(self.y, self.y + distance, 1):
                 obj = self._check_next_object((self.x, y))
                 if obj is not None:
                     return obj
-        elif self.direction == LEFT:
-            for x in range(self.x, -1, -1):
+        elif direction == LEFT:
+            for x in range(self.x, self.x - distance, -1):
                 obj = self._check_next_object((x, self.y))
                 if obj is not None:
                     return obj
-        elif self.direction == RIGHT:
-            for x in range(self.x+1, int(Globals.instance.WIDTH/Globals.instance.GRID_SIZE)+1, 1):
+        elif direction == RIGHT:
+            for x in range(self.x+1, self.x + distance, 1):
                 obj = self._check_next_object((x, self.y))
                 if obj is not None:
                     return obj
