@@ -25,3 +25,12 @@ class Inventory:
 
         for thing in self.things:
             thing.draw(SURF)
+
+    def __str__(self):
+        r = 'Inventory: \n'
+        for thing in self.things:
+            r += '  ' + str(thing) + '\n'
+        return r
+
+    def dump(self):
+        print(str(self))

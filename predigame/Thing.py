@@ -18,6 +18,9 @@ class Thing:
     def use(self):
         raise NotImplementedError('base class cannot be called directly')
 
+    def __str__(self):
+        return '{} {}'.format(self.name, self.quantity)
+
 def check(thing):
     if thing.quantity == 0:
         t = p.text('out of {}'.format(thing.name), RED)

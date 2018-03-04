@@ -24,7 +24,7 @@ def setup(player, level):
    player.take(Landmine(call='6', delay=1))
    player.take(C4(call='7', detonate='8', distance=8, radius=10))
    player.take(WallBuster())
-
+   keydown('p', player._inventory.dump)
 
 def blue_defend(actor):
    """ activate self defense """
