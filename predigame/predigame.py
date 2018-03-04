@@ -8,6 +8,7 @@ from .utils import load_module, register_cell, register_keydown, rand_maze, rand
 from .Sprite import Sprite
 from .Actor import Actor
 from .Level import Level
+from .Inventory import Inventory
 from .constants import *
 import traceback
 
@@ -16,6 +17,8 @@ globs = None
 show_grid = False
 update_game = True
 game_over = False
+draw_aux = False
+inventory = Inventory()
 sounds = {}
 images = {}
 actors = {}
@@ -50,7 +53,7 @@ def background(bg = None):
         _background = _background_color = bg
 
 def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 220), fullscreen = False, **kwargs):
-    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, SURF_AUX, clock, start_time, sounds
 
     RUN_PATH = path
     WIDTH, HEIGHT = width, height
@@ -61,10 +64,13 @@ def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 2
     pygame.init()
     pygame.display.set_caption(title)
     SURF = None
+    SURF_AUX = None
     if fullscreen:
         SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
+        SURF_AUX = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
     else:
         SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
+        SURF_AUX = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
 
     background(bg)
@@ -74,6 +80,8 @@ def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 2
     Globals.instance = globs
 
     SURF.fill((0, 0, 0))
+    SURF_AUX.fill((0, 0, 0))
+
     loading_font = pygame.font.Font(None, 72)
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
@@ -659,6 +667,7 @@ def _update(delta):
                 level(next_level)
 
 def _draw(SURF):
+
     if isinstance(_background, pygame.Surface) :
         SURF.blit(_background, (0,0))
     else:
@@ -673,6 +682,7 @@ def _draw(SURF):
         _draw_grid()
 
 def main_loop():
+    global update_game
     for event in pygame.event.get():
 
         if event.type == QUIT:
@@ -711,6 +721,12 @@ def main_loop():
             if key == 'f12':
                 screenshot()
 
+            if key == 'f1':
+                global draw_aux
+                draw_aux = not draw_aux
+                update_game = not update_game
+
+
         if event.type == KEYUP:
             key = pygame.key.name(event.key)
             if key in globs.keys_registered['keyup']:
@@ -726,7 +742,6 @@ def main_loop():
                     sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
-            global update_game
             if event.action == 'pause' and update_game and not game_over:
                 update_game = False
                 _update(clock.get_time())
@@ -739,6 +754,11 @@ def main_loop():
                     my/globs.GRID_SIZE - sprite.height/2)
         _update(clock.get_time())
         _draw(SURF)
+
+    if draw_aux:
+        inventory.update(clock.get_time())
+        inventory.draw(SURF_AUX)
+
 
     pygame.display.flip()
     clock.tick(FPS)

@@ -5,6 +5,7 @@ from .Thing import Thing
 from .constants import *
 from .Globals import Globals
 from .utils import at, get, is_wall
+from .Inventory import *
 from functools import partial
 
 # actor class for four directional movement
@@ -30,13 +31,11 @@ class Actor(Sprite):
         self.prev_vector = None
         self.direction = LEFT
 
-
-        # TODO: this will matter later
         self._defend = None
         self._health = 100.0
         self._wealth = 0.0
         self._energy = 100.0
-        self._inventory = {}
+        self._inventory = Inventory()
 
         surface = actions[self.action][self.index]
         Sprite.__init__(self, surface, rect, tag, abortable, name)
@@ -51,6 +50,16 @@ class Actor(Sprite):
             self._health = value
         if self.health == 0:
             self.act(DIE, loop=1)
+
+    @property
+    def energy(self):
+        return self._energy
+
+    @energy.setter
+    def energy(self, value):
+        self._energy += value
+        if self._energy < 0: self._energy = 0
+        if self._energy > 100: self._energy = 100
 
     @property
     def defend(self):
@@ -146,24 +155,24 @@ class Actor(Sprite):
             self.action = IDLE + '_' + self.direction
             self.action_loop = FOREVER
 
-    def use(self, name):
-        """ use a given object (e.g. a gun, medicine) """
-        if name in self._inventory:
-            self._inventory[name].use(self)
-        return self
+    #def use(self, name):
+    #    """ use a given object (e.g. a gun, medicine) """
+    #    if name in self._inventory:
+    #        self._inventory[name].use(self)
+    #    return self
 
-    def take(self, name, object):
+    def take(self, obj):
         """ take this object and add to inventory """
-        self._inventory[name] = object
+        self._inventory.add(obj)
         return self
 
-    def buy(self, obj):
-        """ buy this object and add it to inventory """
-        return self
+    #def buy(self, obj):
+    #    """ buy this object and add it to inventory """
+    #    return self
 
-    def rest(self, obj):
-        """ take a rest to improve energy """
-        return self
+    #def rest(self, obj):
+    #    """ take a rest to improve energy """
+    #    return self
 
 
     # TODO: this needs to be merged with act
@@ -193,11 +202,11 @@ class Actor(Sprite):
                     self.actit(action, loop)
         return self
 
-    def kill(self):
+    def kill(self, delay=2.5):
         """ used to kill this actor """
         if self.health > 0:
             self.health = 0
-            self.destruct(2.5)
+            self.destruct(delay)
 
     def rate(self, frame_rate):
         """ the rate to swap animation frames, default is 1 per update call """

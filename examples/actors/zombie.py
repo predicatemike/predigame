@@ -106,9 +106,9 @@ class ZombieLevel(Level):
       self.destination = image(invoke(self.plugins, "blue_destination", "default_blue_destination"), pos=(WIDTH-2, HEIGHT-2), size=1, tag='destination')
 
       # KEYBOARD EVENTS
-      keydown('space', partial(self.plugins.shoot, self, player))
-      keydown('1', partial(self.plugins.punch, self, player))
-      keydown('2', partial(self.plugins.throw, self, player))
+      #keydown('space', partial(self.plugins.shoot, self, player))
+      #keydown('1', partial(self.plugins.punch, self, player))
+      #keydown('2', partial(self.plugins.throw, self, player))
       keydown('r', reset)
 
       # USER DEFINED STUFF
