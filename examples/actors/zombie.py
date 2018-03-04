@@ -42,6 +42,9 @@ def red_murder(self):
        current_level.red_killed += 1
     Actor.kill(self)
 
+def update_status(player):
+    score("{:3d} | {:3d}".format(int(player.energy), int(player.health)), color=WHITE, pos=LOWER_LEFT, method=VALUE)
+
 class ZombieLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
    def __init__(self, targets=1, level=1, duration=0, time_remaining=30):
@@ -106,9 +109,6 @@ class ZombieLevel(Level):
       self.destination = image(invoke(self.plugins, "blue_destination", "default_blue_destination"), pos=(WIDTH-2, HEIGHT-2), size=1, tag='destination')
 
       # KEYBOARD EVENTS
-      #keydown('space', partial(self.plugins.shoot, self, player))
-      #keydown('1', partial(self.plugins.punch, self, player))
-      #keydown('2', partial(self.plugins.throw, self, player))
       keydown('r', reset)
 
       # USER DEFINED STUFF
@@ -124,6 +124,8 @@ class ZombieLevel(Level):
 
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
+
+      callback(partial(update_status, player), wait=1, repeat=FOREVER)
 
    def completed(self):
       #print("RS:{},RK:{},BS:{},BK:{},BF:{}".format(self.red_spawned, self.red_killed, self.blue_spawned, self.blue_killed, self.blue_safe))

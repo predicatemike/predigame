@@ -4,7 +4,7 @@ from .utils import register_keydown as keydown, at, get, has_tag, sprites
 from .constants import *
 from . import predigame as p
 class Thing:
-    def __init__(self, call='space'):
+    def __init__(self, call=None):
         self.name = None
         self.image = None
         self.lethality = 100
@@ -12,7 +12,8 @@ class Thing:
         self.quantity = 1
         self.actor = None
 
-        keydown(call, self.use)
+        if call is not None:
+            keydown(call, self.use)
 
     def use(self):
         raise NotImplementedError('base class cannot be called directly')
@@ -23,7 +24,7 @@ def check(thing):
         p.callback(t.destroy, 2)
         return False
     if thing.actor.energy == 0:
-        t = p.text('not enough energy to {}'.format(thing.name), RED)
+        t = p.text('not enough energy for {}'.format(thing.name), RED)
         p.callback(t.destroy, 2)
         return False
     return True
@@ -315,3 +316,20 @@ class C4(Thing):
         bombs = get('c4')
         for bomb in bombs:
             p.callback(partial(__explode__, bomb), 0.25)
+
+class WallBuster(Thing):
+    """ bust through some walls """
+    def __init__(self):
+        Thing.__init__(self)
+        self.name = 'wall buster'
+        self.energy = -10
+
+        p.callback(self.use, 1)
+
+    def use(self):
+       def __wall_buster__(player, wall):
+           if not check(self):
+	           return
+           wall.fade(0.25)
+           self.actor.energy = self.energy
+       self.actor.collides(get('wall'), __wall_buster__)
