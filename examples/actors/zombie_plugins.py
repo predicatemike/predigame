@@ -5,7 +5,7 @@ def setup(player, level):
 
    maze(callback=partial(image, 'stone'))
 
-   player.keys()
+   player.keys(right = 'd', left = 'a', up = 'w', down = 's')
 
    # randomly pick a background
    if level.level == 1:
@@ -24,6 +24,8 @@ def setup(player, level):
    player.take(Landmine(call='6', delay=1))
    player.take(C4(call='7', detonate='8', distance=8, radius=10))
    player.take(WallBuster())
+   wall = partial(image, 'stone')
+   player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
    keydown('p', player._inventory.dump)
 
 def blue_defend(actor):

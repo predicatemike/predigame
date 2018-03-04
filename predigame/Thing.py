@@ -182,7 +182,7 @@ class AirGun(Thing):
         Thing.__init__(self, call)
         self.name = 'air gun'
         self.energy = -10
-        self.quantity = 2
+        self.quantity = 50
 
     def use(self):
         from .Actor import Actor
@@ -325,7 +325,7 @@ class WallBuster(Thing):
     def __init__(self):
         Thing.__init__(self)
         self.name = 'wall buster'
-        self.energy = -10
+        self.energy = -1
 
         p.callback(self.use, 1)
 
@@ -333,6 +333,31 @@ class WallBuster(Thing):
        def __wall_buster__(player, wall):
            if not check(self):
 	           return
-           wall.fade(0.25)
+           pos = wall.pos
+           wall.destroy()
+           p.image('smoke', center=pos, size=2).fade(2)
            self.actor.energy = self.energy
        self.actor.collides(get('wall'), __wall_buster__)
+
+class WallBuilder(Thing):
+    """ bust through some walls """
+    def __init__(self, left, right, front, back, wall):
+        Thing.__init__(self)
+        self.name = 'wall builder'
+        self.energy = -5
+        self.quantity = 10
+        self.wall = wall
+
+        keydown(back, callback=partial(self.put, BACK))
+        keydown(left, callback=partial(self.put, LEFT))
+        keydown(front, callback=partial(self.put, FRONT))
+        keydown(right, callback=partial(self.put, RIGHT))
+
+    def put(self, direction) :
+        pos = self.actor.next(direction)
+        self.wall(pos=pos,tag='wall')
+        self.actor.energy = self.energy
+        self.quantity -= 1
+
+    def use(self):
+        return None

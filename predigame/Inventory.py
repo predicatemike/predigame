@@ -4,12 +4,14 @@ from .constants import *
 from . import predigame
 class Inventory:
     def __init__(self):
-        self.things = []
+        self.things = {}
         self.title = None
 
     def add(self, thing):
         """ add something to our inventory """
-        self.things.append(thing)
+        if thing.name in self.things:
+            thing.quantity = self.things[thing.name].quantity
+        self.things[thing.name] = thing
 
     def update(self, delta):
         """ update something """
@@ -29,7 +31,7 @@ class Inventory:
     def __str__(self):
         r = 'Inventory: \n'
         for thing in self.things:
-            r += '  ' + str(thing) + '\n'
+            r += '  ' + str(self.things[thing]) + '\n'
         return r
 
     def dump(self):

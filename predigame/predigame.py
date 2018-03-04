@@ -594,6 +594,7 @@ def reset(**kwargs):
     del globs.animations[:]
     del callbacks[:]
     if not kwargs.get('soft', False):
+        Globals.cache = {}
         from . import api
         code, mod = load_module(RUN_PATH, api)
         exec(code, mod.__dict__)

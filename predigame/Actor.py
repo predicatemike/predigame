@@ -35,7 +35,13 @@ class Actor(Sprite):
         self._health = 100.0
         self._wealth = 0.0
         self._energy = 100.0
-        self._inventory = Inventory()
+        self._inventory = None
+
+        if tag is not None and tag in Globals.cache:
+            self._inventory = Globals.cache[tag]
+        else:
+            self._inventory = Inventory()
+            Globals.cache[tag] = self._inventory
 
         surface = actions[self.action][self.index]
         Sprite.__init__(self, surface, rect, tag, abortable, name)
