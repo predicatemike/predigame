@@ -164,6 +164,7 @@ class Actor(Sprite):
     def take(self, obj):
         """ take this object and add to inventory """
         self._inventory.add(obj)
+        obj.actor = self
         return self
 
     #def buy(self, obj):

@@ -4,13 +4,15 @@ from .utils import register_keydown as keydown, at, get, has_tag, sprites
 from .constants import *
 from . import predigame as p
 class Thing:
-    def __init__(self, actor):
+    def __init__(self, call='space'):
         self.name = None
         self.image = None
         self.lethality = 100
         self.energy = 1
         self.quantity = 1
-        self.actor = actor
+        self.actor = None
+
+        keydown(call, self.use)
 
     def use(self):
         raise NotImplementedError('base class cannot be called directly')
@@ -28,13 +30,11 @@ def check(thing):
 
 class Punch(Thing):
     """ throwing a simple punch """
-    def __init__(self, actor, trigger='space'):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space'):
+        Thing.__init__(self, call)
         self.name = 'punch'
         self.energy = -10
         self.quantity = 50
-
-        keydown(trigger, self.use)
 
     def use(self):
         from .Actor import Actor
@@ -52,17 +52,13 @@ class Punch(Thing):
         self.actor.energy = self.energy
         self.quantity -= 1
 
-
-
 class FlameThrower(Thing):
     """ a pretty cool flame thrower """
-    def __init__(self, actor, trigger='space'):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space'):
+        Thing.__init__(self, call)
         self.name = 'flame thrower'
         self.energy = -50
         self.quantity = 2
-
-        keydown(trigger, self.use)
 
     def use(self):
         from .Actor import Actor
@@ -95,18 +91,15 @@ class FlameThrower(Thing):
         self.quantity -= 1
 
 
-
 class Grenade(Thing):
     """ throw a grenade """
-    def __init__(self, actor, trigger='space', distance=5, radius=5):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space', distance=5, radius=5):
+        Thing.__init__(self, call)
         self.name = 'grenade'
         self.energy = -50
         self.quantity = 2
         self.radius = radius
         self.distance = distance
-
-        keydown(trigger, self.use)
 
     def use(self):
         from .Actor import Actor
@@ -138,19 +131,15 @@ class Grenade(Thing):
         self.actor.energy = self.energy
         self.quantity -= 1
 
-
-
 class MustardGas(Thing):
     """ throw a chemical weapon (only affects actors) """
-    def __init__(self, actor, trigger='space', distance=5, radius=5):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space', distance=5, radius=5):
+        Thing.__init__(self, call)
         self.name = 'mustard gas'
         self.energy = -10
         self.quantity = 2
         self.radius = radius
         self.distance = distance
-
-        keydown(trigger, self.use)
 
     def use(self):
         from .Actor import Actor
@@ -185,13 +174,11 @@ class MustardGas(Thing):
 
 class AirGun(Thing):
     """ Simple air shot (that kills any sprite) """
-    def __init__(self, actor, trigger='space'):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space'):
+        Thing.__init__(self, call)
         self.name = 'air gun'
         self.energy = -10
         self.quantity = 2
-
-        keydown(trigger, self.use)
 
     def use(self):
         from .Actor import Actor
@@ -213,15 +200,13 @@ class AirGun(Thing):
 
 class MachineGun(Thing):
     """ machine gun that shoots range limited bullets """
-    def __init__(self, actor, trigger='space', distance=5, repeat=5):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space', distance=5, repeat=5):
+        Thing.__init__(self, call)
         self.name = 'machine gun'
         self.energy = -1
         self.quantity = 50
         self.distance = distance
         self.repeat = repeat
-
-        keydown(trigger, self.use)
 
     def use(self, _repeat=False):
         from .Actor import Actor
@@ -252,14 +237,12 @@ class MachineGun(Thing):
 
 class Landmine(Thing):
     """ plant a landmine """
-    def __init__(self, actor, trigger='space', delay=3):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space', delay=3):
+        Thing.__init__(self, call)
         self.name = 'landmine'
         self.energy = -1
         self.quantity = 50
         self.delay = delay
-
-        keydown(trigger, self.use)
 
     def use(self, _repeat=False):
         from .Actor import Actor
@@ -291,15 +274,14 @@ class Landmine(Thing):
 
 class C4(Thing):
     """ throw some C4 explosives """
-    def __init__(self, actor, trigger='space', detonate='f', distance=8, radius=10):
-        Thing.__init__(self, actor)
+    def __init__(self, call='space', detonate='f', distance=8, radius=10):
+        Thing.__init__(self, call)
         self.name = 'c4'
         self.energy = 10
         self.quantity = 5
         self.distance = distance
         self.radius = radius
 
-        keydown(trigger, self.use)
         keydown(detonate, self.detonate)
 
     def use(self, _repeat=False):

@@ -18,14 +18,14 @@ def setup(player, level):
    else:
       background('stormy')
 
-   player.take(Punch(player, trigger='1'))
-   player.take(FlameThrower(player, trigger='2'))
-   player.take(Grenade(player, trigger='3', distance=6, radius=20))
-   player.take(MustardGas(player, trigger='4', distance=10, radius=20))
-   player.take(AirGun(player, trigger='space'))
-   player.take(MachineGun(player, trigger='5', distance=15, repeat=1))
-   player.take(Landmine(player, trigger='6', delay=1))
-   player.take(C4(player, trigger='7', detonate='8', distance=8, radius=10))
+   player.take(Punch(call='1'))
+   player.take(FlameThrower(call='2'))
+   player.take(Grenade(call='3', distance=6, radius=20))
+   player.take(MustardGas(call='4', distance=10, radius=20))
+   player.take(AirGun(call='space'))
+   player.take(MachineGun(call='5', distance=15, repeat=1))
+   player.take(Landmine(call='6', delay=1))
+   player.take(C4(call='7', detonate='8', distance=8, radius=10))
 
 
 def blue_defend(actor):
