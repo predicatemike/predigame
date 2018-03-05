@@ -42,6 +42,7 @@ class Actor(Sprite):
         else:
             self._inventory = Inventory()
             Globals.cache[tag] = self._inventory
+        self._inventory.actor = self
 
         surface = actions[self.action][self.index]
         Sprite.__init__(self, surface, rect, tag, abortable, name)
@@ -66,6 +67,14 @@ class Actor(Sprite):
         self._energy += value
         if self._energy < 0: self._energy = 0
         if self._energy > 100: self._energy = 100
+
+    @property
+    def wealth(self):
+        return self._wealth
+
+    @wealth.setter
+    def wealth(self, value):
+        self._wealth += value
 
     @property
     def defend(self):

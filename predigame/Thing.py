@@ -326,6 +326,7 @@ class WallBuster(Thing):
         Thing.__init__(self)
         self.name = 'wall buster'
         self.energy = -1
+        self.quantity = 'unlimited'
 
         p.callback(self.use, 1)
 
@@ -335,7 +336,7 @@ class WallBuster(Thing):
 	           return
            pos = wall.pos
            wall.destroy()
-           p.image('smoke', center=pos, size=2).fade(2)
+           p.image('smoke', center=(pos[0]+0.5, pos[1]+0.5), size=2).fade(2)
            self.actor.energy = self.energy
        self.actor.collides(get('wall'), __wall_buster__)
 
