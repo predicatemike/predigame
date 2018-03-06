@@ -8,7 +8,6 @@ from .utils import load_module, register_cell, register_keydown, rand_maze, rand
 from .Sprite import Sprite
 from .Actor import Actor
 from .Level import Level
-from .Inventory import Inventory
 from .constants import *
 import traceback
 

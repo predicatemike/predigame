@@ -1,7 +1,6 @@
 # an Inventory of things an actor can use
 from pygame.locals import *
 from .constants import *
-from . import predigame as p
 from .Globals import Globals
 from functools import partial
 class Inventory:
@@ -31,6 +30,7 @@ class Inventory:
 
     def setup(self):
         """ build all the things """
+        from . import predigame as p
 
         if not self.title:
             self.display_things.append(p.text('Actor Inventory', YELLOW, (13,1)))

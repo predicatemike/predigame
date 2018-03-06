@@ -1,7 +1,6 @@
 import sys, random, math, pygame
 from time import time
 from .Sprite import Sprite
-from .Thing import Thing
 from .constants import *
 from .Globals import Globals
 from .utils import at, get, is_wall

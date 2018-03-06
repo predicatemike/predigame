@@ -319,7 +319,7 @@ def load_state(actor, sfile):
     import os.path, json, base64
     if os.path.isfile(sfile):
         state_file = open(sfile, 'rb')
-        state = json.loads(base64.b64decode(state_file.read()))
+        state = json.loads(base64.b64decode(state_file.read()).decode("ascii"))
         actor.load_state(state)
 
 def save_state(actor, sfile):
