@@ -3,6 +3,7 @@ from pygame.locals import *
 from .constants import *
 from . import predigame as p
 from .Globals import Globals
+from functools import partial
 class Inventory:
     def __init__(self):
         self.things = {}
@@ -21,6 +22,13 @@ class Inventory:
         for dthing in self.display_things:
             dthing._update(delta)
 
+    def buy(self, thing, button):
+        if thing.cost <= self.actor.wealth:
+            thing.quantity += 1
+            self.actor.wealth = -1 * thing.cost
+        self.destroy()
+        self.setup()
+
     def setup(self):
         """ build all the things """
 
@@ -28,11 +36,19 @@ class Inventory:
             self.display_things.append(p.text('Actor Inventory', YELLOW, (13,1)))
 
         offset = 4
+        self.display_things.append(p.text('item', RED, (12, offset)))
+        self.display_things.append(p.text('quantity', RED, (19, offset)))
+        self.display_things.append(p.text('cost', RED, (24, offset)))
+        offset = 5
         for key, thing in sorted(self.things.items()):
-            self.display_things.append(p.image('buy', RED, (11, offset+0.35)))
+            buyit = p.image('buy', RED, (11, offset+0.35))
+            self.display_things.append(buyit)
             self.display_things.append(p.text(thing.name, RED, (12, offset)))
             self.display_things.append(p.text(thing.quantity, RED, (19, offset)))
+            self.display_things.append(p.text(thing.cost, RED, (24, offset)))
+            buyit.clicked(partial(self.buy, thing))
             offset += 1
+
 
         player = p.actor(self.actor.name, pos=(2,2), size=3)
         player.act(IDLE_FRONT, FOREVER)
@@ -64,5 +80,15 @@ class Inventory:
             r += '  ' + str(self.things[thing]) + '\n'
         return r
 
-    def dump(self):
-        print(str(self))
+    def dump_state(self):
+        """ extract the things and values """
+        d = {}
+        for key, thing in self.things.items():
+            d[thing.name] = thing.quantity
+        return d
+
+    def load_state(self, state):
+        """ load quantities from dump state """
+        for key, value in state.items():
+            if key in self.things:
+                self.things[key].quantity = value

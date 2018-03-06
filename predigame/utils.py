@@ -307,3 +307,29 @@ def fill(obj, prob = 1, collide_obj = None, collide_callback = None) :
                             o.collides(obj, collide_callback)
                     else:
                         o.collides(collide_obj, collide_callback)
+
+def load_state(actor, sfile):
+    """
+        save the state of an actor in an encoded file
+
+        :param actor: actor class reference to load state into
+
+        :param sfile: encoded file containing state information
+    """
+    import os.path, json, base64
+    if os.path.isfile(sfile):
+        state_file = open(sfile, 'rb')
+        state = json.loads(base64.b64decode(state_file.read()))
+        actor.load_state(state)
+
+def save_state(actor, sfile):
+    """
+        loads previously saved actor state from encoded file
+
+        :param actor: actor class to dump state from
+
+        :param sfile: encoded file used to write state information
+    """
+    import json, base64
+    state_file = open(sfile, 'wb')
+    state_file.write(base64.b64encode(json.dumps(actor.dump_state()).encode()))

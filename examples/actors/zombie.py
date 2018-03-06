@@ -58,6 +58,7 @@ class ZombieLevel(Level):
       self.red_spawned = 0
       self.red_killed = 0
       self.destination = None
+      self.player = None
       global current_level
       current_level = self
 
@@ -102,8 +103,8 @@ class ZombieLevel(Level):
       """ setup the level """
 
       # PLAYER
-      player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
-      player.speed(5).keys(precondition=player_physics)
+      self.player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
+      self.player.speed(5).keys(precondition=player_physics)
 
       # DESTINATION
       self.destination = image(invoke(self.plugins, "blue_destination", "default_blue_destination"), pos=(WIDTH-2, HEIGHT-2), size=1, tag='destination')
@@ -112,7 +113,10 @@ class ZombieLevel(Level):
       keydown('r', reset)
 
       # USER DEFINED STUFF
-      self.plugins.setup(player, self)
+      self.plugins.setup(self.player, self)
+
+      # LOAD IN SAVED STATE
+      load_state(self.player, 'player.pg')
 
       # FRIENDLIES
       for i in range(self.targets):
@@ -125,7 +129,7 @@ class ZombieLevel(Level):
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=WHITE, method=VALUE, prefix='Level: ')
 
-      callback(partial(update_status, player), wait=1, repeat=FOREVER)
+      callback(partial(update_status, self.player), wait=1, repeat=FOREVER)
 
    def completed(self):
       #print("RS:{},RK:{},BS:{},BK:{},BF:{}".format(self.red_spawned, self.red_killed, self.blue_spawned, self.blue_killed, self.blue_safe))
@@ -136,6 +140,7 @@ class ZombieLevel(Level):
          text('GAME OVER')
          gameover()
       elif len(get('blue')) == 0 or len(get('red')) == 0:
+         save_state(self.player, 'player.pg')
          return True
       else:
          return False

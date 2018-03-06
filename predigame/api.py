@@ -8,6 +8,7 @@ from .constants import *
 from .utils import register_keydown as keydown, at, get, has_tag
 from .utils import animate, player_physics
 from .utils import import_plugin
+from .utils import save_state, load_state
 from .utils import rand_pos, rand_arc, distance, visible, sprites, graze, track, track_astar, fill
 from .Thing import *
 from .Inventory import Inventory

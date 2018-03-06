@@ -11,6 +11,7 @@ class Thing:
         self.energy = 1
         self.quantity = 1
         self.actor = None
+        self.cost = 1000
 
         if call is not None:
             keydown(call, self.use)
@@ -39,6 +40,7 @@ class Punch(Thing):
         self.name = 'punch'
         self.energy = -10
         self.quantity = 50
+        self.cost = 1
 
     def use(self):
         from .Actor import Actor
@@ -63,6 +65,7 @@ class FlameThrower(Thing):
         self.name = 'flame thrower'
         self.energy = -50
         self.quantity = 2
+        self.cost = 500
 
     def use(self):
         from .Actor import Actor
@@ -102,6 +105,7 @@ class Grenade(Thing):
         self.name = 'grenade'
         self.energy = -50
         self.quantity = 2
+        self.cost = 100
         self.radius = radius
         self.distance = distance
 
@@ -142,6 +146,7 @@ class MustardGas(Thing):
         self.name = 'mustard gas'
         self.energy = -10
         self.quantity = 2
+        self.cost = 250
         self.radius = radius
         self.distance = distance
 
@@ -181,7 +186,8 @@ class AirGun(Thing):
     def __init__(self, call='space'):
         Thing.__init__(self, call)
         self.name = 'air gun'
-        self.energy = -10
+        self.cost = 2
+        self.energy = 0
         self.quantity = 50
 
     def use(self):
@@ -207,8 +213,9 @@ class MachineGun(Thing):
     def __init__(self, call='space', distance=5, repeat=5):
         Thing.__init__(self, call)
         self.name = 'machine gun'
-        self.energy = -1
+        self.energy = 0
         self.quantity = 50
+        self.cost = 2
         self.distance = distance
         self.repeat = repeat
 
@@ -244,7 +251,8 @@ class Landmine(Thing):
     def __init__(self, call='space', delay=3):
         Thing.__init__(self, call)
         self.name = 'landmine'
-        self.energy = -1
+        self.energy = 0
+        self.cost = 50
         self.quantity = 50
         self.delay = delay
 
@@ -283,6 +291,8 @@ class C4(Thing):
         self.name = 'c4'
         self.energy = 10
         self.quantity = 5
+        self.cost = 50
+
         self.distance = distance
         self.radius = radius
 
@@ -327,6 +337,7 @@ class WallBuster(Thing):
         self.name = 'wall buster'
         self.energy = -1
         self.quantity = 'unlimited'
+        self.cost = 'n/a'
 
         p.callback(self.use, 1)
 
@@ -347,6 +358,7 @@ class WallBuilder(Thing):
         self.name = 'wall builder'
         self.energy = -5
         self.quantity = 10
+        self.cost = 5
         self.wall = wall
 
         keydown(back, callback=partial(self.put, BACK))

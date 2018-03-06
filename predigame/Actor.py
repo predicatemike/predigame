@@ -33,7 +33,7 @@ class Actor(Sprite):
 
         self._defend = None
         self._health = 100.0
-        self._wealth = 0.0
+        self._wealth = 500.0
         self._energy = 100.0
         self._inventory = None
 
@@ -170,26 +170,12 @@ class Actor(Sprite):
             self.action = IDLE + '_' + self.direction
             self.action_loop = FOREVER
 
-    #def use(self, name):
-    #    """ use a given object (e.g. a gun, medicine) """
-    #    if name in self._inventory:
-    #        self._inventory[name].use(self)
-    #    return self
 
     def take(self, obj):
         """ take this object and add to inventory """
         self._inventory.add(obj)
         obj.actor = self
         return self
-
-    #def buy(self, obj):
-    #    """ buy this object and add it to inventory """
-    #    return self
-
-    #def rest(self, obj):
-    #    """ take a rest to improve energy """
-    #    return self
-
 
     # TODO: this needs to be merged with act
     def actit(self, action, loop=FOREVER):
@@ -299,3 +285,23 @@ class Actor(Sprite):
                 obj = self._check_next_object((x, self.y))
                 if obj is not None:
                     return obj
+
+    def dump_state(self):
+        """ extract wealth, health, energy, inventory """
+        d = {}
+        d['wealth'] = self._wealth
+        d['health'] = self._health
+        d['energy'] = self._energy
+        d['inventory'] = self._inventory.dump_state()
+        return d
+
+    def load_state(self, state):
+        """ load saved state values """
+        if 'wealth' in state:
+            self._wealth = state['wealth']
+        if 'health' in state:
+            self._health = state['health']
+        if 'energy' in state:
+            self._energy = state['energy']
+        if 'inventory' in state:
+            self._inventory.load_state(state['inventory'])

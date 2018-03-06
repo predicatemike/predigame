@@ -26,7 +26,6 @@ def setup(player, level):
    player.take(WallBuster())
    ##wall = partial(image, 'stone')
    ##player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
-   keydown('p', player._inventory.dump)
    display('f1', 'inventory', player._inventory)
 
 def blue_defend(actor):
