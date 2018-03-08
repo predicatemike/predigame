@@ -22,6 +22,7 @@ def arrive_destination(dest_sprite, target):
    if target.tag == 'blue':
       target.destroy()
       current_level.blue_safe += 1
+      current_level.player.wealth = 250
 
 def default_blue_destination():
    return 'pigpen'
@@ -41,9 +42,16 @@ def red_murder(self):
     if self.health > 0:
        current_level.red_killed += 1
     Actor.kill(self)
+    current_level.player.wealth = 100
+
+def blue_murder(self):
+    if self.health > 0:
+       current_level.blue_killed += 1
+    Actor.kill(self)
+    current_level.player.wealth = -250
 
 def update_status(player):
-    score("{:3d} | {:3d}".format(int(player.energy), int(player.health)), color=WHITE, pos=LOWER_LEFT, method=VALUE)
+    score("{:3d} | {:3d}".format(int(player.energy), int(player.wealth)), color=WHITE, pos=LOWER_LEFT, method=VALUE)
 
 class ZombieLevel(Level):
    plugins = import_plugin('zombie_plugins.py')
@@ -72,6 +80,9 @@ class ZombieLevel(Level):
       blue = actor(atts[0], (1,1), tag='blue').speed(atts[1])
       self.destination.collides(blue, arrive_destination)
       if len(atts) == 3: blue.defend = atts[2]
+      blue.old_kill = MethodType(blue.kill, blue)
+      blue.kill = MethodType(blue_murder, blue)
+
       # callbacks
       for o in get('red'):
          o.collides(blue, red_attack)
@@ -139,7 +150,9 @@ class ZombieLevel(Level):
       elif (self.blue_safe == 0 and len(get('blue')) == 0) or len(get('player')) == 0:
          text('GAME OVER')
          gameover()
-      elif len(get('blue')) == 0 or len(get('red')) == 0:
+      elif len(get('blue')) == 0 and len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
          save_state(self.player, 'player.pg')
          return True
       else:
@@ -161,16 +174,16 @@ class WalkAcrossLevel(Level):
       self.level = level
       self.targets = targets
       self.duration = duration
+      self.player = None
       global current_level
       current_level = self
-
 
    def setup(self):
       """ setup the level """
 
       # PLAYER
-      player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
-      player.speed(5).keys(precondition=player_physics)
+      self.player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
+      self.player.speed(5).keys(precondition=player_physics)
 
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=BLACK, method=VALUE, prefix='Level: ')
@@ -193,7 +206,7 @@ class WalkAcrossLevel(Level):
          text('GAME OVER')
          gameover()
       elif len(get('red')) == 0:
-         print('no red')
+         self.player.wealth = 250
          return True
 
    def next(self):

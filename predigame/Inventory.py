@@ -3,9 +3,13 @@ from pygame.locals import *
 from .constants import *
 from .Globals import Globals
 from functools import partial
+from .Thing import *
 class Inventory:
+    defaults = {}
+    default_energy = EnergyDrink()
+    defaults[default_energy.name] = default_energy
     def __init__(self):
-        self.things = {}
+        self.things = Inventory.defaults
         self.display_things = []
         self.title = None
         self.actor = None
@@ -22,9 +26,14 @@ class Inventory:
             dthing._update(delta)
 
     def buy(self, thing, button):
+        if thing.cost == 'n/a':
+            return
         if thing.cost <= self.actor.wealth:
-            thing.quantity += 1
+            if thing.quantity != 'unlimited':
+                thing.quantity += 1
             self.actor.wealth = -1 * thing.cost
+            if thing.energy > 0:
+                self.actor.energy = thing.energy
         self.destroy()
         self.setup()
 
@@ -36,19 +45,20 @@ class Inventory:
             self.display_things.append(p.text('Actor Inventory', YELLOW, (13,1)))
 
         offset = 4
-        self.display_things.append(p.text('item', RED, (12, offset)))
-        self.display_things.append(p.text('quantity', RED, (19, offset)))
-        self.display_things.append(p.text('cost', RED, (24, offset)))
+        self.display_things.append(p.text('item', BLUE, (12, offset)))
+        self.display_things.append(p.text('quantity', BLUE, (18, offset)))
+        self.display_things.append(p.text('cost', BLUE, (22, offset)))
+        self.display_things.append(p.text('energy', BLUE, (26, offset)))
         offset = 5
         for key, thing in sorted(self.things.items()):
             buyit = p.image('buy', RED, (11, offset+0.35))
             self.display_things.append(buyit)
             self.display_things.append(p.text(thing.name, RED, (12, offset)))
-            self.display_things.append(p.text(thing.quantity, RED, (19, offset)))
-            self.display_things.append(p.text(thing.cost, RED, (24, offset)))
+            self.display_things.append(p.text(thing.quantity, RED, (18, offset)))
+            self.display_things.append(p.text(thing.cost, RED, (22, offset)))
+            self.display_things.append(p.text(thing.energy, RED, (26, offset)))
             buyit.clicked(partial(self.buy, thing))
             offset += 1
-
 
         player = p.actor(self.actor.name, pos=(2,2), size=3)
         player.act(IDLE_FRONT, FOREVER)

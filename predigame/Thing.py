@@ -289,7 +289,7 @@ class C4(Thing):
     def __init__(self, call='space', detonate='f', distance=8, radius=10):
         Thing.__init__(self, call)
         self.name = 'c4'
-        self.energy = 10
+        self.energy = -10
         self.quantity = 5
         self.cost = 50
 
@@ -371,6 +371,19 @@ class WallBuilder(Thing):
         self.wall(pos=pos,tag='wall')
         self.actor.energy = self.energy
         self.quantity -= 1
+
+    def use(self):
+        return None
+
+
+class EnergyDrink(Thing):
+    """ get a quick energy boost """
+    def __init__(self):
+        Thing.__init__(self)
+        self.name = 'green rage'
+        self.energy = 10
+        self.quantity = 'unlimited'
+        self.cost = 25
 
     def use(self):
         return None
