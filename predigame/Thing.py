@@ -332,6 +332,7 @@ class C4(Thing):
 
 class WallBuster(Thing):
     """ bust through some walls """
+    refresh = False
     def __init__(self):
         Thing.__init__(self)
         self.name = 'wall buster'
@@ -345,6 +346,9 @@ class WallBuster(Thing):
        def __wall_buster__(player, wall):
            if not check(self):
 	           return
+           if WallBuster.refresh:
+              self.actor.collides(get('wall'), __wall_buster__)
+              WallBuster.refresh = False
            pos = wall.pos
            wall.destroy()
            p.image('smoke', center=(pos[0]+0.5, pos[1]+0.5), size=2).fade(2)
@@ -371,6 +375,7 @@ class WallBuilder(Thing):
         self.wall(pos=pos,tag='wall')
         self.actor.energy = self.energy
         self.quantity -= 1
+        WallBuster.refresh = True
 
     def use(self):
         return None

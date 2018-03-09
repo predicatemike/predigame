@@ -462,6 +462,8 @@ class Sprite():
         for sprite in sprites:
             if sprite == self:
                 continue
+            if sprite in self.collisions:
+                self.collisions.remove(sprite)
             self.collisions.append({ 'sprite': sprite, 'cb': callback })
 
         return self

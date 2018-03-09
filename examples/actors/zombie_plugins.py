@@ -62,8 +62,8 @@ def setup(player, level):
    player.take(NuclearBomb(call='n'))
 
    player.take(WallBuster())
-   ##wall = partial(image, 'stone')
-   ##player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
+   wall = partial(image, 'stone')
+   player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
    display('f1', 'inventory', player._inventory)
 
 
