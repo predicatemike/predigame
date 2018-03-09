@@ -39,7 +39,7 @@ class Punch(Thing):
         Thing.__init__(self, call)
         self.name = 'punch'
         self.energy = -10
-        self.quantity = 50
+        self.quantity = 10
         self.cost = 1
 
     def use(self):
@@ -335,7 +335,7 @@ class WallBuster(Thing):
     def __init__(self):
         Thing.__init__(self)
         self.name = 'wall buster'
-        self.energy = -1
+        self.energy = -0.25
         self.quantity = 'unlimited'
         self.cost = 'n/a'
 

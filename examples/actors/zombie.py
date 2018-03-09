@@ -41,14 +41,14 @@ def red_attack(red, target):
 def red_murder(self):
     if self.health > 0:
        current_level.red_killed += 1
+       current_level.player.wealth = 100
     Actor.kill(self)
-    current_level.player.wealth = 100
 
 def blue_murder(self):
     if self.health > 0:
        current_level.blue_killed += 1
+       current_level.player.wealth = -250
     Actor.kill(self)
-    current_level.player.wealth = -250
 
 def update_status(player):
     score("{:3d} | {:3d}".format(int(player.energy), int(player.wealth)), color=WHITE, pos=LOWER_LEFT, method=VALUE)

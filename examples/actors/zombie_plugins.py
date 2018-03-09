@@ -1,5 +1,41 @@
 # A Place for Gamer Customizations
 
+class NuclearBomb(Thing):
+   """ make a custom weapon """
+   def __init__(self, call='n'):
+      Thing.__init__(self, call)
+      self.name = 'da bomb'
+      self.quantity = 1
+      self.energy = 0
+      self.cost = 1000
+
+   def use(self):
+      if not check(self):
+         return
+
+      # explode a bomb, wrap image with explosion, only kill reds
+      def explode(bomb):
+         bomb.destroy()
+         image('nuke', pos=(0,0), size=40).destruct(1)
+
+         for r in get('red'):
+            r.kill()
+
+      # drop a bomb to the half way point, make it explode
+      def dropit(jet):
+         bomb = image('bomb', pos=(15,1), size=4)
+         bomb.move_to((15,10), callback=partial(explode, bomb)).speed(10)
+         jet.move_to((35,0), callback=jet.destroy)
+
+      # fly a plane across the screen, stop half way
+      # flip the image so the plane faces right
+      jet = image('jet', pos=(-5, 0), size=4).flip()
+
+      # fly the plane to the halfway point, drop by bomb
+      jet.speed(10).move_to((15, 0), callback=partial(dropit, jet))
+      self.quantity -= 1
+
+
 def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
 
@@ -17,34 +53,24 @@ def setup(player, level):
 
    player.take(Punch(call='1'))
    player.take(FlameThrower(call='2'))
-   player.take(Grenade(call='3', distance=6, radius=20))
+   player.take(Grenade(call='3', distance=6, radius=200))
    player.take(MustardGas(call='4', distance=10, radius=20))
    player.take(AirGun(call='space'))
    player.take(MachineGun(call='5', distance=15, repeat=1))
    player.take(Landmine(call='6', delay=1))
    player.take(C4(call='7', detonate='8', distance=8, radius=10))
+   player.take(NuclearBomb(call='n'))
+
    player.take(WallBuster())
    ##wall = partial(image, 'stone')
    ##player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
    display('f1', 'inventory', player._inventory)
 
-def blue_defend(actor):
-   """ activate self defense """
-   for direction in [BACK, FRONT, LEFT, RIGHT]:
-      things = actor.next_object(direction=direction, distance=10)
-      if things and has_tag(things, 'red'):
-            actor.direction = direction
-            actor.stop = True
-            actor.act(HAPPY, 5)
-            target = actor.next_object()
-            if target and isinstance(target, Actor):
-               target.kill()
-            callback(partial(actor.act, IDLE, FOREVER), 5)
 
 def get_blue():
    """ create a blue (friendly) actor """
    # return name of actor, grazing speed, self defense
-   return 'Piggy', 2, blue_defend
+   return 'Piggy', 2
 
 def get_red():
    """ create a red (hostile) actor """
