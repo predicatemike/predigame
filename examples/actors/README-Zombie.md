@@ -100,34 +100,15 @@ Sometimes you may want to quickly change direction and shoot without having to m
    keydown('up', callback=partial(__direction__,player, BACK))
    keydown('down', callback=partial(__direction__,player, FRONT))
 ```
+## Weapons
 
-### Walk through walls (and destroy them too!!)
- **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+# Legacy Weapons
 
-Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
+The following weapons can still be used (without inventory control). They all require adding the following callback in the `setup` function.
+
 ```python
-   player.keys()
-```
-Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
-```python
-   def __wall_buster__(player, wall):
-      wall.fade(0.25)
-   player.collides(get('wall'), __wall_buster__)
-```
-### Add walls
-**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
-
-This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
-```python
-   def __put__(player, direction):
-      """ put a block at the player's next location  """
-      pos = player.next(direction)
-      image('stone', pos, tag = 'wall')
-
-   keydown('w', callback=partial(__put__, player, BACK))
-   keydown('a', callback=partial(__put__, player, LEFT))
-   keydown('s', callback=partial(__put__, player, FRONT))
-   keydown('d', callback=partial(__put__, player, RIGHT))
+keydown('1', partial(punch, level, player))
+keydown('2', partial(throw, level, player))
 ```
 
 ## Weapons
@@ -372,12 +353,35 @@ def throw(level, player, repeat=False):
    c4.move_to(pos)
 ```
 
+### Walk through walls (and destroy them too!!)
+ **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-## Multidirectional Bullets
-*Under Development*
+Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
+```python
+   player.keys()
+```
+Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
+```python
+   def __wall_buster__(player, wall):
+      wall.fade(0.25)
+   player.collides(get('wall'), __wall_buster__)
+```
+### Add walls
+**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-## Limiting Inventory
-*Under Development*
+This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
+```python
+   def __put__(player, direction):
+      """ put a block at the player's next location  """
+      pos = player.next(direction)
+      image('stone', pos, tag = 'wall')
+
+   keydown('w', callback=partial(__put__, player, BACK))
+   keydown('a', callback=partial(__put__, player, LEFT))
+   keydown('s', callback=partial(__put__, player, FRONT))
+   keydown('d', callback=partial(__put__, player, RIGHT))
+```
+
 
 # Friendlies
 **LOCATION GUIDE**: *insert as a top-level function*
@@ -570,5 +574,5 @@ This code should be added to the end of the `setup` function.
  ```
 If desired, it's also possible to add a countdown time that adds additional time for each level. The following code will add 30 seconds for each level.
 ```python
-   timer(color=WHITE, value=30*level_number)
+   timer(color=WHITE, value=30*level.level)
  ```
