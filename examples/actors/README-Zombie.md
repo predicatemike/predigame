@@ -630,6 +630,17 @@ def get_red():
    # return name of actor, movement speed
    return 'Zombie-1', 1
 ```
+
+Spawn different types of zombies at different speeds!
+```python
+def get_red():
+   """ create a red (hostile) actor """
+   # return name of actor, movement speed
+   zombies = ['Zombie-1','Zombie-2','Zombie-3']
+   return choice(zombies), randint(1,4)
+
+```
+
 ## Schedule more hostiles
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
