@@ -2,7 +2,7 @@
 from functools import partial
 from .utils import register_keydown as keydown, at, get, has_tag, sprites
 from .constants import *
-from . import predigame as p
+
 class Thing:
     def __init__(self, call=None):
         self.name = None
@@ -23,6 +23,7 @@ class Thing:
         return '{} {}'.format(self.name, self.quantity)
 
 def check(thing):
+    from . import predigame as p    
     if thing.quantity == 0:
         t = p.text('out of {}'.format(thing.name), RED)
         p.callback(t.destroy, 2)
@@ -70,7 +71,7 @@ class FlameThrower(Thing):
     def use(self):
         from .Actor import Actor
         from .Sprite import Sprite
-
+        from . import predigame as p
         if not check(self):
             return
 
@@ -112,6 +113,7 @@ class Grenade(Thing):
     def use(self):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p        
 
         if not check(self):
             return
@@ -153,6 +155,7 @@ class MustardGas(Thing):
     def use(self):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p
 
         if not check(self):
             return
@@ -193,6 +196,7 @@ class AirGun(Thing):
     def use(self):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p
 
         if not check(self):
             return
@@ -222,6 +226,7 @@ class MachineGun(Thing):
     def use(self, _repeat=False):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p
 
         if not check(self):
             return
@@ -259,6 +264,7 @@ class Landmine(Thing):
     def use(self, _repeat=False):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p
 
         if not check(self):
             return
@@ -314,14 +320,18 @@ class C4(Thing):
     def detonate(self):
         from .Actor import Actor
         from .Sprite import Sprite
+        from . import predigame as p
 
         def __hit__(c4, target):
             if target != c4 and target != self.actor:
                 if isinstance(target, Actor):
                     target.kill()
         def __explode__(c4):
+            from . import predigame as p
+
             c4.destroy()
             cpos = c4.pos
+            
             exp = p.shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
             exp.collides(sprites(), __hit__)
             exp.scale(self.radius)
@@ -333,19 +343,22 @@ class C4(Thing):
 class WallBuster(Thing):
     """ bust through some walls """
     refresh = False
-    def __init__(self):
+    def __init__(self):        
         Thing.__init__(self)
         self.name = 'wall buster'
         self.energy = -0.25
         self.quantity = 'unlimited'
         self.cost = 'n/a'
 
+        from . import predigame as p
         p.callback(self.use, 1)
 
     def use(self):
        def __wall_buster__(player, wall):
            if not check(self):
 	           return
+           from . import predigame as p
+
            if WallBuster.refresh:
               self.actor.collides(get('wall'), __wall_buster__)
               WallBuster.refresh = False
