@@ -23,7 +23,7 @@ class Thing:
         return '{} {}'.format(self.name, self.quantity)
 
 def check(thing):
-    from . import predigame as p    
+    from . import predigame as p
     if thing.quantity == 0:
         t = p.text('out of {}'.format(thing.name), RED)
         p.callback(t.destroy, 2)
@@ -113,7 +113,7 @@ class Grenade(Thing):
     def use(self):
         from .Actor import Actor
         from .Sprite import Sprite
-        from . import predigame as p        
+        from . import predigame as p
 
         if not check(self):
             return
@@ -307,7 +307,7 @@ class C4(Thing):
     def use(self, _repeat=False):
         if not check(self):
             return
-
+        from . import predigame as p
         self.actor.act(THROW, loop=1)
         pos = self.actor.facing(self.radius)
         bpos = self.actor.pos
@@ -331,7 +331,7 @@ class C4(Thing):
 
             c4.destroy()
             cpos = c4.pos
-            
+
             exp = p.shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
             exp.collides(sprites(), __hit__)
             exp.scale(self.radius)
@@ -343,7 +343,7 @@ class C4(Thing):
 class WallBuster(Thing):
     """ bust through some walls """
     refresh = False
-    def __init__(self):        
+    def __init__(self):
         Thing.__init__(self)
         self.name = 'wall buster'
         self.energy = -0.25

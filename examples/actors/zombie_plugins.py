@@ -7,17 +7,22 @@ class NuclearBomb(Thing):
       self.name = 'da bomb'
       self.quantity = 1
       self.energy = 0
-      self.cost = 1000
+      self.cost = 5000
 
    def use(self):
+      # do we have the inventory to use this weapon?
       if not check(self):
          return
 
       # explode a bomb, wrap image with explosion, only kill reds
       def explode(bomb):
+         # destroy the bomb image
          bomb.destroy()
+
+         # display the nuke image for 1 second
          image('nuke', pos=(0,0), size=40).destruct(1)
 
+         # kill only red forces
          for r in get('red'):
             r.kill()
 
@@ -33,11 +38,14 @@ class NuclearBomb(Thing):
 
       # fly the plane to the halfway point, drop by bomb
       jet.speed(10).move_to((15, 0), callback=partial(dropit, jet))
+
+      # deduct inventory by 1
       self.quantity -= 1
 
 
 def setup(player, level):
    """ setup is called for every level. this is a place to add new things. """
+   display('f1', 'inventory', player._inventory)
 
    maze(callback=partial(image, 'stone'))
 
@@ -53,17 +61,17 @@ def setup(player, level):
 
    player.take(Punch(call='1'))
    player.take(FlameThrower(call='2'))
-   player.take(Grenade(call='3', distance=6, radius=200))
+   player.take(Grenade(call='3', distance=6, radius=10))
    player.take(MustardGas(call='4', distance=10, radius=20))
    player.take(AirGun(call='space'))
-   player.take(MachineGun(call='5', distance=15, repeat=1))
+   player.take(MachineGun(call='5', distance=15, repeat=3))
    player.take(Landmine(call='6', delay=1))
    player.take(C4(call='7', detonate='8', distance=8, radius=10))
    player.take(NuclearBomb(call='n'))
 
    player.take(WallBuster())
-   wall = partial(image, 'stone')
-   player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
+   #wall = partial(image, 'stone')
+   #player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
    display('f1', 'inventory', player._inventory)
 
 
@@ -75,7 +83,8 @@ def get_blue():
 def get_red():
    """ create a red (hostile) actor """
    # return name of actor, movement speed
-   return 'Zombie-1', 2
+   zombies = ['Zombie-1','Zombie-2','Zombie-3']
+   return choice(zombies), randint(1,4)
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)
