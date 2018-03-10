@@ -22,6 +22,9 @@ actors = {}
 callbacks = []
 DEFAULT_COLOR = (220, 220, 220)
 _background_color = _background = DEFAULT_COLOR
+DISPLAY_MAIN = '__main__'
+displays = {}
+display_active = DISPLAY_MAIN
 
 def background(bg = None):
     """ set the background color or image """
@@ -49,31 +52,61 @@ def background(bg = None):
     else :
         _background = _background_color = bg
 
+def display(eventkey, name, wrapper=None):
+    """ create a new pygame drawing surface that is triggered when eventkey is pressed.
+        any active game is paused when the display is swapped """
+
+    if FULLSCREEN:
+        surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
+    else:
+        surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
+    surface.fill((0, 0, 0))
+
+    displays[name] = (surface, wrapper)
+
+    if eventkey is not None:
+        register_keydown(eventkey, partial(_display_swap, name))
+
+    return surface
+
+def _display_swap(name) :
+    """ used to swap display surfaces. pauses any active game """
+    global display_active, update_game
+
+    if display_active == name:
+        # swap to main
+        displays[name][1].destroy()
+        display_active = DISPLAY_MAIN
+        update_game = not update_game
+    else:
+        # swap to something else
+        if display_active == DISPLAY_MAIN:
+            update_game = not update_game
+        display_active = name
+        displays[name][1].setup()
+
+
 def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 220), fullscreen = False, **kwargs):
-    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, clock, start_time, sounds
+    global globs, RUN_PATH, WIDTH, HEIGHT, FPS, GRID_SIZE, SURF, FULLSCREEN, clock, start_time, sounds
 
     RUN_PATH = path
     WIDTH, HEIGHT = width, height
     FPS = kwargs.get('fps', 60)
     GRID_SIZE = kwargs.get('grid', 50)
-
+    FULLSCREEN = fullscreen
     pygame.mixer.pre_init(22050, -16, 2, 1024) # sound delay fix
     pygame.init()
     pygame.display.set_caption(title)
-    SURF = None
-    if fullscreen:
-        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
-    else:
-        SURF = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF | pygame.HWSURFACE)
+    SURF = display(None, DISPLAY_MAIN)
     clock = pygame.time.Clock()
 
     background(bg)
 
-
     globs = Globals(WIDTH, HEIGHT, GRID_SIZE)
     Globals.instance = globs
 
-    SURF.fill((0, 0, 0))
+
+
     loading_font = pygame.font.Font(None, 72)
     SURF.blit(loading_font.render('LOADING...', True, (235, 235, 235)), (25, 25))
     pygame.display.update()
@@ -82,6 +115,7 @@ def init(path, width = 800, height = 800, title = 'Predigame', bg = (220, 220, 2
     images['__screenshot__'] = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images', 'screenshot.png'))
 
     start_time = get_time()
+
 
 
 def _create_image(name, pos, center, size, tag):
@@ -550,7 +584,6 @@ def stopwatch(value=0, goal=999, pos=LOWER_RIGHT, color=BLACK, prefix='Duration:
     score(pos=pos, color=color, value=value, method=TIMER,
           step=1, goal=goal, prefix=prefix)
 
-
 def destroyall():
     del globs.sprites[:]
 
@@ -586,6 +619,7 @@ def reset(**kwargs):
     del globs.animations[:]
     del callbacks[:]
     if not kwargs.get('soft', False):
+        Globals.cache = {}
         from . import api
         code, mod = load_module(RUN_PATH, api)
         exec(code, mod.__dict__)
@@ -613,7 +647,7 @@ def screenshot(directory = 'screenshots', filename = None):
     size = 100 / globs.GRID_SIZE
     pos = (globs.WIDTH / globs.GRID_SIZE) / 2 - size / 2, (globs.HEIGHT / globs.GRID_SIZE) / 2 - (size / 1.36) / 2
 
-    img = _create_image('__screenshot__', pos, size)
+    img = _create_image('__screenshot__', pos, None, size, '')
     globs.sprites.append(img)
     camera = globs.sprites[-1]
     animate(camera, 0.45, camera.destroy, size = size / 1.5)
@@ -659,6 +693,7 @@ def _update(delta):
                 level(next_level)
 
 def _draw(SURF):
+
     if isinstance(_background, pygame.Surface) :
         SURF.blit(_background, (0,0))
     else:
@@ -673,6 +708,7 @@ def _draw(SURF):
         _draw_grid()
 
 def main_loop():
+    global update_game
     for event in pygame.event.get():
 
         if event.type == QUIT:
@@ -726,19 +762,24 @@ def main_loop():
                     sprite._handle_click(event.button, event.pos)
 
         if event.type == USEREVENT:
-            global update_game
             if event.action == 'pause' and update_game and not game_over:
                 update_game = False
                 _update(clock.get_time())
                 _draw(SURF)
 
-    if update_game and not game_over:
+    if display_active == DISPLAY_MAIN and (update_game and not game_over):
         mx, my = pygame.mouse.get_pos()
         for sprite in globs.mouse_motion:
                 sprite.pos = (mx/globs.GRID_SIZE - sprite.width/2,
                     my/globs.GRID_SIZE - sprite.height/2)
         _update(clock.get_time())
         _draw(SURF)
+
+    if display_active != DISPLAY_MAIN:
+        displays[display_active][1].update(clock.get_time)
+        displays[display_active][1].draw(displays[display_active][0])
+
+
 
     pygame.display.flip()
     clock.tick(FPS)

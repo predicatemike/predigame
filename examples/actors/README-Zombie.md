@@ -1,6 +1,6 @@
-How do I?
+Zombie Madness
 ---------
-It's possible to take a game in a number of different directions. This guide walks through some common **use cases** and the underlying code that would be required for implementation. Each example includes a **LOCATION GUIDE** that will detail where in the `zombie_plugins.py` file to insert and modify the code.
+It's possible to take this game in a number of different directions. This README walks through some common **use cases** and the underlying code that would be required for implementation. Each example includes a **LOCATION GUIDE** that will detail where in the `zombie_plugins.py` file to insert and modify the code.
 
 # Background Images
 
@@ -100,38 +100,184 @@ Sometimes you may want to quickly change direction and shoot without having to m
    keydown('up', callback=partial(__direction__,player, BACK))
    keydown('down', callback=partial(__direction__,player, FRONT))
 ```
+## Inventory Controlled Weapons
+**LOCATION GUIDE (ALL WEAPONS)**: *insert inside the setup function* -- `def setup(player, level):`
 
-### Walk through walls (and destroy them too!!)
- **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
+| weapon        | cost           | energy impact  |
+| ---------------- |:-------------:| :-----:|
+| air gun      | 2 | 0 |
+| c4 explosive      | 50      |   -10 |
+| flame thrower | 500      |    -50 |
+| green rage | 25      |    10 |
+| grenade | 100      |    -50 |
+| landmine | 50      |   0 |
+| machine gun | 2      |    0 |
+| mustard gas | 250      |    -10 |
+| punch | 1      |    -10 |
+| wall builder | 5      |    -5 |
+| wall buster | n/a      |    -0.25 |
+| nuclear bomb (custom) | mucho grande      |    0 |
+
+*Core conceptual language* - A player "takes" a Thing (can be anything) that is later used.
+
+### Inventory Market Place
+Buy weapons, restore energy at the market place! Be sure to add this line to your `setup` function.
+
 ```python
-   player.keys()
-```
-Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
-```python
-   def __wall_buster__(player, wall):
-      wall.fade(0.25)
-   player.collides(get('wall'), __wall_buster__)
-```
-### Add walls
-**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
-
-This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
-```python
-   def __put__(player, direction):
-      """ put a block at the player's next location  """
-      pos = player.next(direction)
-      image('stone', pos, tag = 'wall')
-
-   keydown('w', callback=partial(__put__, player, BACK))
-   keydown('a', callback=partial(__put__, player, LEFT))
-   keydown('s', callback=partial(__put__, player, FRONT))
-   keydown('d', callback=partial(__put__, player, RIGHT))
+   display('f1', 'inventory', player._inventory)
 ```
 
-## Weapons
-The signature (function name) of each weapon will need to remain the same. These should be copied into the plugin code without indentation. All weapons have 100% lethality.
+### Air Gun
+Shoots "air" bullets. Default activation is with the `space` bar.
+
+```python
+   player.take(AirGun(call='space'))
+```
+
+### C4 Explosives
+Drops C4 explosives. Thrown with the `7` key, detonated with the `8` key. Default throwing distance is `8` blocks and blast radius is `10` (which is about four blocks). Explosives only kill actors and do not destroy walls.
+
+```python
+   player.take(C4(call='7', detonate='8', distance=8, radius=10))
+```
+
+### Flame Thrower
+Throws a devastating ball of fire. It takes quite a bit of energy to generate a the fiery ball, but it's a sure way to clear out the bad guys. The flame had an internal compass that shadows the player's orientation, so move the player around for maximum effect.
+
+Generated and thrown with the `2` key. Use player directional keys after thrown to control flame ball.
+
+```python
+   player.take(FlameThrower(call='2'))
+```
+
+### Green Rage (Energy Drink)
+Give your player a dose of caffeine for continued rage! Only accessible from the inventory panel.  
+
+
+### Grenade
+Throw a grenade with the `3` key. Default throwing distance is `6` blocks and blast radius is `10` (which is about four blocks). Grenade destroys anything in it's blasting radius - including walls!
+
+```python
+   player.take(Grenade(call='3', distance=6, radius=10))
+```
+
+### Landmine
+Plant a landmine with the `6` key. The bomb is activated in one second. **BE CAREFUL!!** - your player can fall victim to the explosive.
+
+```python
+   player.take(Landmine(call='6', delay=1))
+```
+
+### Machine Gun
+Keep your blue forces safe with the trusty machine gun! Default trigger is the `5` key with single bullets that travel `15` blocks. Want rapid fire more bullets? Be sure to set the `repeat` parameter.
+
+```python
+   player.take(MachineGun(call='5', distance=15, repeat=1))
+```
+
+### Mustard Gas
+Take out your enemies with a harmful chemical weapon. Thrown with the `4` key, a mustard gas capsule travels `10` blocks and has an effective radius of `20` (about 5 blocks). The gas capsule only explodes if it hits an actor instance.
+
+```python
+   player.take(MustardGas(call='4', distance=10, radius=20))
+```
+### Punch
+When all else fails, use your hands! The simple punch is activated with the `1` key. Make sure you sneak behind your enemy as they can attack you otherwise!
+
+```python
+   player.take(Punch(call='1'))
+```
+### Wall Builder
+Have your player use walls to provide defense from the zombies. The first line sets the wall image, the second sets the directional callback keys.
+
+```python
+   wall = partial(image, 'stone')
+   player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
+```
+Want to use colored rectangles instead? Give this a shot:
+```python
+   wall = partial(shape, RECT, BLACK)
+   player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
+```
+
+### Wall Buster
+Let your player bust through the maze walls. Make sure you reset player walking keys (see above). A player that obeys physics can't bust walls!
+
+```python
+   player.take(WallBuster())
+```
+
+### Nuclear Bomb [HARD]
+The nuclear bomb is provided as a custom **thing** that you can add to your game.
+
+#### Part 1: Define the Thing
+This code describes the `NuclearBomb` as a child or subclass of a `Thing`. A `Thing` has a name (`da bomb`), a quantity (`1`), energy impact (`0`), and cost to purchase (`5000`). As these attributes are written, one bomb is included in the definition.
+
+The rest of the code is documented inline with comments that describe each action.
+
+This code should be copied to the top of the plugins file.
+
+```python
+class NuclearBomb(Thing):
+   """ make a custom weapon """
+   def __init__(self, call='n'):
+      Thing.__init__(self, call)
+      self.name = 'da bomb'
+      self.quantity = 1
+      self.energy = 0
+      self.cost = 5000
+
+   def use(self):
+      # do we have the inventory to use this weapon?
+      if not check(self):
+         return
+
+      # explode a bomb, wrap image with explosion, only kill reds
+      def explode(bomb):
+         # destroy the bomb image
+         bomb.destroy()
+
+         # display the nuke image for 1 second
+         image('nuke', pos=(0,0), size=40).destruct(1)
+
+         # kill only red forces
+         for r in get('red'):
+            r.kill()
+
+      # drop a bomb to the half way point, make it explode
+      def dropit(jet):
+         bomb = image('bomb', pos=(15,1), size=4)
+         bomb.move_to((15,10), callback=partial(explode, bomb)).speed(10)
+         jet.move_to((35,0), callback=jet.destroy)
+
+      # fly a plane across the screen, stop half way
+      # flip the image so the plane faces right
+      jet = image('jet', pos=(-5, 0), size=4).flip()
+
+      # fly the plane to the halfway point, drop by bomb
+      jet.speed(10).move_to((15, 0), callback=partial(dropit, jet))
+
+      # deduct inventory by 1
+      self.quantity -= 1
+
+```
+
+#### Part 2: Register the Weapon
+Once the code is copied, the weapon can now be registered and used. By default our bomb can be called in with the `4` key.
+
+```python
+   player.take(NuclearBomb(call='n'))
+```
+
+## Legacy Weapons
+
+**NOTE:** The following legacy weapons can still be used (and without inventory control). They all require adding the following callback in the `setup` function.
+
+```python
+   keydown('1', partial(punch, level, player))
+   keydown('2', partial(throw, level, player))
+```
 
 ### Simple air shot
 **LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
@@ -372,12 +518,35 @@ def throw(level, player, repeat=False):
    c4.move_to(pos)
 ```
 
+### Walk through walls (and destroy them too!!)
+ **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-## Multidirectional Bullets
-*Under Development*
+Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
+```python
+   player.keys()
+```
+Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
+```python
+   def __wall_buster__(player, wall):
+      wall.fade(0.25)
+   player.collides(get('wall'), __wall_buster__)
+```
+### Add walls
+**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-## Limiting Inventory
-*Under Development*
+This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
+```python
+   def __put__(player, direction):
+      """ put a block at the player's next location  """
+      pos = player.next(direction)
+      image('stone', pos, tag = 'wall')
+
+   keydown('w', callback=partial(__put__, player, BACK))
+   keydown('a', callback=partial(__put__, player, LEFT))
+   keydown('s', callback=partial(__put__, player, FRONT))
+   keydown('d', callback=partial(__put__, player, RIGHT))
+```
+
 
 # Friendlies
 **LOCATION GUIDE**: *insert as a top-level function*
@@ -461,6 +630,17 @@ def get_red():
    # return name of actor, movement speed
    return 'Zombie-1', 1
 ```
+
+Spawn different types of zombies at different speeds!
+```python
+def get_red():
+   """ create a red (hostile) actor """
+   # return name of actor, movement speed
+   zombies = ['Zombie-1','Zombie-2','Zombie-3']
+   return choice(zombies), randint(1,4)
+
+```
+
 ## Schedule more hostiles
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
@@ -490,6 +670,9 @@ It's possible to change how the story ends! Here's a few possible tricks you can
    def __completed__(self):
       # promote level by killing all the hostiles
       if len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
 
    # register the __completed__ function to control how the level decisions are made
@@ -506,6 +689,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0:
          text('GAME OVER')
@@ -517,6 +703,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0 or len(get('player')) == 0:
          text('GAME OVER')
@@ -527,8 +716,14 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0 or len(get('player')) == 0:
          text('GAME OVER')
@@ -538,6 +733,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('destination')) == 0:
         text('DESTINATION DESTROYED! GAME OVER!')
@@ -550,6 +748,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('destination')) == 0:
         text('DESTINATION DESTROYED! GAME OVER!')
@@ -570,5 +771,5 @@ This code should be added to the end of the `setup` function.
  ```
 If desired, it's also possible to add a countdown time that adds additional time for each level. The following code will add 30 seconds for each level.
 ```python
-   timer(color=WHITE, value=30*level_number)
+   timer(color=WHITE, value=30*level.level)
  ```
