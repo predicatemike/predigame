@@ -117,7 +117,7 @@ Sometimes you may want to quickly change direction and shoot without having to m
 | punch | 1      |    -10 |
 | wall builder | 5      |    -5 |
 | wall buster | n/a      |    -0.25 |
-| nuclear bomb (custom) | are neat      |    0 |
+| nuclear bomb (custom) | mucho grande      |    0 |
 
 *Core conceptual language* - A player "takes" a Thing (can be anything) that is later used.
 
