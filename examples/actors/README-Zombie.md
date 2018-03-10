@@ -659,6 +659,9 @@ It's possible to change how the story ends! Here's a few possible tricks you can
    def __completed__(self):
       # promote level by killing all the hostiles
       if len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
 
    # register the __completed__ function to control how the level decisions are made
@@ -675,6 +678,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0:
          text('GAME OVER')
@@ -686,6 +692,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0 or len(get('player')) == 0:
          text('GAME OVER')
@@ -696,8 +705,14 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif self.blue_killed > 0 or len(get('player')) == 0:
          text('GAME OVER')
@@ -707,6 +722,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('destination')) == 0:
         text('DESTINATION DESTROYED! GAME OVER!')
@@ -719,6 +737,9 @@ This code will promote the level if all blue forces (piggies) go home. It will a
 ```python
    def __completed__(self):
       if self.blue_spawned == self.blue_safe and len(get('red')) == 0:
+         self.player.energy = 50
+         self.player.wealth = 250
+         save_state(self.player, 'player.pg')
          return True
       elif len(get('destination')) == 0:
         text('DESTINATION DESTROYED! GAME OVER!')

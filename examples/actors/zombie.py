@@ -99,6 +99,7 @@ class ZombieLevel(Level):
       red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
       red.old_kill = MethodType(red.kill, red)
       red.kill = MethodType(red_murder, red)
+
       # callbacks
       for o in get('blue'):
          red.collides(o, red_attack)
