@@ -605,6 +605,11 @@ def gameover(delay=0.5):
         game_over = True
     callback(_gameover, delay)
 
+def garbagecollect():
+    import gc
+    gc.collect(0)
+    gc.collect(1)
+    gc.collect(2)
 
 def reset(**kwargs):
     global game_over, current_level, score_dict
@@ -624,10 +629,7 @@ def reset(**kwargs):
         code, mod = load_module(RUN_PATH, api)
         exec(code, mod.__dict__)
 
-    import gc
-    gc.collect(0)
-    gc.collect(1)
-    gc.collect(2)
+    garbagecollect()
 
     global start_time
     start_time = get_time()
@@ -776,7 +778,7 @@ def main_loop():
         _draw(SURF)
 
     if display_active != DISPLAY_MAIN:
-        displays[display_active][1].update(clock.get_time)
+        displays[display_active][1].update(clock.get_time())
         displays[display_active][1].draw(displays[display_active][0])
 
 

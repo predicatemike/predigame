@@ -10,7 +10,7 @@ class Inventory:
     defaults[default_energy.name] = default_energy
     def __init__(self):
         self.things = Inventory.defaults
-        self.display_things = []
+        self.display_things = {}
         self.title = None
         self.actor = None
 
@@ -22,10 +22,12 @@ class Inventory:
 
     def update(self, delta):
         """ update something """
-        for dthing in self.display_things:
+        for key, dthing in self.display_things.items():
             dthing._update(delta)
 
-    def buy(self, thing, button):
+    def buy(self, thing, offset, button):
+        from . import predigame as p
+
         if thing.cost == 'n/a':
             return
         if thing.cost <= self.actor.wealth:
@@ -34,54 +36,57 @@ class Inventory:
             self.actor.wealth = -1 * thing.cost
             if thing.energy > 0:
                 self.actor.energy = thing.energy
-        self.destroy()
-        self.setup()
+        self.display_things['q_' + thing.name].destroy()
+        self.display_things['q_' + thing.name] = p.text(thing.quantity, RED, (18, offset))
+        self.display_things['e'].destroy()
+        self.display_things['e'] = p.text('energy', BLUE, (26, 4))
+        #self.setup()
 
     def setup(self):
         """ build all the things """
         from . import predigame as p
 
         if not self.title:
-            self.display_things.append(p.text('Actor Inventory', YELLOW, (13,1)))
+            self.display_things['title'] = p.text('Actor Inventory', YELLOW, (13,1))
 
         offset = 4
-        self.display_things.append(p.text('item', BLUE, (12, offset)))
-        self.display_things.append(p.text('quantity', BLUE, (18, offset)))
-        self.display_things.append(p.text('cost', BLUE, (22, offset)))
-        self.display_things.append(p.text('energy', BLUE, (26, offset)))
+        self.display_things['i'] = p.text('item', BLUE, (12, offset))
+        self.display_things['q'] = p.text('quantity', BLUE, (18, offset))
+        self.display_things['c'] = p.text('cost', BLUE, (22, offset))
+        self.display_things['e'] = p.text('energy', BLUE, (26, offset))
         offset = 5
         for key, thing in sorted(self.things.items()):
             buyit = p.image('buy', RED, (11, offset+0.35))
-            self.display_things.append(buyit)
-            self.display_things.append(p.text(thing.name, RED, (12, offset)))
-            self.display_things.append(p.text(thing.quantity, RED, (18, offset)))
-            self.display_things.append(p.text(thing.cost, RED, (22, offset)))
-            self.display_things.append(p.text(thing.energy, RED, (26, offset)))
-            buyit.clicked(partial(self.buy, thing))
+            self.display_things['b_' + thing.name] = buyit
+            self.display_things['n_' + thing.name] = p.text(thing.name, RED, (12, offset))
+            self.display_things['q_' + thing.name] = p.text(thing.quantity, RED, (18, offset))
+            self.display_things['c_' + thing.name] = p.text(thing.cost, RED, (22, offset))
+            self.display_things['e_' + thing.name] = p.text(thing.energy, RED, (26, offset))
+            buyit.clicked(partial(self.buy, thing, offset))
             offset += 1
 
         player = p.actor(self.actor.name, pos=(2,2), size=3)
         player.act(IDLE_FRONT, FOREVER)
-        self.display_things.append(player)
-        self.display_things.append(p.text('energy', GREEN, (1, 5)))
-        self.display_things.append(p.text("{:3d}".format(int(self.actor.energy)), GREEN, (4,5)))
-        self.display_things.append(p.text('health', GREEN, (1, 6)))
-        self.display_things.append(p.text("{:3d}".format(int(self.actor.health)), GREEN, (4,6)))
-        self.display_things.append(p.text('wealth', GREEN, (1, 7)))
-        self.display_things.append(p.text("{:3d}".format(int(self.actor.wealth)), GREEN, (4,7)))
-
+        self.display_things['player'] = player
+        self.display_things['p_el']= p.text('energy', GREEN, (1, 5))
+        self.display_things['p_e'] = p.text("{:3d}".format(int(self.actor.energy)), GREEN, (4,5))
+        self.display_things['p_hl'] = p.text('health', GREEN, (1, 6))
+        self.display_things['p_h'] = p.text("{:3d}".format(int(self.actor.health)), GREEN, (4,6))
+        self.display_things['p_wl'] = p.text('wealth', GREEN, (1, 7))
+        self.display_things['p_w'] = p.text("{:3d}".format(int(self.actor.wealth)), GREEN, (4,7))
 
     def destroy(self):
         """ tear it all down """
-        for t in self.display_things:
-            t.destroy()
-        self.display_things = []
-
+        for key, dthing in self.display_things.items():
+            dthing.destroy()
+        self.display_things = {}
+        from . import predigame as p
+        p.garbagecollect()
 
     def draw(self,SURF):
         """ draw the inventory on a surface """
         SURF.fill((0,0,0))
-        for dthing in self.display_things:
+        for key, dthing in self.display_things.items():
             dthing._draw(SURF)
 
     def __str__(self):
