@@ -38,8 +38,11 @@ class Inventory:
                 self.actor.energy = thing.energy
         self.display_things['q_' + thing.name].destroy()
         self.display_things['q_' + thing.name] = p.text(thing.quantity, RED, (18, offset))
-        self.display_things['e'].destroy()
-        self.display_things['e'] = p.text('energy', BLUE, (26, 4))
+        self.display_things['p_w'].destroy()
+        self.display_things['p_w'] = p.text("{:3d}".format(int(self.actor.wealth)), GREEN, (4,7))
+        self.display_things['p_e'].destroy()
+        self.display_things['p_e'] = p.text("{:3d}".format(int(self.actor.energy)), GREEN, (4,5))
+
         #self.setup()
 
     def setup(self):
