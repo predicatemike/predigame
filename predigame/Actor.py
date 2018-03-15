@@ -9,6 +9,7 @@ from functools import partial
 
 # actor class for four directional movement
 class Actor(Sprite):
+    MAX_WEALTH = 500000
     def __init__(self, actions, rect, tag=None, abortable=False, name=None):
         # - scale images
         self.actions = {}
@@ -74,6 +75,7 @@ class Actor(Sprite):
     @wealth.setter
     def wealth(self, value):
         self._wealth += value
+        if self._wealth > Actor.MAX_WEALTH: self._wealth = Actor.MAX_WEALTH
 
     @property
     def defend(self):
@@ -169,7 +171,6 @@ class Actor(Sprite):
             self.action = IDLE + '_' + self.direction
             self.action_loop = FOREVER
 
-
     def take(self, obj):
         """ take this object and add to inventory """
         self._inventory.add(obj)
@@ -189,9 +190,7 @@ class Actor(Sprite):
         self.action_iterations = 0
         return self
 
-
     def act(self, action, loop=FOREVER):
-
         if self.health > 0 or action.startswith(DIE):
             if action in self.actions:
                 self.actit(action, loop)

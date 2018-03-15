@@ -3,7 +3,16 @@
 WIDTH = 31
 HEIGHT = 19
 TITLE = 'Zombie Madness'
+
+LEVEL_COMPLETE = 'Levels Completed'
+PLAYER_KILLS = 'Player Kills'
+RED_LAUNCH = 'Red Launched'
+RED_KILLS = 'Red Kills'
+BLUE_LAUNCH = 'Blue Launched'
+BLUE_SAFE = 'Blue Safe'
+
 current_level = None
+stats = None
 from types import MethodType
 
 def invoke(plugins, function, default, **kwargs):
@@ -23,6 +32,7 @@ def arrive_destination(dest_sprite, target):
       target.destroy()
       current_level.blue_safe += 1
       current_level.player.wealth = 250
+      stats.add(BLUE_SAFE, 1)
 
 def default_blue_destination():
    return 'pigpen'
@@ -30,24 +40,28 @@ def default_blue_destination():
 def red_attack(red, target):
    if target.tag == 'red':
       return
-   if target.tag == 'blue' or target.tag == 'player':
-      if target.tag == 'blue' and target.health > 0:
+   if (target.tag == 'blue' or target.tag == 'player') and target.health > 0:
+      if target.tag == 'blue':
          current_level.blue_killed += 1
       red.stop()
       red.act(ATTACK, 1)
       callback(partial(red.act, IDLE_FRONT, FOREVER), 1)
       target.kill()
+      stats.add(RED_KILLS, 1)
 
 def red_murder(self):
     if self.health > 0:
        current_level.red_killed += 1
        current_level.player.wealth = 100
+       stats.add(PLAYER_KILLS, 1)
     Actor.kill(self)
 
 def blue_murder(self):
     if self.health > 0:
+       callback(partial(current_level.create_red, self.pos), 0.5)
        current_level.blue_killed += 1
        current_level.player.wealth = -250
+
     Actor.kill(self)
 
 def update_status(player):
@@ -91,12 +105,13 @@ class ZombieLevel(Level):
       cb = partial(track_astar, blue, ['destination'], pabort=0.1)
       callback(cb, 0.1)
       callback(partial(monitor, blue, cb), 0.75)
+      stats.add(BLUE_LAUNCH, 1)
 
-   def create_red(self):
+   def create_red(self, pos=(WIDTH-2,1)):
       """ create a red (hostile) actor """
       self.red_spawned += 1
       actor_name, speed = self.plugins.get_red()
-      red = actor(actor_name, (WIDTH-2,1), tag='red').speed(speed)
+      red = actor(actor_name, pos=pos, tag='red').speed(speed)
       red.old_kill = MethodType(red.kill, red)
       red.kill = MethodType(red_murder, red)
 
@@ -110,9 +125,16 @@ class ZombieLevel(Level):
       cb = partial(track_astar, red, ['blue', 'player'], pabort=0.1)
       callback(cb, 0.1)
       callback(partial(monitor, red, cb), 0.75)
+      stats.add(RED_LAUNCH, 1)
 
    def setup(self):
       """ setup the level """
+
+      # LOAD IN stats
+      global stats
+      stats = Statistics()
+      load_state(stats, 'stats.pg')
+      display('f2', 'stats', stats)
 
       # PLAYER
       self.player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
@@ -148,13 +170,18 @@ class ZombieLevel(Level):
       if len(get('destination')) == 0:
          text("DESTINATION DESTROYED! GAME OVER")
          gameover()
-      elif (self.blue_safe == 0 and len(get('blue')) == 0) or len(get('player')) == 0:
+         save_state(stats, 'stats.pg')
+      elif len(get('player')) == 0:
          text('GAME OVER')
          gameover()
+         save_state(stats, 'stats.pg')
       elif len(get('blue')) == 0 and len(get('red')) == 0:
          self.player.energy = 50
          self.player.wealth = 250
          save_state(self.player, 'player.pg')
+         stats.add(LEVEL_COMPLETE, 1)
+         save_state(stats, 'stats.pg')
+         print(str(stats))
          return True
       else:
          return False
@@ -186,6 +213,11 @@ class WalkAcrossLevel(Level):
       self.player = actor(self.plugins.get_player(), (1, HEIGHT-2), tag='player', abortable=True)
       self.player.speed(5).keys(precondition=player_physics)
 
+      # LOAD IN stats
+      global stats
+      stats = Statistics()
+      load_state(stats, 'stats.pg')
+
       # SCORE BOARD
       score(self.level, pos=UPPER_RIGHT, color=BLACK, method=VALUE, prefix='Level: ')
 
@@ -208,6 +240,8 @@ class WalkAcrossLevel(Level):
          gameover()
       elif len(get('red')) == 0:
          self.player.wealth = 250
+         stats.add(LEVEL_COMPLETE, 1)
+         save_state(stats, 'stats.pg')
          return True
 
    def next(self):

@@ -43,8 +43,6 @@ class Inventory:
         self.display_things['p_e'].destroy()
         self.display_things['p_e'] = p.text("{:3d}".format(int(self.actor.energy)), GREEN, (4,5))
 
-        #self.setup()
-
     def setup(self):
         """ build all the things """
         from . import predigame as p

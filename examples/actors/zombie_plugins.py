@@ -52,12 +52,7 @@ def setup(player, level):
    player.keys(right = 'd', left = 'a', up = 'w', down = 's')
 
    # randomly pick a background
-   if level.level == 1:
-      background('grass')
-   elif level.level == 2:
-      background('ville')
-   else:
-      background('stormy')
+   background()
 
    player.take(Punch(call='1'))
    player.take(FlameThrower(call='2'))
@@ -74,6 +69,15 @@ def setup(player, level):
    #player.take(WallBuilder(left='left', right='right', front='up', back='down', wall=wall))
    display('f1', 'inventory', player._inventory)
 
+   def drink(soda, player):
+      soda.destroy()
+      player.energy = 10
+   fill(partial(image,'sprite', size=1.0), 0.05, player, drink)
+
+   def claim(coin, player):
+      coin.destroy()
+      player.wealth = 5
+   fill(partial(image,'coin', size=1.0), 0.25, player, claim)
 
 def get_blue():
    """ create a blue (friendly) actor """
@@ -88,8 +92,6 @@ def get_red():
 
 def get_player():
    # name of player sprite (must exist in actors/ directory)
-   # return 'Soldier-2'
-
    # pick a random Soldier
    choices = ['Soldier-1', 'Soldier-2', 'Soldier-3', 'Soldier-4', 'Soldier-5',
               'Soldier-6', 'Soldier-7', 'Soldier-8', 'Soldier-9', 'Soldier-10']

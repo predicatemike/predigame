@@ -15,3 +15,4 @@ from .Inventory import Inventory
 from .Level import Level
 from .Actor import Actor
 from .Sprite import Sprite
+from .Statistics import Statistics
