@@ -79,6 +79,8 @@ def _display_swap(name) :
         display_active = DISPLAY_MAIN
         update_game = not update_game
     else:
+        if display_active != DISPLAY_MAIN:
+            displays[display_active][1].destroy()
         # swap to something else
         if display_active == DISPLAY_MAIN:
             update_game = not update_game
