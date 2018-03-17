@@ -1,3 +1,4 @@
+
 Zombie Madness
 ---------
 It's possible to take this game in a number of different directions. This README walks through some common **use cases** and the underlying code that would be required for implementation. Each example includes a **LOCATION GUIDE** that will detail where in the `zombie_plugins.py` file to insert and modify the code.
@@ -270,282 +271,31 @@ Once the code is copied, the weapon can now be registered and used. By default o
    player.take(NuclearBomb(call='n'))
 ```
 
-## Legacy Weapons
-
-**NOTE:** The following legacy weapons can still be used (and without inventory control). They all require adding the following callback in the `setup` function.
-
-```python
-   keydown('1', partial(punch, level, player))
-   keydown('2', partial(throw, level, player))
-```
-
-### Simple air shot
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
-
-```python
-def shoot(level, player):
-   """ simple air shot """
-   player.act(SHOOT, loop=1)
-   target = player.next_object()
-
-   if target and isinstance(target, Actor):
-      target.kill()
-```
-### Simple air shot (that kills any sprite)
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
-
-```python
-def shoot(level, player):
-   """ air shot that will kill any actor or sprite """
-   player.act(SHOOT, loop=1)
-   target = player.next_object()
-   if target and isinstance(target, Actor):
-      target.kill()
-   elif target and isinstance(target, Sprite):
-      target.fade(0.5)
-```
-### Shooting bullets (that kills any sprite)
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
-
-**Customizations:**
-* try having bullets only destroy actors
-* try changing the bullet image
-```python
-def shoot(level, player, repeat=False):
-   """ shoot real bullets """
-   player.act(SHOOT, loop=1)
-   pos = player.facing()
-   bpos = player.pos
-   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.5))
-
-   def __hit__(bullet, target):
-      if target != player:
-         bullet.destroy()
-         if isinstance(target, Actor):
-            target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   bullet.collides(sprites(), __hit__)
-```
-At the very end of this function, it's possible to add a machine gun fire with the following lines:
-```python
-   if not repeat:
-      callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
-```
-Try changing the `wait` attributes. If it's too small you'll notice that the bullets collide with each other. Try also changing the `repeat` option for more bullets.
-
-If the following line is removed, bullet will push through multiple objects, making it VERY LETHAL!!
-```python
-         bullet.destroy()
-```
-### Shooting range limiting bullets
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing shoot function prior to insertion**
-
-By default there is no limit the the distance a bullet can fly. At times that can be a little unrealistic. Here's the modification to the code that will allow bullets to fly just a few grid cells.
-```python
-def shoot(level, player, repeat=False):
-   """ shoot real bullets """
-   distance = 4
-   player.act(SHOOT, loop=1)
-   pos = player.facing(distance)
-   bpos = player.pos
-   bullet = image('bullet', tag='bullet', pos=(bpos[0]+0.85, bpos[1]+0.35), size=0.3)
-   bullet.speed(10).move_to((pos[0]+0.5,pos[1]+0.35),callback=bullet.destroy)
-
-   def __hit__(bullet, target):
-      if target != player:
-         bullet.destroy()
-         if isinstance(target, Actor):
-            target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   bullet.collides(sprites(), __hit__)
-   if not repeat:
-      callback(partial(shoot, level, player, True), wait=0.2, repeat=5)
-```
-The way this code works is quite simple. Bullets will travel for `distance` number of grid cells before disappearing. In the example above, the distance is `4`, but this can be changed to any number. Keep in mind that there are some sensitive targets in the game so it may be wise to limit the distance that a bullet can fly!
-
-### Flame thrower
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw function prior to insertion**
-
-This one goes without any explanation. It's just really awesome. Keep in mind that the throw key is `2` on your keyboard.
-```python
-def throw(level, player, repeat=False):
-   """ flame thrower """
-   player.act(THROW, loop=1)
-   pos = player.facing()
-   bpos = player.pos
-   beam = shape(ELLIPSE, RED, pos=(bpos[0]+0.5, bpos[1]+0.5), size=0.3)
-
-   def __hit__(beam, target):
-      if target != player:
-         if isinstance(target, Actor):
-            target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   beam.collides(sprites(), __hit__)
-
-   def __grow__(beam):
-      beam.move_to(player.facing())
-      beam.scale(1.1).speed(10)
-      if beam.size > 20:
-        beam.fade(1)
-
-   if not repeat:
-      callback(partial(__grow__, beam), wait=0.1, repeat=50)
-```
-### Throw a grenade
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw function prior to insertion**
-
-Another cool throwing option..
-```python
-def throw(level, player, repeat=False):
-   """ grenade thrower """
-   player.act(THROW, loop=1)
-   # set the range of the grenade
-   pos = player.facing(5)
-   bpos = player.pos
-   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
-
-   def __hit__(grenade, target):
-      if target != grenade:
-         if isinstance(target, Actor):
-            target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-   def __explode__(grenade):
-      grenade.destroy()
-      gpos = grenade.pos
-      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
-      exp.collides(sprites(), __hit__)
-      exp.scale(10)
-      callback(partial(exp.fade, 1), 0.5)
-   grenade.move_to(pos, callback=callback(partial(__explode__, grenade), wait=1))
-```
-### Throw a grenade (that explodes on impact and doesn't destroy walls)
-```python
-def throw(level, player, repeat=False):
-   """ throw an explode on impact grenade (just kills actors)"""
-   player.act(THROW, loop=1)
-   # set the range of the grenade
-   pos = player.facing(5)
-   bpos = player.pos
-   grenade = image('grenade', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.3).spin(0.25)
-
-   def __explode__(grenade):
-      grenade.destroy()
-      gpos = grenade.pos
-      exp = shape(CIRCLE, RED, (gpos[0]-1.5,gpos[1]-1.5), size=0.3)
-      exp.scale(10)
-      callback(partial(exp.fade, 1), 0.5)
-
-   def __hit__(grenade, target):
-      if target != grenade and target != player:
-         if isinstance(target, Actor):
-            __explode__(grenade)
-            target.kill()
-   grenade.move_to(pos, callback=grenade.destroy)
-   grenade.collides(sprites(), __hit__)
-```
-### Throw a punch
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing punch function prior to insertion**
-
-```python
-def punch(level, player):
-   player.act(THROW, loop=1)
-   target = at(player.next(player.direction))
-   if isinstance(target, Actor):
-       target.kill()
-   elif isinstance(target, Sprite):
-       target.fade(0.5)
-```
-### Plant a landmine
+# Bonus Sprites
 **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-Mines are cool! This will use the `m` key drop the mine. It'll be active within three seconds, so be sure to get out of the way! There are quite a few numbers here that can be tweaked, so you'll want to try a few things until you end up with the perfect mine.
-```python
-   def __drop__(player):
-      """ put a landmine right where the player is standing """
-      mine = image('mine', player.pos, tag = 'mine')
+These boost sprites allow your player to earn extra energy and wealth bonuses during the game. Blue and red forces are immune to boost sprites.
 
-      def __hit__(mine, target):
-         """ mine hits something and that something dies """
-         if isinstance(target, Actor):
-            target.kill()
-         elif isinstance(target, Sprite):
-            target.fade(0.5)
-
-      def __explode__(mine, sprite):
-         """ explode the mine """
-         if mine != sprite:
-            mine.collides(sprites(), __hit__)
-            callback(partial(mine.fade, 2), 1)
-      # wait three seconds to activate the mine
-      callback(partial(mine.collides, sprites(), __explode__), wait=3)
-   keydown('m', callback=partial(__drop__, player))
-```
-### Throw some c-4 explosives
-**LOCATION GUIDE**: *insert as a top-level function* -- **must delete existing throw**
-
-This is a two-part weapon. By default `2` will throw the c-4 (you can throw many), and then `3` will detonate.
+## Energy Boost
+This code will drop `sprite` images with a `5%` probability. Anytime the player collides with a `sprite` image, the player is rewarded with a `10%` energy boost.
 
 ```python
-def throw(level, player, repeat=False):
-   """ throw some c-4 (explodes on '3' button press)"""
-   player.act(THROW, loop=1)
-   # set the range of the c4
-   pos = player.facing(8)
-   bpos = player.pos
-   c4 = image('mine', tag='c4', center=(bpos[0]+0.5, bpos[1]+0.5), size=0.5).spin(0.25)
-
-   def __hit__(c4, target):
-      if target != c4 and target != player:
-         if isinstance(target, Actor):
-            target.kill()
-   def __explode__(c4):
-      c4.destroy()
-      cpos = c4.pos
-      exp = shape(CIRCLE, RED, (cpos[0]-1.5,cpos[1]-1.5), size=0.3)
-      exp.collides(sprites(), __hit__)
-      exp.scale(10)
-      callback(partial(exp.fade, 1), 0.5)
-   def __detonate__():
-      bombs = get('c4')
-      for bomb in bombs:
-         callback(partial(__explode__, bomb), 0.25)
-   keydown('3', __detonate__)
-   c4.move_to(pos)
+   def drink(soda, player):
+      soda.destroy()
+      player.energy = 10
+   fill(partial(image,'sprite', size=1.0), 0.05, player, drink)
 ```
 
-### Walk through walls (and destroy them too!!)
- **LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
+## Wealth Boost
+This code will drop `coin` images with a `25%` probability. Anytime the player collides with a `coin` image, the player is rewarded with a `5` point wealth boost.
 
-Friendlies and hostiles must obey the ways, but it's possible to have the player be a little stealthy. Add this line to your `setup` function.
 ```python
-   player.keys()
+   def claim(coin, player):
+      coin.destroy()
+      player.wealth = 5
+   fill(partial(image,'coin', size=1.0), 0.25, player, claim)
 ```
-Want to clear a path through the walls? Be sure the add these lines right under the keys override (it won't work otherwise). Keep in mind that this is pretty easy to move around, but it also makes you and your friendlies a little easier to find!
-```python
-   def __wall_buster__(player, wall):
-      wall.fade(0.25)
-   player.collides(get('wall'), __wall_buster__)
-```
-### Add walls
-**LOCATION GUIDE**: *insert inside the setup function* -- `def setup(player, level):`
 
-This code will register callbacks for the `w`, `a`,`s`, and `d` keys. The put function a stone wall at the grid location next to the player. Run this code as part of your `setup` function since the code needs a reference to the player actor.
-```python
-   def __put__(player, direction):
-      """ put a block at the player's next location  """
-      pos = player.next(direction)
-      image('stone', pos, tag = 'wall')
-
-   keydown('w', callback=partial(__put__, player, BACK))
-   keydown('a', callback=partial(__put__, player, LEFT))
-   keydown('s', callback=partial(__put__, player, FRONT))
-   keydown('d', callback=partial(__put__, player, RIGHT))
-```
 
 
 # Friendlies

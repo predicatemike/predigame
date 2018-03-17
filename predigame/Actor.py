@@ -171,6 +171,11 @@ class Actor(Sprite):
             self.action = IDLE + '_' + self.direction
             self.action_loop = FOREVER
 
+    def get_actions(self):
+        """ return all actions that this actor can perform """
+        return list(self.actions.keys())
+
+
     def take(self, obj):
         """ take this object and add to inventory """
         self._inventory.add(obj)
