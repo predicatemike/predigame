@@ -35,6 +35,7 @@ DIE = 'die'
 ATTACK = 'attack'
 SHOOT = 'shoot'
 HAPPY = 'happy'
+DANCE = 'dance'
 
 # Actor actions (directional)
 ATTACK_BACK = 'attack_back'
@@ -82,6 +83,10 @@ RUN_FRONT = 'run_front'
 RUN_LEFT = 'run_left'
 RUN_RIGHT = 'run_right'
 
+DANCE_BACK = 'dance_back'
+DANCE_FRONT = 'dance_front'
+DANCE_LEFT = 'dance_left'
+DANCE_RIGHT = 'dance_right'
 
 LEFT = 'left'
 RIGHT = 'right'

@@ -3,30 +3,35 @@ WIDTH = 16
 HEIGHT = 6
 TITLE = 'Animated Actors'
 
+actors = []
+
+def act(action, seq):
+	for a in actors:
+		a.act(action, seq)
+
 def register(p1):
-	keydown('q', lambda: p1.act(ATTACK_BACK, FOREVER))
-	keydown('w', lambda: p1.act(ATTACK_FRONT, FOREVER))
-	keydown('e', lambda: p1.act(ATTACK_LEFT, FOREVER))
-	keydown('r', lambda: p1.act(ATTACK_RIGHT, FOREVER))
+	keydown('q', partial(act, ATTACK_BACK, FOREVER))
+	keydown('w', partial(act, ATTACK_FRONT, FOREVER))
+	keydown('e', partial(act, ATTACK_LEFT, FOREVER))
+	keydown('r', partial(act, ATTACK_RIGHT, FOREVER))
 
-	keydown('a', lambda: p1.act(DIE_BACK, FOREVER))
-	keydown('s', lambda: p1.act(DIE_FRONT, FOREVER))
-	keydown('d', lambda: p1.act(DIE_LEFT, FOREVER))
-	keydown('f', lambda: p1.act(DIE_RIGHT, FOREVER))
+	keydown('a', partial(act, DIE_BACK, FOREVER))
+	keydown('s', partial(act, DIE_FRONT, FOREVER))
+	keydown('d', partial(act, DIE_LEFT, FOREVER))
+	keydown('f', partial(act, DIE_RIGHT, FOREVER))
 
-	keydown('z', lambda: p1.act(IDLE_BACK, FOREVER))
-	keydown('x', lambda: p1.act(IDLE_FRONT, FOREVER))
-	keydown('c', lambda: p1.act(IDLE_LEFT, FOREVER))
-	keydown('v', lambda: p1.act(IDLE_RIGHT, FOREVER))
+	keydown('z', partial(act, IDLE_BACK, FOREVER))
+	keydown('x', partial(act, IDLE_FRONT, FOREVER))
+	keydown('c', partial(act, IDLE_LEFT, FOREVER))
+	keydown('v', partial(act, IDLE_RIGHT, FOREVER))
 
-	keydown('1', lambda: p1.act(WALK_BACK, FOREVER))
-	keydown('2', lambda: p1.act(WALK_FRONT, FOREVER))
-	keydown('3', lambda: p1.act(WALK_LEFT, FOREVER))
-	keydown('4', lambda: p1.act(WALK_RIGHT, FOREVER))
+	keydown('1', partial(act, WALK_BACK, FOREVER))
+	keydown('2', partial(act, WALK_FRONT, FOREVER))
+	keydown('3', partial(act, WALK_LEFT, FOREVER))
+	keydown('4', partial(act, WALK_RIGHT, FOREVER))
 
 
 offset = 3
-actors = []
 for i in range(3):
 	a = actor('Zombie-'+str(i+1), center=(offset, 3), size=5)
 	register(a)

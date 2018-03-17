@@ -10,6 +10,8 @@ from .Actor import Actor
 from .Level import Level
 from .constants import *
 import traceback
+import io
+from zipfile import ZipFile
 
 current_level = None
 globs = None
@@ -271,23 +273,26 @@ def actor(name = None, pos = None, center = None, size = 1, abortable = False, t
         loaded = True
         states = actors[name]
     else:
-        path = 'actors/' + name
-        if os.path.isdir(path):
-            for state in os.listdir(path):
-                if os.path.isdir(path + '/' + state):
-                    for img_file in os.listdir(path + '/' + state):
+        pga_file = 'actors/' + name + '.pga'
+        try:
+            with ZipFile(pga_file) as pga:
+                lst = pga.namelist()
+                for f in lst:
+                    if f.endswith('.png'):
+                        state = f.split('/')[0]
                         if not state in states:
                             states[state] = []
-                        try:
-                            #print(path + '/' + state + '/' + img_file)
-                            states[state].append(pygame.image.load(path + '/' + state + '/' + img_file))
+                        with pga.open(f) as afile:
+                            states[state].append(pygame.image.load(io.BytesIO(afile.read())))
                             loaded = True
-                        except:
-                            continue
+        except:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit('Unable to find or load actor ' + str(name) + '. actors/' + str(name) + '.pga. may be bad!')
+
         actors[name] = states
 
     if not loaded:
-        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + ' exist?')
+        sys.exit('Unable to find or load actor ' + str(name) + '. Does actors/' + str(name) + '.pga exist?')
 
     if not center and not pos:
         pos = rand_pos(size - 1, size - 1)

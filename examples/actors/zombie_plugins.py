@@ -52,7 +52,7 @@ def setup(player, level):
    player.keys(right = 'd', left = 'a', up = 'w', down = 's')
 
    # randomly pick a background
-   background()
+   background('grass')
 
    player.take(Punch(call='1'))
    player.take(FlameThrower(call='2'))

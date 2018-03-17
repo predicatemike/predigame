@@ -3,45 +3,51 @@ WIDTH = 32
 HEIGHT = 6
 TITLE = 'Animated Actors'
 
+actors = []
+
+def act(action, seq):
+	for a in actors:
+		a.act(action, seq)
+
 def register(p1):
-	keydown('q', lambda: p1.act(SHOOT_BACK, FOREVER))
-	keydown('w', lambda: p1.act(SHOOT_FRONT, FOREVER))
-	keydown('e', lambda: p1.act(SHOOT_LEFT, FOREVER))
-	keydown('r', lambda: p1.act(SHOOT_RIGHT, FOREVER))
+	keydown('q', partial(act, SHOOT_BACK, FOREVER))
+	keydown('w', partial(act, SHOOT_FRONT, FOREVER))
+	keydown('e', partial(act, SHOOT_LEFT, FOREVER))
+	keydown('r', partial(act, SHOOT_RIGHT, FOREVER))
 
-	keydown('t', lambda: p1.act(THROW_BACK, FOREVER))
-	keydown('y', lambda: p1.act(THROW_FRONT, FOREVER))
-	keydown('u', lambda: p1.act(THROW_LEFT, FOREVER))
-	keydown('i', lambda: p1.act(THROW_RIGHT, FOREVER))
+	keydown('t', partial(act, THROW_BACK, FOREVER))
+	keydown('y', partial(act, THROW_FRONT, FOREVER))
+	keydown('u', partial(act, THROW_LEFT, FOREVER))
+	keydown('i', partial(act, THROW_RIGHT, FOREVER))
 
-	keydown('a', lambda: p1.act(DIE_BACK, FOREVER))
-	keydown('s', lambda: p1.act(DIE_FRONT, FOREVER))
-	keydown('d', lambda: p1.act(DIE_LEFT, FOREVER))
-	keydown('f', lambda: p1.act(DIE_RIGHT, FOREVER))
+	keydown('a', partial(act, DIE_BACK, FOREVER))
+	keydown('s', partial(act, DIE_FRONT, FOREVER))
+	keydown('d', partial(act, DIE_LEFT, FOREVER))
+	keydown('f', partial(act, DIE_RIGHT, FOREVER))
 
-	keydown('z', lambda: p1.act(IDLE_BACK, FOREVER))
-	keydown('x', lambda: p1.act(IDLE_FRONT, FOREVER))
-	keydown('c', lambda: p1.act(IDLE_LEFT, FOREVER))
-	keydown('v', lambda: p1.act(IDLE_RIGHT, FOREVER))
+	keydown('z', partial(act, IDLE_BACK, FOREVER))
+	keydown('x', partial(act, IDLE_FRONT, FOREVER))
+	keydown('c', partial(act, IDLE_LEFT, FOREVER))
+	keydown('v', partial(act, IDLE_RIGHT, FOREVER))
 
-	keydown('b', lambda: p1.act(IDLE_AIM_BACK, FOREVER))
-	keydown('n', lambda: p1.act(IDLE_AIM_FRONT, FOREVER))
-	keydown('m', lambda: p1.act(IDLE_AIM_LEFT, FOREVER))
-	keydown(',', lambda: p1.act(IDLE_AIM_RIGHT, FOREVER))
+	keydown('b', partial(act, IDLE_AIM_BACK, FOREVER))
+	keydown('n', partial(act, IDLE_AIM_FRONT, FOREVER))
+	keydown('m', partial(act, IDLE_AIM_LEFT, FOREVER))
+	keydown(',', partial(act, IDLE_AIM_RIGHT, FOREVER))
 
-	keydown('1', lambda: p1.act(WALK_BACK, FOREVER))
-	keydown('2', lambda: p1.act(WALK_FRONT, FOREVER))
-	keydown('3', lambda: p1.act(WALK_LEFT, FOREVER))
-	keydown('4', lambda: p1.act(WALK_RIGHT, FOREVER))
+	keydown('1', partial(act, WALK_BACK, FOREVER))
+	keydown('2', partial(act, WALK_FRONT, FOREVER))
+	keydown('3', partial(act, WALK_LEFT, FOREVER))
+	keydown('4', partial(act, WALK_RIGHT, FOREVER))
 
-	keydown('5', lambda: p1.act(WALK_AIM_BACK, FOREVER))
-	keydown('6', lambda: p1.act(WALK_AIM_FRONT, FOREVER))
-	keydown('7', lambda: p1.act(WALK_AIM_LEFT, FOREVER))
-	keydown('8', lambda: p1.act(WALK_AIM_RIGHT, FOREVER))
+	keydown('5', partial(act, WALK_AIM_BACK, FOREVER))
+	keydown('6', partial(act, WALK_AIM_FRONT, FOREVER))
+	keydown('7', partial(act, WALK_AIM_LEFT, FOREVER))
+	keydown('8', partial(act, WALK_AIM_RIGHT, FOREVER))
 
 
 offset = 2
-actors = []
+
 for i in range(10):
 	a = actor('Soldier-'+str(i+1), center=(offset, 3), size=5)
 	register(a)
