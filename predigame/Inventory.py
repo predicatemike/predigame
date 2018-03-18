@@ -5,11 +5,9 @@ from .Globals import Globals
 from functools import partial
 from .Thing import *
 class Inventory:
-    defaults = {}
-    default_energy = EnergyDrink()
-    defaults[default_energy.name] = default_energy
+
     def __init__(self):
-        self.things = Inventory.defaults
+        self.things = {}
         self.display_things = {}
         self.title = None
         self.actor = None
