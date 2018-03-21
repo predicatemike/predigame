@@ -210,7 +210,7 @@ class Actor(Sprite):
                     self.actit(action, loop)
         return self
 
-    def kill(self, delay=2.5):
+    def kill(self, delay=1.25):
         """ used to kill this actor """
         if self.health > 0:
             self.health = 0
